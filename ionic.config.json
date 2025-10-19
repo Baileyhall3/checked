@@ -1,0 +1,7 @@
+{
+  "name": "checked",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}
