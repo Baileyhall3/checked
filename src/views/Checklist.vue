@@ -74,7 +74,6 @@ import { reactive, ref } from 'vue';
 import { dataSources } from '@/api/dataObjects';
 import RoundedContainer from '@/components/RoundedContainer.vue';
 import { Button } from "@/components/ui/button";
-import { PlusIcon } from 'lucide-vue-next';
 import { useToast } from "@/components/ui/toast/use-toast";
 import { userStore } from '@/store/userStore';
 import { CircleIcon, CheckCircle2Icon } from "lucide-vue-next";
@@ -172,9 +171,9 @@ async function createDataObjects(id: number) {
 const showAddInput = ref(true);
 const newItemName = ref("");
 
-function toggleAddInput() {
-    showAddInput.value = !showAddInput.value;
-}
+// function toggleAddInput() {
+//     showAddInput.value = !showAddInput.value;
+// }
 
 async function addItem() {
     if (newItemName.value.trim() === "") return;
