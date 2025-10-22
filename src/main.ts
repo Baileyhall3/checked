@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router';
-import { IonPage, IonContent, IonicVue } from '@ionic/vue';
+import {  IonicVue } from '@ionic/vue';
 
 import '@ionic/vue/css/core.css';       // required for ion-page/ion-content layout
 import '@ionic/vue/css/structure.css';  // required for inner-scroll sizing
@@ -15,8 +15,6 @@ import './theme/variables.css';
 const app = createApp(App)
   .use(IonicVue)
   .use(router)
-  .component('IonPage', IonPage)
-  .component('IonContent', IonContent)
 
 router.isReady().then(() => {
   app.mount('#app');

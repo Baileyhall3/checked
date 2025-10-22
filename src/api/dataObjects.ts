@@ -22,7 +22,8 @@ const errorHandler: DataObjectErrorHandler = {
 export const dataSources = reactive({
     manager: null as DataObjectManager | null,
     user: null as DataObject | null,
-    myChecklists: null as DataObject | null
+    myChecklists: null as DataObject | null,
+    checklistItems: null as DataObject | null
 });
 
 /**
@@ -49,7 +50,6 @@ export async function initDataObjects(url: string, key: string, currentUserId: n
         ],
         recordLimit: 1
     });
-    
     
     dataSources.myChecklists = await createDataObject('my_checklists', {
         viewName: 'checklists_view',

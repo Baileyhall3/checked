@@ -1,6 +1,6 @@
 <template>
-  <ion-page>
-    <ion-content :fullscreen="true">
+  <IonPage>
+    <IonContent :fullscreen="true">
       <div class="min-h-screen bg-gray-100">
         <div class="container mx-auto px-6 py-8">
           <template v-if="userStore.isAuthenticated">
@@ -34,10 +34,12 @@
                   :key="checklist.id"
                   class="cursor-pointer border-b hover:bg-gray-200"
                 >
-                  <div class="p-2">
-                    <span class="text-lg font-medium">{{ checklist.name }}</span>
-                    <p class="text-muted-foreground text-sm">{{ DateUtils.toDateTime(checklist.created_at) }}</p>
-                  </div>
+                  <RouterLink :to="`/checklist/${checklist.id}`">
+                    <div class="p-2">
+                      <span class="text-lg font-medium">{{ checklist.name }}</span>
+                      <p class="text-muted-foreground text-sm">{{ DateUtils.toDateTime(checklist.created_at) }}</p>
+                    </div>
+                  </RouterLink>
                 </div>
             </RoundedContainer>
 
@@ -49,15 +51,15 @@
           </div>
         </div>
       </div>
-    </ion-content>
-  </ion-page>
-  
-  <CreateChecklist ref="createChecklistDialog" @checklist-created="refreshChecklists" />
+    </IonContent>
+
+    <CreateChecklist ref="createChecklistDialog" @checklist-created="refreshChecklists" />
+  </IonPage>
 </template>
 
 <script setup lang="ts">
 import { IonContent, IonPage } from '@ionic/vue';
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Empty,
   EmptyContent,
@@ -68,19 +70,15 @@ import {
 } from "@/components/ui/empty";
 import { ListTodo } from 'lucide-vue-next';
 import { userStore } from '@/store/userStore';
-import { getDataObjectById } from 'supabase-dataobject-core';
 import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 import { ref } from 'vue';
 import RoundedContainer from '@/components/RoundedContainer.vue';
 import { dataSources } from '@/api/dataObjects';
 import DateUtils from '@/utils/DateUtils';
 
-// const checklistsDs = getDataObjectById('my_checklists');
-
 const createChecklistDialog = ref();
 
 function refreshChecklists() {
-  console.log('did refresh')
   dataSources.myChecklists?.refresh();
 }
 </script>
