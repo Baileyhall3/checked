@@ -238,7 +238,6 @@ async function createChecklist() {
 
   } catch (err) {
     console.error(err);
-
   } finally {
     isCreating.value = false;
   }

@@ -23,7 +23,8 @@ export const dataSources = reactive({
     manager: null as DataObjectManager | null,
     user: null as DataObject | null,
     myChecklists: null as DataObject | null,
-    checklistItems: null as DataObject | null
+    checklistItems: null as DataObject | null,
+    myFolders: null as DataObject | null
 });
 
 /**
@@ -78,6 +79,29 @@ export async function initDataObjects(url: string, key: string, currentUserId: n
             { name: "updated_by_id" },
             { name: "updated_by_username" },
             { name: "deleted_at" }
+        ]
+    }); 
+
+    dataSources.myFolders = await createDataObject('my_folders', {
+        viewName: 'checklist_folders_view',
+        tableName: 'checklist_folders',
+        canInsert: true,
+        canUpdate: true,
+        canDelete: true,
+        masterDataObjectBinding: {
+            masterDataObjectId: 'user',
+            childBindingField: 'user_id',
+            masterBindingField: 'id'
+        },
+        sort: { field: "created_at", direction: 'desc' },
+        fields: [
+            { name: "id" },
+            { name: "prim_key" },
+            { name: "name" },
+            { name: "user_id" },
+            { name: "created_at" },
+            { name: "username" },
+            { name: "checklist_count" },
         ]
     }); 
 

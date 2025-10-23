@@ -1,8 +1,7 @@
 <template>
     <IonHeader class="bg-white shadow-sm">
-        <IonToolbar class="flex justify-between items-center px-4">
-            <div class="flex justify-between items-center px-6">
-
+        <IonToolbar class="flex justify-between items-center">
+            <div class="container mx-auto px-4 py-3 flex justify-between items-center">
                 <!-- App Title -->
                 <div class="items-center flex">
                     <img src="/public/assets/images/check-icon-no-bg.png"

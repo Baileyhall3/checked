@@ -16,10 +16,18 @@
                                     </BreadcrumbItem>
                                     <BreadcrumbSeparator />
                                     <BreadcrumbItem>
-                                        <BreadcrumbLink href="#" class="inline-flex items-center gap-1.5">
-                                            <Folder class="size-4" aria-hidden="true" />
-                                            Folder
-                                        </BreadcrumbLink>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger class="inline-flex items-center gap-1.5">
+                                                <Folder class="size-4" aria-hidden="true" />
+                                                    Folder Name
+                                                <ChevronDown class="size-4" />
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="start">
+                                                <DropdownMenuItem>Checklist 1</DropdownMenuItem>
+                                                <DropdownMenuItem>Checklist 2</DropdownMenuItem>
+                                                <DropdownMenuItem>Checklist 3</DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
                                     </BreadcrumbItem>
                                     <BreadcrumbSeparator />
                                     <BreadcrumbItem>
@@ -176,7 +184,7 @@ import RoundedContainer from '@/components/RoundedContainer.vue';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast/use-toast";
 import { userStore } from '@/store/userStore';
-import { RotateCcw, Folder, Home, Trash, TextAlignStart, CircleIcon, CheckCircle2Icon, Ellipsis, X } from "lucide-vue-next";
+import { ChevronDown, RotateCcw, Folder, Home, Trash, TextAlignStart, CircleIcon, CheckCircle2Icon, Ellipsis, X } from "lucide-vue-next";
 import Header from '@/components/header/Checklist.vue';
 import {
   DropdownMenu,
@@ -320,7 +328,6 @@ async function addItem() {
             name: newItemName.value, 
             is_checked: false,
             checklist_id: checklistDs.checklist?.currentRecord?.id,
-            created_by_id: userStore.userProfile?.id
         });
     } catch (err) {
         toast({
@@ -334,16 +341,13 @@ async function addItem() {
 
 function toggleCheck(item: any) {
     checklistDs.checklistItems?.update(item.id, {
-        is_checked: !item.is_checked,
-        updated_by_id: userStore.userProfile?.id
+        is_checked: !item.is_checked
     });
 }
 
 function setDeleted(item: any) {
     checklistDs.checklistItems?.update(item.id, {
-        deleted_at: new Date(),
-        updated_by_id: userStore.userProfile?.id,
-        deleted_by_id: userStore.userProfile?.id
+        deleted_at: new Date()
     });
 
     toast({
@@ -354,9 +358,7 @@ function setDeleted(item: any) {
 
 function recoverItem(item: any) {
     checklistDs.checklistItems?.update(item.id, {
-        deleted_at: null,
-        updated_by_id: userStore.userProfile?.id,
-        deleted_by_id: null
+        deleted_at: null
     });
 } 
 

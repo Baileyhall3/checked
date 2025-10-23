@@ -34,25 +34,66 @@
                   <div class="w-full">
                     <SearchBar />
                   </div>
-                  <Button @click="createChecklistDialog.show()" class="text-white rounded-xl">
+                  <!-- <Button @click="createChecklistDialog.show()" class="text-white rounded-xl">
                       Add New
-                  </Button>
+                  </Button> -->
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button>
+                        Add New
+                        <ChevronDown
+                          :size="16"
+                          class="-me-1 opacity-60 rounded-xl"
+                          aria-hidden="true"
+                        />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem @click="createChecklistDialog.show()" class="cursor-pointer"> 
+                        <ListTodo :size="16" class="opacity-60" aria-hidden="true" />
+                        Checklist
+                      </DropdownMenuItem>
+                      <DropdownMenuItem @click="createFolderDialog.show()" class="cursor-pointer">
+                        <Folder :size="16" class="opacity-60" aria-hidden="true" />
+                        Folder
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
               </div>
               
-              <div class="text-lg font-medium">Your Checklists</div>
-              <RoundedContainer class=" flex flex-col">
-                  <div v-for="(checklist, index) in dataSources.myChecklists?.data" 
-                    :key="checklist.id"
-                    class="cursor-pointer border-b hover:bg-gray-200"
-                  >
-                    <RouterLink :to="`/checklist/${checklist.id}`">
-                      <div class="p-2">
-                        <span class="text-lg font-medium">{{ checklist.name }}</span>
-                        <p class="text-muted-foreground text-sm">{{ DateUtils.toDateTime(checklist.created_at) }}</p>
-                      </div>
-                    </RouterLink>
-                  </div>
-              </RoundedContainer>
+              <div class="mb-8">
+                <div class="text-lg font-medium">Your Checklists</div>
+                <RoundedContainer class="flex flex-col">
+                    <div v-for="(checklist, index) in dataSources.myChecklists?.data" 
+                      :key="checklist.id"
+                      class="cursor-pointer border-b hover:bg-gray-200"
+                    >
+                      <RouterLink :to="`/checklist/${checklist.id}`">
+                        <div class="p-2">
+                          <span class="text-lg font-medium">{{ checklist.name }}</span>
+                          <p class="text-muted-foreground text-sm">{{ DateUtils.toDateTime(checklist.created_at) }}</p>
+                        </div>
+                      </RouterLink>
+                    </div>
+                </RoundedContainer>
+              </div>
+              
+              <div v-if="dataSources.myFolders && dataSources.myFolders.data.length > 0">
+                <div class="text-lg font-medium">Your Folders</div>
+                <RoundedContainer class=" flex flex-col">
+                    <div v-for="(folder, index) in dataSources.myFolders?.data" 
+                      :key="folder.id"
+                      class="cursor-pointer border-b hover:bg-gray-200"
+                    >
+                      <RouterLink :to="`/folder/${folder.id}`">
+                        <div class="p-2">
+                          <span class="text-lg font-medium">{{ folder.name }}</span>
+                          <p class="text-muted-foreground text-sm">{{ DateUtils.toDateTime(folder.created_at) }}</p>
+                        </div>
+                      </RouterLink>
+                    </div>
+                </RoundedContainer>
+              </div>
             </template>
           </template>
           <div class="flex justify-center" v-else>
@@ -65,6 +106,7 @@
     </IonContent>
 
     <CreateChecklist ref="createChecklistDialog" @checklist-created="refreshChecklists" />
+    <CreateFolder ref="createFolderDialog" @folder-created="refreshFolders" />
   </IonPage>
 </template>
 
@@ -79,7 +121,13 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { ListTodo } from 'lucide-vue-next';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ListTodo, ChevronDown, Folder } from 'lucide-vue-next';
 import { userStore } from '@/store/userStore';
 import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 import { ref } from 'vue';
@@ -89,11 +137,17 @@ import DateUtils from '@/utils/DateUtils';
 import UnauthenticatedHeader from '@/components/header/Unauthenticated.vue';
 import { onIonViewDidEnter, onIonViewDidLeave } from '@ionic/vue';
 import SearchBar from '@/components/custom/UI/SearchBar.vue';
+import CreateFolder from '@/components/dialogs/CreateFolder.vue';
 
 const createChecklistDialog = ref();
+const createFolderDialog = ref();
 
 function refreshChecklists() {
   dataSources.myChecklists?.refresh();
+}
+
+function refreshFolders() {
+  dataSources.myFolders?.refresh();
 }
 
 onIonViewDidEnter(() => {

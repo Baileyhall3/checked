@@ -1,5 +1,5 @@
 <template>
-    <InputGroup class="bg-white rounded-xl ">
+    <InputGroup class="bg-white rounded-md ">
         <InputGroupInput placeholder="Search..." type="text" />
         <InputGroupAddon>
             <Search :size="16" aria-hidden="true" />
