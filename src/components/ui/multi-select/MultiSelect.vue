@@ -19,6 +19,7 @@ import {
 import { computed, watch } from "vue";
 import type { Option } from "~/registry/default/ui/multi-select";
 import ComboboxList from '../combobox/ComboboxList.vue';
+import ComboboxEmpty from '../combobox/ComboboxEmpty.vue';
 
 interface MultySelectProps {
   defaultOptions?: Option[];
@@ -98,7 +99,7 @@ const removeTag = (index: number) => {
           <ComboboxInput v-model="query" as-child>
             <TagsInputInput
               :placeholder="placeholder"
-              class="placeholder:text-muted-foreground/70 flex-1 bg-transparent px-2 py-1 outline-hidden disabled:cursor-not-allowed"
+              class="border border-transparent focus-within:border-transparent focus-within:ring-0 relative min-h-[38px] cursor-text rounded-md p-1 text-sm transition-[color,box-shadow] outline-none"
               :class="{
                 '-ml-1': modelValue.length !== 0,
               }"

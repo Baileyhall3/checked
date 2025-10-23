@@ -24,7 +24,8 @@ export const dataSources = reactive({
     user: null as DataObject | null,
     myChecklists: null as DataObject | null,
     checklistItems: null as DataObject | null,
-    myFolders: null as DataObject | null
+    myFolders: null as DataObject | null,
+    checklistsNoFolderLkp: null as DataObject | null
 });
 
 /**
@@ -102,6 +103,32 @@ export async function initDataObjects(url: string, key: string, currentUserId: n
             { name: "created_at" },
             { name: "username" },
             { name: "checklist_count" },
+        ]
+    }); 
+
+    dataSources.checklistsNoFolderLkp = await createDataObject('no_folder_checklists_lkp', {
+        viewName: 'checklists_view',
+        tableName: 'checklists',
+        autoRefresh: false,
+        whereClauses: [
+            { field: 'owner_id', operator: 'equals', value: currentUserId },
+            { field: 'folder_id', operator: 'isnull' }
+        ],
+        fields: [
+            { name: "id" },
+            { name: "prim_key" },
+            { name: "name" },
+            { name: "is_template" },
+            { name: "created_at" },
+            { name: "updated_at" },
+            { name: "folder_id" },
+            { name: "folder_name" },
+            { name: "owner_id" },
+            { name: "owner_username" },
+            { name: "owner_email" },
+            { name: "updated_by_id" },
+            { name: "updated_by_username" },
+            { name: "deleted_at" }
         ]
     }); 
 

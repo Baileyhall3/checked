@@ -3,7 +3,7 @@ import { supabase } from '../api/supabase'
 import { supabaseHelpers } from '@/utils/supabaseHelpers'
 import { saveAuthState, clearAuthState } from '../utils/authPersistence'
 import type { Session, User } from '@supabase/supabase-js';
-import { initDataObjects } from '@/api/dataObjects';
+import { dataSources, initDataObjects } from '@/api/dataObjects';
 
 interface UserProfile {
   id?: number
@@ -84,7 +84,7 @@ export const userStore = {
 
       if (state.user) await this.fetchUserProfile()
 
-      if (state.userProfile && state.userProfile.id) {
+      if (state.userProfile && state.userProfile.id && !dataSources.manager) {
         await initDataObjects(supabaseUrl, supabasePublishableKey, state.userProfile.id);
       }
 

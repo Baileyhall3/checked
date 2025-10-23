@@ -21,7 +21,7 @@
                         class="border-gray-300 focus:ring-blue-500"
                     />
                 </div>
-                <div class="*:not-first:mt-2" v-if="options.length > 0">
+                <!-- <div class="*:not-first:mt-2" v-if="options.length > 0">
                     <Label>Select Checklists</Label>
                     <MultiSelect
                         :options="options"
@@ -29,7 +29,7 @@
                         v-model:query="query"
                         placeholder="Select checklists"
                     />
-                </div>
+                </div> -->
             </form>
             <DialogFooter class="pt-4 gap-2">
                 <DialogClose asChild>
@@ -66,6 +66,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/ui/toast/use-toast";
 import { MultiSelect, type Option } from "@/components/ui/multi-select";
 import { createDataObject, DataObject } from "supabase-dataobject-core";
+import { dataSources } from "@/api/dataObjects";
 
 const emit = defineEmits<{
     (e: 'folder-created'): void
@@ -78,10 +79,6 @@ const values = ref<Option[]>([]);
 const options = ref<Option[]>([]);
 const isLoaded = ref<boolean>(false);
 
-const checklistDs = reactive({
-    checklists: null as DataObject | null
-});
-
 const folderData = reactive({
     name: '',
     user_id: userStore.userProfile?.id,
@@ -93,6 +90,11 @@ async function createFolder() {
 
     try {
         isCreating.value = true;
+        
+        if (values.value.length > 0) {
+            console.log('vals ', values.value)
+            return
+        }
 
         if (!folderData.name) {
             toast({
@@ -103,10 +105,6 @@ async function createFolder() {
             return; 
         }
 
-        if (values.value.length > 0) {
-            console.log('vals ', values.value)
-            return
-        }
 
         const { data, error } = await supabase.rpc('create_folder', {
             p_name: folderData.name,
@@ -137,43 +135,17 @@ async function createFolder() {
 function resetChecklistData() {
     folderData.name = '';
     folderData.checklistIds = [];
+
 }
 
 async function loadDataObject() {
   try {
     isLoaded.value = false;
 
-    const checklistData = await createDataObject('checklist', {
-        viewName: 'checklists_view',
-        tableName: 'checklists',
-        canInsert: false,
-        canUpdate: true,
-        canDelete: true,
-        whereClauses: [
-            { field: 'owner_id', operator: 'equals', value: userStore.userProfile?.id },
-            // { field: 'folder_id', operator: 'equals', value: null }
-        ],
-        fields: [
-            { name: "id" },
-            { name: "prim_key" },
-            { name: "name" },
-            { name: "is_template" },
-            { name: "created_at" },
-            { name: "updated_at" },
-            { name: "folder_id" },
-            { name: "folder_name" },
-            { name: "owner_id" },
-            { name: "owner_username" },
-            { name: "owner_email" },
-            { name: "updated_by_id" },
-            { name: "updated_by_username" },
-            { name: "deleted_at" }
-        ]
-    }); 
+    await dataSources.checklistsNoFolderLkp?.refresh();
 
-    if (checklistData?.data.length) {
-        checklistDs.checklists = checklistData;
-        for (const checklist of checklistData?.data) {
+    if (dataSources.checklistsNoFolderLkp?.data.length) {
+        for (const checklist of dataSources.checklistsNoFolderLkp.data) {
             options.value.push({
                 value: checklist.id,
                 label: checklist.name
@@ -188,8 +160,12 @@ async function loadDataObject() {
 }
 
 const show = () => {
-  isDialogOpen.value = true;
-  loadDataObject();
+    isDialogOpen.value = true;
+    folderData.name = '';
+    folderData.checklistIds = [];
+    values.value = [];
+    options.value = [];
+    loadDataObject();
 }
 
 const close = () => {

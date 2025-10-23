@@ -6,35 +6,66 @@
                 <header class="sticky top-0 z-50">
                     <div class="backdrop-blur-lg bg-white/30 border-b border-white/20 shadow-sm">
                         <div class="container mx-auto px-6 py-3 flex justify-between items-center">
-                            <Breadcrumb>
-                                <BreadcrumbList>
-                                    <BreadcrumbItem>
-                                        <BreadcrumbLink href="/home" class="inline-flex items-center gap-1.5">
-                                            <Home class="size-4" aria-hidden="true" />
-                                            Home
-                                        </BreadcrumbLink>
-                                    </BreadcrumbItem>
-                                    <BreadcrumbSeparator />
-                                    <BreadcrumbItem>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger class="inline-flex items-center gap-1.5">
-                                                <Folder class="size-4" aria-hidden="true" />
-                                                    Folder Name
-                                                <ChevronDown class="size-4" />
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="start">
-                                                <DropdownMenuItem>Checklist 1</DropdownMenuItem>
-                                                <DropdownMenuItem>Checklist 2</DropdownMenuItem>
-                                                <DropdownMenuItem>Checklist 3</DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </BreadcrumbItem>
-                                    <BreadcrumbSeparator />
-                                    <BreadcrumbItem>
-                                        <BreadcrumbPage>{{ checklistDs.checklist?.currentRecord?.name }}</BreadcrumbPage>
-                                    </BreadcrumbItem>
-                                </BreadcrumbList>
-                            </Breadcrumb>
+                            <div class="flex flex-col gap-2 w-full">
+                                <Breadcrumb>
+                                    <BreadcrumbList>
+                                        <BreadcrumbItem>
+                                            <BreadcrumbLink href="/home" class="inline-flex items-center gap-1.5">
+                                                <Home class="size-4" aria-hidden="true" />
+                                                Home
+                                            </BreadcrumbLink>
+                                        </BreadcrumbItem>
+                                        <BreadcrumbSeparator />
+                                        <BreadcrumbItem>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger class="inline-flex items-center gap-1.5">
+                                                    <Folder class="size-4" aria-hidden="true" />
+                                                        Folder Name
+                                                    <ChevronDown class="size-4" />
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="start">
+                                                    <DropdownMenuItem>Checklist 1</DropdownMenuItem>
+                                                    <DropdownMenuItem>Checklist 2</DropdownMenuItem>
+                                                    <DropdownMenuItem>Checklist 3</DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </BreadcrumbItem>
+                                        <BreadcrumbSeparator />
+                                        <BreadcrumbItem>
+                                            <BreadcrumbPage>{{ checklistDs.checklist?.currentRecord?.name }}</BreadcrumbPage>
+                                        </BreadcrumbItem>
+                                    </BreadcrumbList>
+                                </Breadcrumb>
+                                
+                                <div class="w-full flex">
+                                    <SearchBar />
+                                    
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                size="icon"
+                                                variant="secondary"
+                                                class="rounded-xl shadow-none ml-3"
+                                                aria-label="Open sort"
+                                            >
+                                                <ArrowUpDown :size="16" aria-hidden="true" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('recent')">
+                                                Most Recent
+                                                <Check class="size-4" aria-hidden="true" v-if="currentSort === 'recent'" />
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('name')">
+                                                Name
+                                                <Check class="size-4" aria-hidden="true" v-if="currentSort === 'name'" />
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </header>
@@ -117,7 +148,7 @@
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent>
-                                                <DropdownMenuItem class="cursor-pointer">
+                                                <DropdownMenuItem class="cursor-pointer" @click="openItemDetails(item)">
                                                     <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
                                                     Details
                                                 </DropdownMenuItem>
@@ -171,6 +202,12 @@
                 </Empty>
             </div>
         </IonContent>
+
+        <ChecklistItemDetails 
+            ref="itemDetailsDialog" 
+            :checklist-item="checklistDs.checklistItems?.currentRecord" 
+            :data-object="checklistDs.checklistItems" 
+        />
     </IonPage>
 </template>
 
@@ -184,14 +221,28 @@ import RoundedContainer from '@/components/RoundedContainer.vue';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast/use-toast";
 import { userStore } from '@/store/userStore';
-import { ChevronDown, RotateCcw, Folder, Home, Trash, TextAlignStart, CircleIcon, CheckCircle2Icon, Ellipsis, X } from "lucide-vue-next";
+import { 
+    ChevronDown, 
+    RotateCcw, 
+    Folder, 
+    Home, 
+    Trash, 
+    TextAlignStart, 
+    CircleIcon, 
+    CheckCircle2Icon, 
+    Ellipsis, 
+    X,
+    ArrowUpDown,
+    Check
+} from "lucide-vue-next";
 import Header from '@/components/header/Checklist.vue';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator 
+  DropdownMenuSeparator ,
+  DropdownMenuLabel
 } from "@/components/ui/dropdown-menu";
 import DateUtils from '@/utils/DateUtils';
 import {
@@ -210,11 +261,15 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import ChecklistItemDetails from '@/components/dialogs/ChecklistItemDetails.vue';
+import SearchBar from '@/components/custom/UI/SearchBar.vue';
 
 const route = useRoute();
-
+const itemDetailsDialog = ref();
 const isLoading = ref<boolean>(true);
 const { toast } = useToast();
+
+const currentSort = ref<'recent' | 'name'>('recent');
 
 const checklistDs = reactive({
     checklist: null as DataObject | null,
@@ -281,7 +336,7 @@ async function createDataObjects(id: number) {
             canUpdate: true,
             canDelete: true,
             // whereClauses: [
-            //     { field: 'deleted_at', operator: 'equals', value: null }
+            //     { field: 'deleted_at', operator: 'isnotnull' }
             // ],
             masterDataObjectBinding: {
                 masterDataObjectId: 'checklist',
@@ -339,10 +394,19 @@ async function addItem() {
     // showAddInput.value = false;
 }
 
+function updateSort(sort: 'recent' | 'name') {
+    currentSort.value = sort;
+}
+
 function toggleCheck(item: any) {
     checklistDs.checklistItems?.update(item.id, {
         is_checked: !item.is_checked
     });
+}
+
+function openItemDetails(item: any) {
+    checklistDs.checklistItems.currentRecord = item;
+    itemDetailsDialog.value.show();
 }
 
 function setDeleted(item: any) {
