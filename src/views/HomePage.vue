@@ -1,11 +1,12 @@
 <template>
   <IonPage>
+    <UnauthenticatedHeader />
     <IonContent :fullscreen="true">
       <div class="min-h-screen bg-gray-100">
         <div class="container mx-auto px-6 py-8">
           <template v-if="userStore.isAuthenticated">
-            <div class="text-lg font-medium">Hey, {{ userStore.userProfile?.username }}!</div>
-            <Empty class="bg-white shadow-lg rounded-xl p-6 mb-8" >
+            <!-- <div class="text-lg font-medium">Hey, {{ userStore.userProfile?.username }}!</div> -->
+            <Empty class="bg-white shadow-lg rounded-xl p-6 mb-8" v-if="dataSources.myChecklists?.data.length === 0">
               <EmptyHeader>
                 <EmptyMedia variant="icon">
                   <ListTodo />
@@ -28,21 +29,31 @@
               </EmptyContent>
             </Empty>
             
-            <div class="text-lg font-medium">Your Checklists</div>
-            <RoundedContainer class=" flex flex-col">
-                <div v-for="(checklist, index) in dataSources.myChecklists?.data" 
-                  :key="checklist.id"
-                  class="cursor-pointer border-b hover:bg-gray-200"
-                >
-                  <RouterLink :to="`/checklist/${checklist.id}`">
-                    <div class="p-2">
-                      <span class="text-lg font-medium">{{ checklist.name }}</span>
-                      <p class="text-muted-foreground text-sm">{{ DateUtils.toDateTime(checklist.created_at) }}</p>
-                    </div>
-                  </RouterLink>
-                </div>
-            </RoundedContainer>
-
+            <template v-else>
+              <div class="flex items-center space-x-2 mb-8">
+                  <div class="w-full">
+                    <SearchBar />
+                  </div>
+                  <Button @click="createChecklistDialog.show()" class="text-white rounded-xl">
+                      Add New
+                  </Button>
+              </div>
+              
+              <div class="text-lg font-medium">Your Checklists</div>
+              <RoundedContainer class=" flex flex-col">
+                  <div v-for="(checklist, index) in dataSources.myChecklists?.data" 
+                    :key="checklist.id"
+                    class="cursor-pointer border-b hover:bg-gray-200"
+                  >
+                    <RouterLink :to="`/checklist/${checklist.id}`">
+                      <div class="p-2">
+                        <span class="text-lg font-medium">{{ checklist.name }}</span>
+                        <p class="text-muted-foreground text-sm">{{ DateUtils.toDateTime(checklist.created_at) }}</p>
+                      </div>
+                    </RouterLink>
+                  </div>
+              </RoundedContainer>
+            </template>
           </template>
           <div class="flex justify-center" v-else>
             <router-link to="/register">
@@ -75,12 +86,19 @@ import { ref } from 'vue';
 import RoundedContainer from '@/components/RoundedContainer.vue';
 import { dataSources } from '@/api/dataObjects';
 import DateUtils from '@/utils/DateUtils';
+import UnauthenticatedHeader from '@/components/header/Unauthenticated.vue';
+import { onIonViewDidEnter, onIonViewDidLeave } from '@ionic/vue';
+import SearchBar from '@/components/custom/UI/SearchBar.vue';
 
 const createChecklistDialog = ref();
 
 function refreshChecklists() {
   dataSources.myChecklists?.refresh();
 }
+
+onIonViewDidEnter(() => {
+  refreshChecklists();
+});
 </script>
 
 <style scoped>

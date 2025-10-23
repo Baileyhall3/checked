@@ -1,66 +1,166 @@
 <template>
     <IonPage>
         <IonContent>
-            <div class="min-h-screen bg-gray-100">
-                <div class="container mx-auto px-6 py-8">
-                    <template v-if="!isLoading">
-                        <div class="text-lg font-medium">{{ checklistDs.checklist?.currentRecord?.name }}</div>
-                        <RoundedContainer class="flex flex-col p-4 space-y-3">
-                            <!-- Add New Item Input -->
-                            <transition name="fade-slide">
-                                <div v-if="showAddInput" class="flex items-center space-x-2">
-                                    <input
-                                        v-model="newItemName"
-                                        type="text"
-                                        placeholder="New checklist item..."
-                                        class="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                                        @keyup.enter="addItem"
-                                    />
-                                    <Button @click="addItem" class="text-white rounded-xl">
-                                        Add
-                                    </Button>
-                                </div>
-                            </transition>
-
-                            <!-- Checklist Items -->
-                            <div v-for="(item, index) in checklistDs.checklistItems?.data" :key="index"
-                                class="flex justify-between items-center bg-white rounded-2xl shadow-sm px-4 py-3 transition hover:shadow-md">
-                                <div>
-                                    <input
-                                        v-model="item.name"
-                                        type="text"
-                                        class="flex-1 bg-transparent border-none focus:outline-none text-gray-800"
-                                    />
-                                </div>
-                                <div>
-                                    <button
-                                        class="ml-3 hover:text-indigo-500 transition"
-                                        :class="{ 
-                                            'text-green-600' : item.is_checked, 
-                                            'text-gray-400' : !item.is_checked
-                                        }"
-                                        @click="toggleCheck(item)"
+            <!-- <Header :title="checklistDs.checklist?.currentRecord?.name" /> -->
+            <template v-if="checklistDs.checklist && checklistDs.checklist.data.length">
+                <header class="sticky top-0 z-50">
+                    <div class="backdrop-blur-lg bg-white/30 border-b border-white/20 shadow-sm">
+                        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+                            <Breadcrumb>
+                                <BreadcrumbList>
+                                    <BreadcrumbItem>
+                                        <BreadcrumbLink href="/home" class="inline-flex items-center gap-1.5">
+                                            <Home class="size-4" aria-hidden="true" />
+                                            Home
+                                        </BreadcrumbLink>
+                                    </BreadcrumbItem>
+                                    <BreadcrumbSeparator />
+                                    <BreadcrumbItem>
+                                        <BreadcrumbLink href="#" class="inline-flex items-center gap-1.5">
+                                            <Folder class="size-4" aria-hidden="true" />
+                                            Folder
+                                        </BreadcrumbLink>
+                                    </BreadcrumbItem>
+                                    <BreadcrumbSeparator />
+                                    <BreadcrumbItem>
+                                        <BreadcrumbPage>{{ checklistDs.checklist?.currentRecord?.name }}</BreadcrumbPage>
+                                    </BreadcrumbItem>
+                                </BreadcrumbList>
+                            </Breadcrumb>
+                        </div>
+                    </div>
+                </header>
+                <div class="min-h-screen bg-gray-100">
+                    <div class="container mx-auto px-6 py-2">
+                        <template v-if="!isLoading">
+                            <div class="flex flex-col space-y-3">
+    
+                                <!-- Checklist Progress Bar -->
+                                <div v-if="checklistDs.checklistItems?.data?.length" class="mt-4 mb-6">
+                                    <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                        <span>Progress</span>
+                                        <span>{{ completedCount }} / {{ totalCount }}</span>
+                                    </div>
+    
+                                    <div
+                                        class="bg-gray-200 h-2 w-full overflow-hidden rounded-full"
+                                        role="progressbar"
+                                        :aria-valuenow="progressPercent"
+                                        aria-valuemin="0"
+                                        :aria-valuemax="100"
+                                        aria-label="Checklist progress"
                                     >
-                                        <component
-                                            :is="item.is_checked ? CheckCircle2Icon : CircleIcon"
-                                            class="w-6 h-6"
+                                        <div
+                                        class="h-full bg-indigo-500 transition-all duration-500 ease-out"
+                                        :style="{ width: `${progressPercent}%` }"
+                                        ></div>
+                                    </div>
+                                </div>
+    
+                                <!-- Add New Item Input -->
+                                <transition name="fade-slide">
+                                    <div v-if="showAddInput" class="flex items-center space-x-2">
+                                        <input
+                                            v-model="newItemName"
+                                            type="text"
+                                            placeholder="New checklist item..."
+                                            class="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                                            @keyup.enter="addItem"
                                         />
-                                    </button>
+                                        <Button @click="addItem" class="text-white rounded-xl">
+                                            Add
+                                        </Button>
+                                    </div>
+                                </transition>
+    
+                                <!-- Checklist Items -->
+                                <div v-for="(item, index) in checklistDs.checklistItems?.data" :key="index"
+                                    class=" bg-white rounded-2xl shadow-sm px-4 py-3 transition hover:shadow-md"
+                                >
+                                    <div class="flex justify-between items-center">
+                                        <button
+                                            v-if="!item.deleted_at"
+                                            class="mr-2 hover:text-indigo-500 transition"
+                                            :class="{ 
+                                                'text-green-600' : item.is_checked, 
+                                                'text-gray-400' : !item.is_checked
+                                            }"
+                                            @click="toggleCheck(item)"
+                                        >
+                                            <component :is="item.is_checked ? CheckCircle2Icon : CircleIcon" class="w-6 h-6" />
+                                        </button>
+                                        <Trash v-else class="w-6 h-6 text-red-600 mr-2" />
+                                        <div class="w-full">
+                                            <input
+                                                v-model="item.name"
+                                                type="text"
+                                                class="flex-1 bg-transparent border-none focus:outline-none text-gray-800 w-full"
+                                            />
+                                        </div>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button
+                                                    size="icon"
+                                                    variant="ghost"
+                                                    class="rounded-full shadow-none ml-3"
+                                                    aria-label="Open edit menu"
+                                                >
+                                                    <Ellipsis :size="16" aria-hidden="true" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent>
+                                                <DropdownMenuItem class="cursor-pointer">
+                                                    <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
+                                                    Details
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem variant="destructive" class="cursor-pointer" @click="setDeleted(item)" v-if="!item.deleted_at">
+                                                    <Trash class="size-4" aria-hidden="true" />
+                                                    Delete
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem class="cursor-pointer" @click="recoverItem(item)" v-else>
+                                                    <RotateCcw class="size-4" aria-hidden="true" />
+                                                    Recover
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                    <span v-if="item.deleted_at" class="text-red-600 italic text-sm">
+                                        Deleted {{ DateUtils.toDateTime(item.deleted_at) }} by {{ item.deleted_by_username }}
+                                    </span>
+                                    <span class="text-sm text-gray-600">
+                                        {{ item.description }}
+                                    </span>
                                 </div>
                             </div>
-
-                            <!-- Add Button -->
-                            <!-- <div class="flex justify-center mt-3">
-                                <Button
-                                    class="rounded-full w-12 h-12 flex items-center justify-center text-white shadow-md"
-                                    @click="toggleAddInput"
-                                >
-                                    <PlusIcon class="w-5 h-5" />
-                                </Button>
-                            </div> -->
-                        </RoundedContainer>
-                    </template>
+                        </template>
+                    </div>
                 </div>
+            </template>
+            <div class="flex justify-center h-full" v-else-if="checklistDs.checklist?.state.isReady">
+                <Empty>
+                    <EmptyHeader>
+                        <EmptyMedia variant="icon">
+                            <X />
+                        </EmptyMedia>
+                        <EmptyTitle>Checklist Not Found</EmptyTitle>
+                        <EmptyDescription>
+                            The checklist you are trying to access does not exist, or you may not have access to it.
+                        </EmptyDescription>
+                    </EmptyHeader>
+                    <EmptyContent>
+                        <div class="flex gap-2">
+                            <RouterLink :to="`/home`">
+                                <Button>
+                                    Home
+                                </Button>
+                            </RouterLink>
+                        </div>
+                        <EmptyDescription>
+                            Need help? <a href="#">View tutorial</a>
+                        </EmptyDescription>
+                    </EmptyContent>
+                </Empty>
             </div>
         </IonContent>
     </IonPage>
@@ -70,21 +170,53 @@
 import { useRoute } from 'vue-router';
 import { createDataObject, DataObject } from 'supabase-dataobject-core';
 import { IonContent, IonPage, onIonViewDidEnter, onIonViewDidLeave } from '@ionic/vue';
-import { reactive, ref } from 'vue';
+import { reactive, ref, computed } from 'vue';
 import { dataSources } from '@/api/dataObjects';
 import RoundedContainer from '@/components/RoundedContainer.vue';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast/use-toast";
 import { userStore } from '@/store/userStore';
-import { CircleIcon, CheckCircle2Icon } from "lucide-vue-next";
+import { RotateCcw, Folder, Home, Trash, TextAlignStart, CircleIcon, CheckCircle2Icon, Ellipsis, X } from "lucide-vue-next";
+import Header from '@/components/header/Checklist.vue';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator 
+} from "@/components/ui/dropdown-menu";
+import DateUtils from '@/utils/DateUtils';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 
 const route = useRoute();
 
 const isLoading = ref<boolean>(true);
+const { toast } = useToast();
 
 const checklistDs = reactive({
     checklist: null as DataObject | null,
     checklistItems: null as DataObject | null
+});
+
+const totalCount = computed(() => checklistDs.checklistItems?.data?.length || 0);
+const completedCount = computed(() => checklistDs.checklistItems?.data?.filter((item: any) => item.is_checked)?.length || 0);
+const progressPercent = computed(() => {
+    return totalCount.value === 0 ? 0 : Math.round((completedCount.value / totalCount.value) * 100);
 });
 
 onIonViewDidEnter(() => {
@@ -140,6 +272,9 @@ async function createDataObjects(id: number) {
             canInsert: true,
             canUpdate: true,
             canDelete: true,
+            // whereClauses: [
+            //     { field: 'deleted_at', operator: 'equals', value: null }
+            // ],
             masterDataObjectBinding: {
                 masterDataObjectId: 'checklist',
                 childBindingField: 'checklist_id',
@@ -159,6 +294,9 @@ async function createDataObjects(id: number) {
                 { name: "updated_at" },
                 { name: "updated_by_id" },
                 { name: "updated_by_username" },
+                { name: "deleted_by_id" },
+                { name: "deleted_by_username" },
+                { name: "deleted_at" },
             ]
         }); 
     } catch (err) {
@@ -185,7 +323,6 @@ async function addItem() {
             created_by_id: userStore.userProfile?.id
         });
     } catch (err) {
-        const { toast } = useToast();
         toast({
             title: 'Failed to create checklist item',
             variant: "destructive"
@@ -201,6 +338,27 @@ function toggleCheck(item: any) {
         updated_by_id: userStore.userProfile?.id
     });
 }
+
+function setDeleted(item: any) {
+    checklistDs.checklistItems?.update(item.id, {
+        deleted_at: new Date(),
+        updated_by_id: userStore.userProfile?.id,
+        deleted_by_id: userStore.userProfile?.id
+    });
+
+    toast({
+        title: 'Item deleted.',
+        description: 'Deleted items are recoverable for 30 days.',
+    });
+}
+
+function recoverItem(item: any) {
+    checklistDs.checklistItems?.update(item.id, {
+        deleted_at: null,
+        updated_by_id: userStore.userProfile?.id,
+        deleted_by_id: null
+    });
+} 
 
 onIonViewDidLeave(() => {
     dataSources.manager?.removeDataObject('checklist');

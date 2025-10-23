@@ -92,6 +92,7 @@
 </template>
 
 <script setup lang="ts">
+import { IonContent, IonPage } from '@ionic/vue';
 import {
   InputGroup,
   InputGroupAddon,

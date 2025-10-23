@@ -1,10 +1,10 @@
 <template>
   <Toaster />
-  <template v-if="userStore.isLoaded">
-    <ion-app>
+  <ion-app>
+      <!-- <template v-if="userStore.isLoaded">
+      </template> -->
       <ion-router-outlet />
     </ion-app>
-  </template>
 </template>
 
 <script setup lang="ts">

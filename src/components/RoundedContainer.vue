@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-white shadow-lg rounded-xl" :class="props.class">
+    <div class="bg-white shadow-md rounded-xl" :class="props.class">
         <slot></slot>
     </div>
 </template>
