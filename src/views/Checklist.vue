@@ -16,17 +16,21 @@
                                             </BreadcrumbLink>
                                         </BreadcrumbItem>
                                         <BreadcrumbSeparator />
-                                        <BreadcrumbItem>
+                                        <BreadcrumbItem v-if="checklistDs.checklist?.currentRecord?.folder_name">
+                                            <BreadcrumbLink :href="`/folder/${checklistDs.checklist?.currentRecord.folder_id}`" class="inline-flex items-center gap-1.5">
+                                                <Folder class="size-4" aria-hidden="true" />
+                                                {{ checklistDs.checklist?.currentRecord?.folder_name }}
+                                            </BreadcrumbLink>
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger class="inline-flex items-center gap-1.5">
-                                                    <Folder class="size-4" aria-hidden="true" />
-                                                        Folder Name
                                                     <ChevronDown class="size-4" />
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="start">
-                                                    <DropdownMenuItem>Checklist 1</DropdownMenuItem>
-                                                    <DropdownMenuItem>Checklist 2</DropdownMenuItem>
-                                                    <DropdownMenuItem>Checklist 3</DropdownMenuItem>
+                                                    <template v-for="checklist in checklistDs.folderChecklistsLkp?.data" :key="checklist.id">
+                                                        <RouterLink :to="`/checklist/${checklist.id}`">
+                                                            <DropdownMenuItem class="cursor-pointer">{{ checklist.name }}</DropdownMenuItem>
+                                                        </RouterLink>
+                                                    </template>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </BreadcrumbItem>
@@ -222,7 +226,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast/use-toast";
 import { userStore } from '@/store/userStore';
 import { 
-    ChevronDown, 
+ChevronDown, 
     RotateCcw, 
     Folder, 
     Home, 
@@ -273,7 +277,8 @@ const currentSort = ref<'recent' | 'name'>('recent');
 
 const checklistDs = reactive({
     checklist: null as DataObject | null,
-    checklistItems: null as DataObject | null
+    checklistItems: null as DataObject | null,
+    folderChecklistsLkp: null as DataObject | null
 });
 
 const totalCount = computed(() => checklistDs.checklistItems?.data?.length || 0);
@@ -322,11 +327,36 @@ async function createDataObjects(id: number) {
                 { name: "updated_by_id" },
                 { name: "updated_by_username" },
                 { name: "deleted_at" }
-            ]
+            ],
+            recordLimit: 1
         }); 
 
         if (checklistData?.data.length) {
             checklistDs.checklist = checklistData;
+        }
+        
+        if (checklistData?.currentRecord?.folder_name) {
+            checklistDs.folderChecklistsLkp = await createDataObject('folder_checklists_lkp', {
+                viewName: 'checklists_view',
+                masterDataObjectBinding: {
+                    masterDataObjectId: 'checklist',
+                    childBindingField: 'folder_id',
+                    masterBindingField: 'folder_id'
+                },
+                sort: { field: "created_at", direction: 'desc' },
+                whereClauses: [
+                    { field: 'deleted_at', operator: 'isnull' }
+                ],
+                fields: [
+                    { name: "id" },
+                    { name: "name" },
+                    { name: "created_at" },
+                    { name: "folder_id" },
+                    { name: "folder_name" },
+                    { name: "owner_id" },
+                    { name: "deleted_at" }
+                ],
+            }); 
         }
 
         checklistDs.checklistItems = await createDataObject('checklist_items', {
@@ -429,11 +459,10 @@ function recoverItem(item: any) {
 onIonViewDidLeave(() => {
     dataSources.manager?.removeDataObject('checklist');
     dataSources.manager?.removeDataObject('checklist_items');
-
-    // checklistDs.checklist?.dispose();
-    // checklistDs.checklistItems?.dispose();
+    dataSources.manager?.removeDataObject('folder_checklists_lkp')
     checklistDs.checklist = null;
     checklistDs.checklistItems = null;
+    checklistDs.folderChecklistsLkp = null;
 });
 </script>
 

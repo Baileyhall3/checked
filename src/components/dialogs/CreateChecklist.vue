@@ -29,100 +29,31 @@
                         {{ errors.username }}
                     </p> -->
                 </div>
-                <!-- <div class="*:not-first:mt-2">
+                <div class="*:not-first:mt-2">
                     <Label for="checklistFolder">Folder</Label>
                     <div class="select-input">
-                        <Select default-value="1" class="select-input">
+                        <Select 
+                          :default-value="props.folder?.id" 
+                          class="select-input" 
+                          :disabled="dataSources.myFolders?.data.length === 0 || props.folder?.id"
+                          v-model="checklistData.folder_id"
+                        >
                             <SelectTrigger id="checklistFolder" class="relative ps-9 rounded-lg">
                                 <div
                                     class="text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 group-has-[select[disabled]]:opacity-50"
                                 >
                                     <Folder class="h-4 w-4" aria-hidden="true" />
                                 </div>
-                                <SelectValue placeholder="Select time" />
+                                <SelectValue placeholder="Select folder" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="1">00:00 AM - 11:59 PM</SelectItem>
-                                <SelectItem value="2">01:00 AM - 12:59 PM</SelectItem>
-                                <SelectItem value="3">02:00 AM - 01:59 PM</SelectItem>
-                                <SelectItem value="4">03:00 AM - 02:59 PM</SelectItem>
+                                <template v-for="folder in dataSources.myFolders?.data" :key="folder.id">
+                                  <SelectItem :value="folder.id">{{ folder.name }}</SelectItem>
+                                </template>
                             </SelectContent>
                         </Select>
                     </div>
-                </div> -->
-                <!-- <div>
-                    <Label for="checklistMembers">Checklist Members</Label>
-                    <ComboboxRoot
-                      v-model="values"
-                      multiple
-                      ignore-filter
-                      class="my-4 mx-auto relative"
-                    >
-                      <ComboboxAnchor class="w-[400px] inline-flex items-center justify-between rounded-lg p-2 text-[13px] leading-none  gap-[5px] bg-white text-grass11 shadow-[0_2px_10px] shadow-black/10 hover:bg-mauve3 focus:shadow-[0_0_0_2px] focus:shadow-black data-[placeholder]:text-grass9 outline-none">
-                        <TagsInputRoot
-                          v-model="values"
-                          delimiter=""
-                          class="flex gap-2 items-center rounded-lg flex-wrap"
-                        >
-                          <TagsInputItem
-                            v-for="item in values"
-                            :key="item"
-                            :value="item"
-                            class="flex items-center justify-center gap-2 text-white bg-grass8 aria-[current=true]:bg-grass9 rounded px-2 py-1"
-                          >
-                            <TagsInputItemText class="text-sm" />
-                            <TagsInputItemDelete>
-                              <Icon icon="lucide:x" />
-                            </TagsInputItemDelete>
-                          </TagsInputItem>
-
-                          <ComboboxInput
-                            v-model="query"
-                            as-child
-                          >
-                            <TagsInputInput
-                              placeholder="Fruits..."
-                              class="focus:outline-none flex-1 rounded !bg-transparent  placeholder:text-mauve10 px-1"
-                              @keydown.enter.prevent
-                            />
-                          </ComboboxInput>
-                        </TagsInputRoot>
-
-                        <ComboboxTrigger>
-                          <Icon
-                            icon="radix-icons:chevron-down"
-                            class="h-4 w-4 text-grass11"
-                          />
-                        </ComboboxTrigger>
-                      </ComboboxAnchor>
-
-                      <ComboboxContent class="absolute z-10 w-full mt-2 bg-white overflow-hidden rounded shadow-[0px_10px_38px_-10px_rgba(22,_23,_24,_0.35),_0px_10px_20px_-15px_rgba(22,_23,_24,_0.2)] will-change-[opacity,transform] data-[side=top]:animate-slideDownAndFade data-[side=right]:animate-slideLeftAndFade data-[side=bottom]:animate-slideUpAndFade data-[side=left]:animate-slideRightAndFade">
-                        <ComboboxViewport class="p-[5px]">
-                          <ComboboxGroup v-if="filteredOptions.length">
-                            <ComboboxLabel class="px-[25px] text-xs leading-[25px] text-mauve11">
-                              Fruits
-                            </ComboboxLabel>
-
-                            <ComboboxItem
-                              v-for="(option, index) in filteredOptions"
-                              :key="index"
-                              class="text-[13px] leading-none text-grass11 rounded-[3px] flex items-center h-[25px] pr-[35px] pl-[25px] relative select-none data-[disabled]:text-mauve8 data-[disabled]:pointer-events-none data-[highlighted]:outline-none data-[highlighted]:bg-grass8 data-[highlighted]:text-grass1"
-                              :value="option"
-                            >
-                              <ComboboxItemIndicator
-                                class="absolute left-0 w-[25px] inline-flex items-center justify-center"
-                              >
-                                <Icon icon="radix-icons:check" />
-                              </ComboboxItemIndicator>
-                              <span>
-                                {{ option }}
-                              </span>
-                            </ComboboxItem>
-                          </ComboboxGroup>
-                        </ComboboxViewport>
-                      </ComboboxContent>
-                    </ComboboxRoot>
-                </div> -->
+                </div>
             </form>
 
             <DialogFooter class="pt-4 gap-2">
@@ -166,11 +97,21 @@ import { supabase } from "@/api/supabase";
 import { userStore } from "@/store/userStore";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/ui/toast/use-toast";
+import { dataSources } from "@/api/dataObjects";
 
 interface ChecklistMember {
     id: number;
     username: string;
 }
+
+interface ChecklistFolder {
+  id: number;
+  name: string;
+}
+
+const props = defineProps<{
+  folder?: ChecklistFolder;
+}>();
 
 const emit = defineEmits<{
   (e: 'checklist-created'): void
@@ -178,8 +119,8 @@ const emit = defineEmits<{
 
 const checklistData = reactive({
     name: '',
-    folder_id: null,
-    folder: '',
+    folder_id: props.folder?.id ?? null,
+    folder: props.folder?.name ?? '',
     checklistMembers: [],
     owner_id: userStore.userProfile?.id
 });
@@ -216,7 +157,7 @@ async function createChecklist() {
 
     const { data, error } = await supabase.rpc('create_checklist', {
       p_name: checklistData.name,
-      p_folder_id: checklistData.folder_id,
+      p_folder_id: props.folder?.id ?? checklistData.folder_id,
       p_owner_id: checklistData.owner_id,
       p_is_template: false,
       p_member_ids: checklistData.checklistMembers

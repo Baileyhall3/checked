@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
 import HomePage from '../views/HomePage.vue';
 import Checklist from '@/views/Checklist.vue';
+import Folder from '@/views/Folder.vue';
 
 import { userStore } from '@/store/userStore';
 import { hasAuthState } from '@/utils/authPersistence';
@@ -44,6 +45,15 @@ const routes: Array<RouteRecordRaw> = [
     component: Checklist,
     meta: {
       title: 'Checklist',
+      // requiresAuth: true
+    }
+  },
+  {
+    path: '/folder/:id',
+    name: 'Folder',
+    component: Folder,
+    meta: {
+      title: 'Folder',
       // requiresAuth: true
     }
   },

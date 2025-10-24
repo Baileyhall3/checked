@@ -3,7 +3,26 @@
         <DialogContent class="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
             <DialogHeader class="contents space-y-0 text-left">
                 <DialogTitle class="border-b px-6 py-4 text-base">
-                    {{ props.checklistItem.name }}
+                    <div class="flex justify-between items-center">
+                        <button
+                            v-if="!props.checklistItem.deleted_at"
+                            class="mr-2 hover:text-indigo-500 transition"
+                            :class="{ 
+                                'text-green-600' : props.checklistItem.is_checked, 
+                                'text-gray-400' : !props.checklistItem.is_checked
+                            }"
+                            @click="toggleCheck(props.checklistItem)"
+                        >
+                            <component :is="props.checklistItem.is_checked ? CheckCircle2Icon : CircleIcon" class="w-6 h-6" />
+                        </button>
+                        <div class="w-full">
+                            <input
+                                v-model="props.checklistItem.name"
+                                type="text"
+                                class="flex-1 bg-transparent border-none focus:outline-none text-gray-800 w-full"
+                            />
+                        </div>
+                    </div>
                 </DialogTitle>
             </DialogHeader>
             <!-- <DialogDescription class="px-6">
@@ -14,18 +33,6 @@
 
             <div class="px-6 pt-4 pb-6">
                 <form class="space-y-4 pb-4">
-                    <div class="flex flex-col gap-4 sm:flex-row">
-                        <div class="flex-1">
-                            <Label for="title">Title</Label>
-                            <Input
-                                id="title"
-                                placeholder="Title"
-                                type="text"
-                                v-model="props.checklistItem.name"
-                            />
-                        </div>
-                    </div>
-
                     <div class="*:not-first:mt-2">
                         <Label for="description">Description</Label>
                         <Textarea
@@ -90,6 +97,7 @@ import { useToast } from "@/components/ui/toast/use-toast";
 import { ref, computed } from 'vue';
 import Textarea from '../ui/textarea/Textarea.vue';
 import DateUtils from '@/utils/DateUtils';
+import { CheckCircle2Icon, CircleIcon } from 'lucide-vue-next';
 
 const props = defineProps<{
     checklistItem: DataObjectRecord;
@@ -101,6 +109,10 @@ const isSaving = ref<boolean>(false);
 
 const maxLength = 180;
 const characterCount = computed(() => props.checklistItem.description?.length ?? maxLength);
+
+function toggleCheck(item: any) {
+    item.is_checked = !item.is_checked;
+}
 
 async function saveChanges() {
     try {
