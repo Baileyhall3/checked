@@ -8,8 +8,9 @@ import { dataSources, initDataObjects } from '@/api/dataObjects';
 interface UserProfile {
   id?: number
   email: string
-  username?: string
+  username: string
   auth_id: string;
+  profile_picture_url: string;
   [key: string]: any
 }
 

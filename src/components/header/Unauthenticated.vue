@@ -16,12 +16,13 @@
                 <!-- Right side buttons -->
                 <div class="flex items-center gap-2">
                     <template v-if="userStore.isAuthenticated">
-                        <span class="text-sm text-gray-700">
+                        <!-- <span class="text-sm text-gray-700">
                             Hey, {{ userStore.userProfile?.username }}
                         </span>
                         <Button variant="outline" size="sm" @click="logout">
                             Logout
-                        </Button>
+                        </Button> -->
+                        <ProfileDropdown />
                     </template>
             
                     <template v-else>
@@ -38,10 +39,11 @@
 </template>
 
 <script setup lang="ts">
-import { IonHeader, IonToolbar } from '@ionic/vue'
-import { RouterLink } from 'vue-router'
-import { Button } from '@/components/ui/button'
-import { userStore } from '@/store/userStore'
+import { IonHeader, IonToolbar } from '@ionic/vue';
+import { RouterLink } from 'vue-router';
+import { Button } from '@/components/ui/button';
+import { userStore } from '@/store/userStore';
+import ProfileDropdown from '../custom/ProfileDropdown.vue';
 
 function logout() {
   userStore.signOut();

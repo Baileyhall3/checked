@@ -3,6 +3,7 @@ import { RouteRecordRaw } from 'vue-router';
 import HomePage from '../views/HomePage.vue';
 import Checklist from '@/views/Checklist.vue';
 import Folder from '@/views/Folder.vue';
+import UserProfile from '@/views/UserProfile.vue';
 
 import { userStore } from '@/store/userStore';
 import { hasAuthState } from '@/utils/authPersistence';
@@ -37,6 +38,15 @@ const routes: Array<RouteRecordRaw> = [
     meta: {
         title: 'Login',
         requiresAuth: false
+      }
+  },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: UserProfile,
+    meta: {
+        title: 'Profile',
+        // requiresAuth: true
       }
   },
   {
