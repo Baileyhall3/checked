@@ -138,7 +138,7 @@ import RoundedContainer from '@/components/RoundedContainer.vue';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LucideImagePlus } from 'lucide-vue-next';
+import { LucideImagePlus, Home } from 'lucide-vue-next';
 import { useTemplateRef, ref } from 'vue';
 import { useObjectUrl } from '@vueuse/core';
 import { Spinner } from "@/components/ui/spinner";
