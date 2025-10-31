@@ -61,7 +61,6 @@
                                             Most Recent
                                             <Check class="size-4" aria-hidden="true" v-if="currentSort === 'recent'" />
                                         </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
                                         <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('name')">
                                             Name
                                             <Check class="size-4" aria-hidden="true" v-if="currentSort === 'name'" />
@@ -72,7 +71,6 @@
                                             Checked Items
                                             <Check class="size-4" aria-hidden="true" v-if="itemsView.checked" />
                                         </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
                                         <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('deleted')">
                                             Deleted Items
                                             <Check class="size-4" aria-hidden="true" v-if="itemsView.deleted" />
@@ -257,7 +255,7 @@
 
 <script setup lang="ts">
 import { useRoute } from 'vue-router';
-import { createDataObject, DataObject } from 'supabase-dataobject-core';
+import { createDataObject, DataObject, SortConfig, WhereClause } from 'supabase-dataobject-core';
 import { IonContent, IonPage, onIonViewDidEnter, onIonViewDidLeave } from '@ionic/vue';
 import { reactive, ref, computed } from 'vue';
 import { dataSources } from '@/api/dataObjects';
@@ -376,7 +374,10 @@ async function createDataObjects(id: number) {
                 { name: "owner_email" },
                 { name: "updated_by_id" },
                 { name: "updated_by_username" },
-                { name: "deleted_at" }
+                { name: "deleted_at" },
+                { name: "items_updated_at" },
+                { name: "items_updated_by_id" },
+                { name: "items_updated_by_username" },
             ],
             recordLimit: 1
         }); 
@@ -415,9 +416,9 @@ async function createDataObjects(id: number) {
             canInsert: true,
             canUpdate: true,
             canDelete: true,
-            // whereClauses: [
-            //     { field: 'deleted_at', operator: 'isnotnull' }
-            // ],
+            whereClauses: [
+                { field: 'deleted_at', operator: 'isnull' }
+            ],
             masterDataObjectBinding: {
                 masterDataObjectId: 'checklist',
                 childBindingField: 'checklist_id',
@@ -442,6 +443,12 @@ async function createDataObjects(id: number) {
                 { name: "deleted_at" },
             ]
         }); 
+
+        checklistDs.checklistItems?.on("fieldChanged", (record, updates) => {
+            if ('name' in updates) {
+                checklistDs.checklistItems?.saveChanges();
+            }
+        })
     } catch (err) {
         console.error(err);
     } finally {
@@ -476,10 +483,20 @@ async function addItem() {
 
 function updateSort(sort: 'recent' | 'name') {
     currentSort.value = sort;
+    const sortConfig: SortConfig = sort === 'recent' ? { field: "created_at", direction: 'desc' } : { field: "name", direction: 'asc' };
+    checklistDs.checklistItems?.updateSort(sortConfig);
 }
 
 function updateView(key: 'checked' | 'deleted') {
     itemsView[key] = !itemsView[key];
+    const whereClauses: WhereClause[] = [];
+    if (!itemsView.checked) {
+        whereClauses.push({ field: 'is_checked', operator: 'equals', value: false });
+    }
+    if (!itemsView.deleted) {
+        whereClauses.push({ field: 'deleted_at', operator: 'isnull' });
+    }
+    checklistDs.checklistItems.whereClauses = whereClauses
 }
 
 function toggleCheck(item: any) {

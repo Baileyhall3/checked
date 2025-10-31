@@ -79,7 +79,10 @@ export async function initDataObjects(url: string, key: string, currentUserId: n
             { name: "owner_email" },
             { name: "updated_by_id" },
             { name: "updated_by_username" },
-            { name: "deleted_at" }
+            { name: "deleted_at" },
+            { name: "items_updated_at" },
+            { name: "items_updated_by_id" },
+            { name: "items_updated_by_username" },
         ]
     }); 
 
@@ -128,7 +131,11 @@ export async function initDataObjects(url: string, key: string, currentUserId: n
             { name: "owner_email" },
             { name: "updated_by_id" },
             { name: "updated_by_username" },
-            { name: "deleted_at" }
+            { name: "deleted_at" },
+            { name: 'items_updated_at' },
+            { name: "items_updated_at" },
+            { name: "items_updated_by_id" },
+            { name: "items_updated_by_username" },
         ]
     }); 
 

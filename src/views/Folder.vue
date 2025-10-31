@@ -116,12 +116,14 @@
                                 :key="checklist.id"
                                 class="cursor-pointer border-b hover:bg-gray-200"
                             >
-                            <RouterLink :to="`/checklist/${checklist.id}`">
-                                <div class="p-2">
-                                <span class="text-lg font-medium">{{ checklist.name }}</span>
-                                <p class="text-muted-foreground text-sm">{{ DateUtils.toDateTime(checklist.created_at) }}</p>
-                                </div>
-                            </RouterLink>
+                                <RouterLink :to="`/checklist/${checklist.id}`">
+                                    <div class="p-2">
+                                        <span class="text-lg font-medium">{{ checklist.name }}</span>
+                                        <p class="text-muted-foreground text-sm">
+                                            {{ DateUtils.toDateTime(checklist.items_updated_at ?? checklist.created_at) }}
+                                        </p>
+                                    </div>
+                                </RouterLink>
                             </div>
                         </RoundedContainer>
                     </div>
@@ -267,7 +269,10 @@ async function createDataObjects(id: number) {
                 { name: "owner_email" },
                 { name: "updated_by_id" },
                 { name: "updated_by_username" },
-                { name: "deleted_at" }
+                { name: "deleted_at" },
+                { name: "items_updated_at" },
+                { name: "items_updated_by_id" },
+                { name: "items_updated_by_username" },
             ],
         }); 
     } catch (err) {
