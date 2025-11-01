@@ -65,6 +65,9 @@ export async function initDataObjects(url: string, key: string, currentUserId: n
             masterBindingField: 'id'
         },
         sort: { field: "created_at", direction: 'desc' },
+        // whereClauses: [
+        //     { field: 'folder_id', operator: 'isnull' }
+        // ],
         fields: [
             { name: "id" },
             { name: "prim_key" },

@@ -5,6 +5,7 @@
                 <div class="flex flex-col gap-2 w-full">
                     <slot></slot>
                 </div>
+                <slot name="rightSide"></slot>
             </div>
         </div>
     </header>

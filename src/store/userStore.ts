@@ -297,7 +297,83 @@ export const userStore = {
 
   clearError() {
     state.error = null
+  },
+
+  /**
+   * Upload a display image
+   * @param {File} file - File to use as profile picture
+   * @returns {Promise<{url: string|null, error: any|null}>}
+   */
+  async uploadDisplayPicture(file: File) {
+    if (!file) return { error: 'Missing file' };
+
+    const userId = userStore.user?.id;
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${userId}/avatar.${fileExt}`; // folder = user id
+
+    const { error: uploadError } = await supabase.storage
+      .from('profile-pictures')
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      console.error('Upload error:', uploadError.message);
+      return { error: uploadError };
+    }
+
+    // Get a public URL (works only if the bucket allows public read)
+    const { data: publicUrlData } = supabase.storage
+      .from('profile-pictures')
+      .getPublicUrl(filePath);
+
+    await dataSources.user?.update(dataSources.user?.currentRecord?.id, {
+      profile_picture_url: publicUrlData.publicUrl
+    });
+
+    userStore.userProfile.profile_picture_url = publicUrlData.publicUrl;
+
+    return { url: publicUrlData.publicUrl, error: null };
+  },
+
+  /**
+   * Remove the user's profile picture
+   * Deletes the image from storage and clears the DB field
+   * @returns {Promise<{ success: boolean, error: any | null }>}
+   */
+  async removeDisplayPicture() {
+    const userId = userStore.user?.id;
+    const profileUrl = userStore.userProfile?.profile_picture_url;
+
+    if (!profileUrl) {
+      return { success: false, error: 'No profile picture to remove' };
+    }
+
+    try {
+      // Extract file extension from the URL (we know the pattern)
+      const fileExt = profileUrl.split('.').pop().split('?')[0]; // handles ?token=... case
+      const filePath = `${userId}/avatar.${fileExt}`;
+
+      const { error: deleteError } = await supabase.storage
+        .from('profile-pictures')
+        .remove([filePath]);
+
+      if (deleteError) {
+        console.error('Delete error:', deleteError.message);
+        return { success: false, error: deleteError };
+      }
+
+      // Clear DB field
+      await dataSources.user?.update(dataSources.user?.currentRecord?.id, {
+        profile_picture_url: null
+      });
+      userStore.userProfile.profile_picture_url = null;
+
+      return { success: true, error: null };
+    } catch (err) {
+      console.error('Unexpected error during removal:', err);
+      return { success: false, error: err };
+    }
   }
+
 }
 
 // Initialize the store

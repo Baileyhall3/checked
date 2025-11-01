@@ -1,134 +1,135 @@
 <template>
     <IonPage>
         <IonContent :fullscreen="true">
-            <header class="sticky top-0 z-50">
-                <div class="backdrop-blur-lg bg-white/30 border-b border-white/20 shadow-sm">
-                    <div class="container mx-auto px-6 py-3 flex justify-between items-center">
-                        <div class="flex flex-col gap-2 w-full">
-                            <Breadcrumb>
-                                <BreadcrumbList>
-                                    <BreadcrumbItem>
-                                        <BreadcrumbLink href="/home" class="inline-flex items-center gap-1.5">
-                                            <Home class="size-4" aria-hidden="true" />
-                                            Home
-                                        </BreadcrumbLink>
-                                    </BreadcrumbItem>
-                                    <BreadcrumbSeparator />
-                                    <BreadcrumbItem>
-                                        <BreadcrumbPage class="inline-flex items-center gap-1.5">
-                                            <Folder class="size-4" aria-hidden="true" />
-                                            {{ folderDs.folder?.currentRecord?.name }}
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger class="inline-flex items-center gap-1.5">
-                                                    <ChevronDown class="size-4" />
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="start">
-                                                    <template 
-                                                        v-if="folderDs.checklists?.data?.length > 0"
-                                                        v-for="(checklist, index) in folderDs.checklists?.data" 
-                                                        :key="checklist.id"
-                                                    >
-                                                        <RouterLink :to="`/checklist/${checklist.id}`">
-                                                            <DropdownMenuItem class="cursor-pointer">
-                                                                {{ checklist.name }}
-                                                            </DropdownMenuItem>
-                                                        </RouterLink>
-                                                    </template>
-                                                    <DropdownMenuItem v-else>
-                                                        No checklists created.
+            <Loading v-if="isLoading" />
+            <template v-else>
+                <BlurredHeader>
+                    <Breadcrumb>
+                        <BreadcrumbList>
+                            <BreadcrumbItem>
+                                <BreadcrumbLink href="/home" class="inline-flex items-center gap-1.5">
+                                    <Home class="size-4" aria-hidden="true" />
+                                    Home
+                                </BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbPage class="inline-flex items-center gap-1.5">
+                                    <Folder class="size-4" aria-hidden="true" />
+                                    {{ folderDs.folder?.currentRecord?.name }}
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger class="inline-flex items-center gap-1.5">
+                                            <ChevronDown class="size-4" />
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="start">
+                                            <template 
+                                                v-if="folderDs.checklists?.data?.length > 0"
+                                                v-for="(checklist, index) in folderDs.checklists?.data" 
+                                                :key="checklist.id"
+                                            >
+                                                <RouterLink :to="`/checklist/${checklist.id}`">
+                                                    <DropdownMenuItem class="cursor-pointer">
+                                                        {{ checklist.name }}
                                                     </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </BreadcrumbPage>
-                                    </BreadcrumbItem>
-                                </BreadcrumbList>
-                            </Breadcrumb>
-                            
-                            <!-- <div class="w-full flex">
-                                <SearchBar />
-                                
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            size="icon"
-                                            variant="secondary"
-                                            class="rounded-xl shadow-none ml-3"
-                                            aria-label="Open sort"
-                                        >
-                                            <ArrowUpDown :size="16" aria-hidden="true" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                        <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-                                        <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('recent')">
-                                            Most Recent
-                                            <Check class="size-4" aria-hidden="true" v-if="currentSort === 'recent'" />
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('name')">
-                                            Name
-                                            <Check class="size-4" aria-hidden="true" v-if="currentSort === 'name'" />
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div> -->
-                        </div>
-                    </div>
-                </div>
-            </header>
-            <div class="min-h-screen bg-gray-100">
-                <div class="container mx-auto px-6 py-8">
-                    <Empty class="bg-white shadow-lg rounded-xl p-6 mb-8" v-if="folderDs.checklists?.data.length === 0">
-                        <EmptyHeader>
-                            <EmptyMedia variant="icon">
-                                <ListTodo />
-                            </EmptyMedia>
-                            <EmptyTitle>No Checklists Yet</EmptyTitle>
-                            <EmptyDescription>
-                                This folder does not have any checklists yet. Get started by creating your first
-                                checklist!
-                            </EmptyDescription>
-                        </EmptyHeader>
-                        <EmptyContent>
-                            <div class="flex gap-2">
-                                <Button @click="createChecklistDialog.show()">
-                                    Create Checklist
+                                                </RouterLink>
+                                            </template>
+                                            <DropdownMenuItem v-else>
+                                                No checklists created.
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </BreadcrumbPage>
+                            </BreadcrumbItem>
+                        </BreadcrumbList>
+                    </Breadcrumb>
+                    <!-- <div class="w-full flex">
+                        <SearchBar />
+                        
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    size="icon"
+                                    variant="secondary"
+                                    class="rounded-xl shadow-none ml-3"
+                                    aria-label="Open sort"
+                                >
+                                    <ArrowUpDown :size="16" aria-hidden="true" />
                                 </Button>
-                            </div>
-                            <EmptyDescription>
-                                Need help? <a href="#">View tutorial</a>
-                            </EmptyDescription>
-                        </EmptyContent>
-                    </Empty>
-                    <div class="flex items-center space-x-2 mb-8" v-else>
-                        <div class="w-full">
-                            <SearchBar />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('recent')">
+                                    Most Recent
+                                    <Check class="size-4" aria-hidden="true" v-if="currentSort === 'recent'" />
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('name')">
+                                    Name
+                                    <Check class="size-4" aria-hidden="true" v-if="currentSort === 'name'" />
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div> -->
+                    <template #rightSide>
+                        <div class="flex items-center gap-2">
+                            <ProfileDropdown />
                         </div>
-                        <Button @click="createChecklistDialog.show()" class="text-white rounded-xl">
-                            Add New
-                        </Button>
-                    </div>
-
-                    <div v-if="folderDs.checklists && folderDs.checklists?.data.length > 0">
-                        <div class="text-lg font-medium">Folder Checklists</div>
-                        <RoundedContainer class=" flex flex-col">
-                            <div v-for="(checklist, index) in folderDs.checklists?.data" 
-                                :key="checklist.id"
-                                class="cursor-pointer border-b hover:bg-gray-200"
-                            >
-                                <RouterLink :to="`/checklist/${checklist.id}`">
-                                    <div class="p-2">
-                                        <span class="text-lg font-medium">{{ checklist.name }}</span>
-                                        <p class="text-muted-foreground text-sm">
-                                            {{ DateUtils.toDateTime(checklist.items_updated_at ?? checklist.created_at) }}
-                                        </p>
-                                    </div>
-                                </RouterLink>
+                    </template>
+                </BlurredHeader>   
+                <div class="min-h-screen bg-gray-100">
+                    <div class="container mx-auto px-6 py-8">
+                        <Empty class="bg-white shadow-lg rounded-xl p-6 mb-8" v-if="folderDs.checklists?.data.length === 0">
+                            <EmptyHeader>
+                                <EmptyMedia variant="icon">
+                                    <ListTodo />
+                                </EmptyMedia>
+                                <EmptyTitle>No Checklists Yet</EmptyTitle>
+                                <EmptyDescription>
+                                    This folder does not have any checklists yet. Get started by creating your first
+                                    checklist!
+                                </EmptyDescription>
+                            </EmptyHeader>
+                            <EmptyContent>
+                                <div class="flex gap-2">
+                                    <Button @click="createChecklistDialog.show()">
+                                        Create Checklist
+                                    </Button>
+                                </div>
+                                <EmptyDescription>
+                                    Need help? <a href="#">View tutorial</a>
+                                </EmptyDescription>
+                            </EmptyContent>
+                        </Empty>
+                        <div class="flex items-center space-x-2 mb-8" v-else>
+                            <div class="w-full">
+                                <SearchBar />
                             </div>
-                        </RoundedContainer>
+                            <Button @click="createChecklistDialog.show()" class="text-white rounded-xl">
+                                Add New
+                            </Button>
+                        </div>
+    
+                        <div v-if="folderDs.checklists && folderDs.checklists?.data.length > 0">
+                            <div class="text-lg font-medium">Folder Checklists</div>
+                            <RoundedContainer class=" flex flex-col">
+                                <div v-for="(checklist, index) in folderDs.checklists?.data" 
+                                    :key="checklist.id"
+                                    class="cursor-pointer border-b hover:bg-gray-200"
+                                >
+                                    <RouterLink :to="`/checklist/${checklist.id}`">
+                                        <div class="p-2">
+                                            <span class="text-lg font-medium">{{ checklist.name }}</span>
+                                            <p class="text-muted-foreground text-sm">
+                                                {{ DateUtils.toDateTime(checklist.items_updated_at ?? checklist.created_at) }}
+                                            </p>
+                                        </div>
+                                    </RouterLink>
+                                </div>
+                            </RoundedContainer>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </template>
         </IonContent>
 
     <CreateChecklist ref="createChecklistDialog" :folder="folderDs.folder?.currentRecord" @checklist-created="refreshChecklists" />
@@ -163,17 +164,8 @@ import {
 } from "@/components/ui/breadcrumb";
 import { 
     ChevronDown, 
-    RotateCcw, 
     Folder, 
     Home, 
-    Trash, 
-    TextAlignStart, 
-    CircleIcon, 
-    CheckCircle2Icon, 
-    Ellipsis, 
-    X,
-    ArrowUpDown,
-    Check
 } from "lucide-vue-next";
 import {
   DropdownMenu,
@@ -187,6 +179,9 @@ import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 import RoundedContainer from '@/components/RoundedContainer.vue';
 import DateUtils from '@/utils/DateUtils';
 import SearchBar from '@/components/custom/UI/SearchBar.vue';
+import BlurredHeader from '@/components/header/Blurred.vue';
+import Loading from '@/components/custom/UI/Loading.vue';
+import ProfileDropdown from '@/components/custom/ProfileDropdown.vue';
 
 const createChecklistDialog = ref();
 const route = useRoute();

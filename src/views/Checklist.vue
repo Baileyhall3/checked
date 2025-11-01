@@ -1,248 +1,255 @@
 <template>
     <IonPage>
         <IonContent>
-            <template v-if="checklistDs.checklist && checklistDs.checklist.data.length">
-                <BlurredHeader>
-                    <Breadcrumb>
-                        <BreadcrumbList>
-                            <BreadcrumbItem>
-                                <BreadcrumbLink href="/home" class="inline-flex items-center gap-1.5">
-                                    <Home class="size-4" aria-hidden="true" />
-                                    Home
-                                </BreadcrumbLink>
-                            </BreadcrumbItem>
-                            <template v-if="checklistDs.checklist?.currentRecord?.folder_name">
-                                <BreadcrumbSeparator />
-                                <BreadcrumbItem>
-                                    <BreadcrumbLink :href="`/folder/${checklistDs.checklist?.currentRecord.folder_id}`" class="inline-flex items-center gap-1.5">
-                                        <Folder class="size-4" aria-hidden="true" />
-                                        {{ checklistDs.checklist?.currentRecord?.folder_name }}
-                                    </BreadcrumbLink>
+            <Loading v-if="isLoading" />
+            <template v-else>
+                <template v-if="checklistDs.checklist && checklistDs.checklist.data.length">
+                    <BlurredHeader>
+                        <div class="flex justify-between items-center">
+                            <Breadcrumb>
+                                <BreadcrumbList>
+                                    <BreadcrumbItem>
+                                        <BreadcrumbLink href="/home" class="inline-flex items-center gap-1.5">
+                                            <Home class="size-4" aria-hidden="true" />
+                                            Home
+                                        </BreadcrumbLink>
+                                    </BreadcrumbItem>
+                                    <template v-if="checklistDs.checklist?.currentRecord?.folder_name">
+                                        <BreadcrumbSeparator />
+                                        <BreadcrumbItem>
+                                            <BreadcrumbLink :href="`/folder/${checklistDs.checklist?.currentRecord.folder_id}`" class="inline-flex items-center gap-1.5">
+                                                <Folder class="size-4" aria-hidden="true" />
+                                                {{ checklistDs.checklist?.currentRecord?.folder_name }}
+                                            </BreadcrumbLink>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger class="inline-flex items-center gap-1.5">
+                                                    <ChevronDown class="size-4" />
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="start">
+                                                    <template v-for="checklist in checklistDs.folderChecklistsLkp?.data" :key="checklist.id">
+                                                        <RouterLink :to="`/checklist/${checklist.id}`">
+                                                            <DropdownMenuItem class="cursor-pointer">{{ checklist.name }}</DropdownMenuItem>
+                                                        </RouterLink>
+                                                    </template>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </BreadcrumbItem>
+                                    </template>
+                                    <BreadcrumbSeparator />
+                                    <BreadcrumbItem>
+                                        <BreadcrumbPage>{{ checklistDs.checklist?.currentRecord?.name }}</BreadcrumbPage>
+                                    </BreadcrumbItem>
+                                </BreadcrumbList>
+                            </Breadcrumb>
+                            <ProfileDropdown />
+                            
+                        </div>
+                        
+                        <div class="w-full flex">
+                            <SearchBar />
+                            
+                            <ButtonGroup>
+                                <ButtonGroup class="ml-3">
                                     <DropdownMenu>
-                                        <DropdownMenuTrigger class="inline-flex items-center gap-1.5">
-                                            <ChevronDown class="size-4" />
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                size="icon"
+                                                variant="secondary"
+                                                class="rounded-xl shadow-none"
+                                                aria-label="Open sort"
+                                            >
+                                                <ArrowUpDown :size="16" aria-hidden="true" />
+                                            </Button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="start">
-                                            <template v-for="checklist in checklistDs.folderChecklistsLkp?.data" :key="checklist.id">
-                                                <RouterLink :to="`/checklist/${checklist.id}`">
-                                                    <DropdownMenuItem class="cursor-pointer">{{ checklist.name }}</DropdownMenuItem>
-                                                </RouterLink>
-                                            </template>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('recent')">
+                                                Most Recent
+                                                <Check class="size-4" aria-hidden="true" v-if="currentSort === 'recent'" />
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('name')">
+                                                Name
+                                                <Check class="size-4" aria-hidden="true" v-if="currentSort === 'name'" />
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuLabel>Show</DropdownMenuLabel>
+                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('checked')">
+                                                Checked Items
+                                                <Check class="size-4" aria-hidden="true" v-if="itemsView.checked" />
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('deleted')">
+                                                Deleted Items
+                                                <Check class="size-4" aria-hidden="true" v-if="itemsView.deleted" />
+                                            </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
-                                </BreadcrumbItem>
-                            </template>
-                            <BreadcrumbSeparator />
-                            <BreadcrumbItem>
-                                <BreadcrumbPage>{{ checklistDs.checklist?.currentRecord?.name }}</BreadcrumbPage>
-                            </BreadcrumbItem>
-                        </BreadcrumbList>
-                    </Breadcrumb>
-                    
-                    <div class="w-full flex">
-                        <SearchBar />
-                        
-                        <ButtonGroup>
-                            <ButtonGroup class="ml-3">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            size="icon"
-                                            variant="secondary"
-                                            class="rounded-xl shadow-none"
-                                            aria-label="Open sort"
-                                        >
-                                            <ArrowUpDown :size="16" aria-hidden="true" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                        <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-                                        <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('recent')">
-                                            Most Recent
-                                            <Check class="size-4" aria-hidden="true" v-if="currentSort === 'recent'" />
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('name')">
-                                            Name
-                                            <Check class="size-4" aria-hidden="true" v-if="currentSort === 'name'" />
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuLabel>Show</DropdownMenuLabel>
-                                        <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('checked')">
-                                            Checked Items
-                                            <Check class="size-4" aria-hidden="true" v-if="itemsView.checked" />
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('deleted')">
-                                            Deleted Items
-                                            <Check class="size-4" aria-hidden="true" v-if="itemsView.deleted" />
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                                <ButtonGroupSeparator />
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            size="icon"
-                                            variant="secondary"
-                                            class="rounded-xl shadow-none"
-                                            aria-label="Open settings"
-                                        >
-                                            <Settings :size="16" aria-hidden="true" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                        <DropdownMenuLabel>Checklist Actions</DropdownMenuLabel>
-                                        <DropdownMenuItem class="cursor-pointer">
-                                            Sharing
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem class="cursor-pointer">
-                                            Deleted Items
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem class="cursor-pointer text-red-600">
-                                            Delete Checklist
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-    
+                                    <ButtonGroupSeparator />
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                size="icon"
+                                                variant="secondary"
+                                                class="rounded-xl shadow-none"
+                                                aria-label="Open settings"
+                                            >
+                                                <Settings :size="16" aria-hidden="true" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuLabel>Checklist Actions</DropdownMenuLabel>
+                                            <DropdownMenuItem class="cursor-pointer">
+                                                Sharing
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem class="cursor-pointer">
+                                                Deleted Items
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem class="cursor-pointer text-red-600">
+                                                Delete Checklist
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+        
+                                </ButtonGroup>
                             </ButtonGroup>
-                        </ButtonGroup>
-                    </div>
-                </BlurredHeader>
-                <div class="min-h-screen bg-gray-100">
-                    <div class="container mx-auto px-6 py-2">
-                        <template v-if="!isLoading">
-                            <div class="flex flex-col space-y-3">
-    
-                                <!-- Checklist Progress Bar -->
-                                <div v-if="checklistDs.checklistItems?.data?.length" class="mt-4 mb-6">
-                                    <div class="flex justify-between text-sm text-gray-600 mb-1">
-                                        <span>Progress</span>
-                                        <span>{{ completedCount }} / {{ totalCount }}</span>
-                                    </div>
-    
-                                    <div
-                                        class="bg-gray-200 h-2 w-full overflow-hidden rounded-full"
-                                        role="progressbar"
-                                        :aria-valuenow="progressPercent"
-                                        aria-valuemin="0"
-                                        :aria-valuemax="100"
-                                        aria-label="Checklist progress"
-                                    >
-                                        <div
-                                        class="h-full bg-indigo-500 transition-all duration-500 ease-out"
-                                        :style="{ width: `${progressPercent}%` }"
-                                        ></div>
-                                    </div>
-                                </div>
-    
-                                <!-- Add New Item Input -->
-                                <transition name="fade-slide">
-                                    <div v-if="showAddInput" class="flex items-center space-x-2">
-                                        <input
-                                            v-model="newItemName"
-                                            type="text"
-                                            placeholder="New checklist item..."
-                                            class="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                                            @keyup.enter="addItem"
-                                        />
-                                        <Button @click="addItem" class="text-white rounded-xl">
-                                            Add
-                                        </Button>
-                                    </div>
-                                </transition>
-    
-                                <!-- Checklist Items -->
-                                <div v-for="(item, index) in checklistDs.checklistItems?.data" :key="index"
-                                    class=" bg-white rounded-2xl shadow-sm px-4 py-3 transition hover:shadow-md"
-                                >
-                                    <div class="flex justify-between items-center">
-                                        <button
-                                            v-if="!item.deleted_at"
-                                            class="mr-2 hover:text-indigo-500 transition"
-                                            :class="{ 
-                                                'text-green-600' : item.is_checked, 
-                                                'text-gray-400' : !item.is_checked
-                                            }"
-                                            @click="toggleCheck(item)"
-                                        >
-                                            <component :is="item.is_checked ? CheckCircle2Icon : CircleIcon" class="w-6 h-6" />
-                                        </button>
-                                        <Trash v-else class="w-6 h-6 text-red-600 mr-2" />
-                                        <div class="w-full">
-                                            <input
-                                                v-model="item.name"
-                                                type="text"
-                                                :disabled="item.deleted_at"
-                                                class="flex-1 bg-transparent border-none focus:outline-none text-gray-800 w-full"
-                                                :class="{ 'text-gray-800' : item.deleted_at || item.is_checked }"
-                                            />
+                        </div>
+                    </BlurredHeader>
+                    <div class="min-h-screen bg-gray-100">
+                        <div class="container mx-auto px-6 py-2">
+                            <template v-if="!isLoading">
+                                <div class="flex flex-col space-y-3">
+        
+                                    <!-- Checklist Progress Bar -->
+                                    <div v-if="checklistDs.checklistItems?.data?.length" class="mt-4 mb-6">
+                                        <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                            <span>Progress</span>
+                                            <span>{{ completedCount }} / {{ totalCount }}</span>
                                         </div>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    size="icon"
-                                                    variant="ghost"
-                                                    class="rounded-full shadow-none ml-3"
-                                                    aria-label="Open edit menu"
-                                                >
-                                                    <Ellipsis :size="16" aria-hidden="true" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent>
-                                                <DropdownMenuItem class="cursor-pointer" @click="openItemDetails(item)">
-                                                    <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
-                                                    Details
-                                                </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem class="cursor-pointer text-red-600" @click="setDeleted(item)" v-if="!item.deleted_at">
-                                                    <Trash class="size-4" aria-hidden="true" />
-                                                    Delete
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem class="cursor-pointer" @click="recoverItem(item)" v-else>
-                                                    <RotateCcw class="size-4" aria-hidden="true" />
-                                                    Recover
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+        
+                                        <div
+                                            class="bg-gray-200 h-2 w-full overflow-hidden rounded-full"
+                                            role="progressbar"
+                                            :aria-valuenow="progressPercent"
+                                            aria-valuemin="0"
+                                            :aria-valuemax="100"
+                                            aria-label="Checklist progress"
+                                        >
+                                            <div
+                                            class="h-full bg-indigo-500 transition-all duration-500 ease-out"
+                                            :style="{ width: `${progressPercent}%` }"
+                                            ></div>
+                                        </div>
                                     </div>
-                                    <span v-if="item.deleted_at" class="text-red-600 italic text-sm">
-                                        Deleted {{ DateUtils.toDateTime(item.deleted_at) }} by {{ item.deleted_by_username }}
-                                    </span>
-                                    <span class="text-sm text-gray-600">
-                                        {{ item.description }}
-                                    </span>
+        
+                                    <!-- Add New Item Input -->
+                                    <transition name="fade-slide">
+                                        <div v-if="showAddInput" class="flex items-center space-x-2">
+                                            <input
+                                                v-model="newItemName"
+                                                type="text"
+                                                placeholder="New checklist item..."
+                                                class="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                                                @keyup.enter="addItem"
+                                            />
+                                            <Button @click="addItem" class="text-white rounded-xl">
+                                                Add
+                                            </Button>
+                                        </div>
+                                    </transition>
+        
+                                    <!-- Checklist Items -->
+                                    <div v-for="(item, index) in checklistDs.checklistItems?.data" :key="index"
+                                        class=" bg-white rounded-2xl shadow-sm px-4 py-3 transition hover:shadow-md"
+                                    >
+                                        <div class="flex justify-between items-center">
+                                            <button
+                                                v-if="!item.deleted_at"
+                                                class="mr-2 hover:text-indigo-500 transition"
+                                                :class="{ 
+                                                    'text-green-600' : item.is_checked, 
+                                                    'text-gray-400' : !item.is_checked
+                                                }"
+                                                @click="toggleCheck(item)"
+                                            >
+                                                <component :is="item.is_checked ? CheckCircle2Icon : CircleIcon" class="w-6 h-6" />
+                                            </button>
+                                            <Trash v-else class="w-6 h-6 text-red-600 mr-2" />
+                                            <div class="w-full">
+                                                <input
+                                                    v-model="item.name"
+                                                    type="text"
+                                                    :disabled="item.deleted_at"
+                                                    class="flex-1 bg-transparent border-none focus:outline-none text-gray-800 w-full"
+                                                    :class="{ 'text-gray-800' : item.deleted_at || item.is_checked }"
+                                                />
+                                            </div>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        class="rounded-full shadow-none ml-3"
+                                                        aria-label="Open edit menu"
+                                                    >
+                                                        <Ellipsis :size="16" aria-hidden="true" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent>
+                                                    <DropdownMenuItem class="cursor-pointer" @click="openItemDetails(item)">
+                                                        <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
+                                                        Details
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem class="cursor-pointer text-red-600" @click="setDeleted(item)" v-if="!item.deleted_at">
+                                                        <Trash class="size-4" aria-hidden="true" />
+                                                        Delete
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem class="cursor-pointer" @click="recoverItem(item)" v-else>
+                                                        <RotateCcw class="size-4" aria-hidden="true" />
+                                                        Recover
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                        <span v-if="item.deleted_at" class="text-red-600 italic text-sm">
+                                            Deleted {{ DateUtils.toDateTime(item.deleted_at) }} by {{ item.deleted_by_username }}
+                                        </span>
+                                        <span class="text-sm text-gray-600">
+                                            {{ item.description }}
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
-                        </template>
+                            </template>
+                        </div>
                     </div>
+                </template>
+                <div class="flex justify-center h-full" v-else-if="checklistDs.checklist?.state.isReady">
+                    <Empty>
+                        <EmptyHeader>
+                            <EmptyMedia variant="icon">
+                                <X />
+                            </EmptyMedia>
+                            <EmptyTitle>Checklist Not Found</EmptyTitle>
+                            <EmptyDescription>
+                                The checklist you are trying to access does not exist, or you may not have access to it.
+                            </EmptyDescription>
+                        </EmptyHeader>
+                        <EmptyContent>
+                            <div class="flex gap-2">
+                                <RouterLink :to="`/home`">
+                                    <Button>
+                                        Home
+                                    </Button>
+                                </RouterLink>
+                            </div>
+                            <EmptyDescription>
+                                Need help? <a href="#">View tutorial</a>
+                            </EmptyDescription>
+                        </EmptyContent>
+                    </Empty>
                 </div>
             </template>
-            <div class="flex justify-center h-full" v-else-if="checklistDs.checklist?.state.isReady">
-                <Empty>
-                    <EmptyHeader>
-                        <EmptyMedia variant="icon">
-                            <X />
-                        </EmptyMedia>
-                        <EmptyTitle>Checklist Not Found</EmptyTitle>
-                        <EmptyDescription>
-                            The checklist you are trying to access does not exist, or you may not have access to it.
-                        </EmptyDescription>
-                    </EmptyHeader>
-                    <EmptyContent>
-                        <div class="flex gap-2">
-                            <RouterLink :to="`/home`">
-                                <Button>
-                                    Home
-                                </Button>
-                            </RouterLink>
-                        </div>
-                        <EmptyDescription>
-                            Need help? <a href="#">View tutorial</a>
-                        </EmptyDescription>
-                    </EmptyContent>
-                </Empty>
-            </div>
         </IonContent>
 
         <ChecklistItemDetails 
@@ -311,6 +318,8 @@ import {
   ButtonGroupSeparator,
   ButtonGroupText,
 } from '@/components/ui/button-group'
+import Loading from '@/components/custom/UI/Loading.vue';
+import ProfileDropdown from '@/components/custom/ProfileDropdown.vue';
 
 const route = useRoute();
 const itemDetailsDialog = ref();

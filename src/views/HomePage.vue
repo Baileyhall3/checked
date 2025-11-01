@@ -61,24 +61,7 @@
                 </DropdownMenu>
               </div>
               
-              <div class="mb-8">
-                <div class="text-lg font-medium">Your Checklists</div>
-                <RoundedContainer class="flex flex-col">
-                    <div v-for="(checklist, index) in dataSources.myChecklists?.data" 
-                      :key="checklist.id"
-                      class="cursor-pointer border-b hover:bg-gray-200"
-                    >
-                      <RouterLink :to="`/checklist/${checklist.id}`">
-                        <div class="p-2">
-                          <span class="text-lg font-medium">{{ checklist.name }}</span>
-                          <p class="text-muted-foreground text-sm">{{ DateUtils.toDateTime(checklist.created_at) }}</p>
-                        </div>
-                      </RouterLink>
-                    </div>
-                </RoundedContainer>
-              </div>
-              
-              <div v-if="dataSources.myFolders && dataSources.myFolders.data.length > 0">
+              <div class="mb-8" v-if="dataSources.myFolders && dataSources.myFolders.data.length > 0">
                 <div class="text-lg font-medium">Your Folders</div>
                 <RoundedContainer class=" flex flex-col">
                     <div v-for="(folder, index) in dataSources.myFolders?.data" 
@@ -94,6 +77,32 @@
                     </div>
                 </RoundedContainer>
               </div>
+
+              <div>
+                <div class="text-lg font-medium">Your Checklists</div>
+                <RoundedContainer class="flex flex-col">
+                    <div v-for="(checklist, index) in dataSources.myChecklists?.data" 
+                      :key="checklist.id"
+                      class="cursor-pointer border-b hover:bg-gray-200"
+                    >
+                      <RouterLink :to="`/checklist/${checklist.id}`">
+                        <div class="p-2">
+                          <div class="flex items-center">
+                            <template v-if="checklist.folder_name">
+                              {{ checklist.folder_name }}
+                              <ChevronRight class="size-3.5 mx-1" />
+                            </template>
+                            {{ checklist.name }}
+                          </div>
+                          <p class="text-muted-foreground text-sm">
+                            {{ DateUtils.toDateTime(checklist.items_updated_at ?? checklist.created_at) }}
+                          </p>
+                        </div>
+                      </RouterLink>
+                    </div>
+                </RoundedContainer>
+              </div>
+              
             </template>
           </template>
           <div class="flex justify-center" v-else>
@@ -127,7 +136,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ListTodo, ChevronDown, Folder } from 'lucide-vue-next';
+import { ListTodo, ChevronDown, Folder, ChevronRight } from 'lucide-vue-next';
 import { userStore } from '@/store/userStore';
 import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 import { ref } from 'vue';

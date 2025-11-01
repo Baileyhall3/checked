@@ -1,7 +1,7 @@
 <template>
     <IonHeader class="bg-white shadow-sm">
         <IonToolbar class="flex justify-between items-center">
-            <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="container mx-auto px-6 py-3 flex justify-between items-center">
                 <!-- App Title -->
                 <div class="items-center flex">
                     <img src="/public/assets/images/check-icon-no-bg.png"
@@ -15,23 +15,7 @@
         
                 <!-- Right side buttons -->
                 <div class="flex items-center gap-2">
-                    <template v-if="userStore.isAuthenticated">
-                        <!-- <span class="text-sm text-gray-700">
-                            Hey, {{ userStore.userProfile?.username }}
-                        </span>
-                        <Button variant="outline" size="sm" @click="logout">
-                            Logout
-                        </Button> -->
-                        <ProfileDropdown />
-                    </template>
-            
-                    <template v-else>
-                        <RouterLink to="/login">
-                            <Button size="sm">
-                                Login
-                            </Button>
-                        </RouterLink>
-                    </template>
+                    <ProfileDropdown />
                 </div>
             </div>
         </IonToolbar>
