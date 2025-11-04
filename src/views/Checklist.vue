@@ -106,15 +106,22 @@
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent>
                                             <DropdownMenuLabel>Checklist Actions</DropdownMenuLabel>
+                                            <DropdownMenuItem class="cursor-pointer" @click="checklistDetailsDialog.show()">
+                                                <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
+                                                Details
+                                            </DropdownMenuItem>
                                             <DropdownMenuItem class="cursor-pointer">
+                                                <Share2 class="size-4 opacity-60" aria-hidden="true" />
                                                 Sharing
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem class="cursor-pointer">
+                                                <ListX class="size-4" aria-hidden="true" />
                                                 Deleted Items
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem class="cursor-pointer text-red-600">
+                                            <DropdownMenuItem class="cursor-pointer text-red-600" @click="confirmDialog.show()">
+                                                <Trash class="size-4" aria-hidden="true" />
                                                 Delete Checklist
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
@@ -128,7 +135,20 @@
                         <div class="container mx-auto px-6 py-2">
                             <template v-if="!isLoading">
                                 <div class="flex flex-col space-y-3">
-        
+                                    <div class="bg-white z-50 rounded-md border px-4 py-3 shadow-md" v-if="checklistDs.checklist.currentRecord?.deleted_at">
+                                        <div
+                                        class="flex flex-col justify-between gap-3 md:flex-row md:items-center"
+                                        >
+                                        <p class="text-sm">
+                                            This checklist was deleted {{ DateUtils.toDateTime(checklistDs.checklist.currentRecord?.deleted_at) }} by {{ checklistDs.checklist.currentRecord?.deleted_by_username }}
+
+                                        </p>
+                                        <div class="flex gap-2 max-md:flex-wrap">
+                                            <Button size="sm">Accept</Button>
+                                            <Button variant="outline" size="sm">Decline</Button>
+                                        </div>
+                                        </div>
+                                    </div>
                                     <!-- Checklist Progress Bar -->
                                     <div v-if="checklistDs.checklistItems?.data?.length" class="mt-4 mb-6">
                                         <div class="flex justify-between text-sm text-gray-600 mb-1">
@@ -189,7 +209,8 @@
                                                     v-model="item.name"
                                                     type="text"
                                                     :disabled="item.deleted_at"
-                                                    class="flex-1 bg-transparent border-none focus:outline-none text-gray-800 w-full"
+                                                    :title="item.name"
+                                                    class="flex-1 bg-transparent border-none focus:outline-none text-gray-800 w-full truncate"
                                                     :class="{ 'text-gray-800' : item.deleted_at || item.is_checked }"
                                                 />
                                             </div>
@@ -266,11 +287,21 @@
             :checklist-item="checklistDs.checklistItems?.currentRecord" 
             :data-object="checklistDs.checklistItems" 
         />
+        <ChecklistDetails
+            ref="checklistDetailsDialog"
+            :checklist="checklistDs.checklist?.currentRecord"
+            :data-object="checklistDs.checklist"
+        />
+        <Confirm
+            description="Are you sure you want to delete this checklist? Deleted checklists can be recovered for 30 days. Checklist items will not be editable."
+            ref="confirmDialog" 
+            @confirmed="handleChecklistDelete"
+        />
     </IonPage>
 </template>
 
 <script setup lang="ts">
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { createDataObject, DataObject, SortConfig, WhereClause } from 'supabase-dataobject-core';
 import { IonContent, IonPage, onIonViewDidEnter, onIonViewDidLeave } from '@ionic/vue';
 import { reactive, ref, computed } from 'vue';
@@ -293,7 +324,9 @@ ChevronDown,
     ArrowUpDown,
     Check,
     Settings,
-    Menu
+    Menu,
+    Share2,
+    ListX
 } from "lucide-vue-next";
 import {
   DropdownMenu,
@@ -330,10 +363,12 @@ import {
 } from '@/components/ui/button-group'
 import Loading from '@/components/custom/UI/Loading.vue';
 import ProfileDropdown from '@/components/custom/ProfileDropdown.vue';
-import { useWindowSize } from '@vueuse/core';
 
 const route = useRoute();
+const router = useRouter();
 const itemDetailsDialog = ref();
+const checklistDetailsDialog = ref();
+const confirmDialog = ref();
 const isLoading = ref<boolean>(true);
 const { toast } = useToast();
 
@@ -399,6 +434,7 @@ async function createDataObjects(id: number) {
                 { name: "updated_by_id" },
                 { name: "updated_by_username" },
                 { name: "deleted_at" },
+                { name: "deleted_by_username" },
                 { name: "items_updated_at" },
                 { name: "items_updated_by_id" },
                 { name: "items_updated_by_username" },
@@ -406,8 +442,14 @@ async function createDataObjects(id: number) {
             recordLimit: 1
         }); 
 
+        
         if (checklistData?.data.length) {
             checklistDs.checklist = checklistData;
+            // checklistDs.checklist?.on("fieldChanged", (record, updates) => {
+            //     if ('name' in updates) {
+            //         checklistDs.checklist?.saveChanges();
+            //     }
+            // })
         }
         
         if (checklistData?.currentRecord?.folder_name) {
@@ -470,7 +512,7 @@ async function createDataObjects(id: number) {
 
         checklistDs.checklistItems?.on("fieldChanged", (record, updates) => {
             if ('name' in updates) {
-                checklistDs.checklistItems?.saveChanges();
+                checklistDs.checklistItems?.saveChanges(); // causing issues with saving in details dialog
             }
         })
     } catch (err) {
@@ -549,7 +591,24 @@ function recoverItem(item: any) {
     checklistDs.checklistItems?.update(item.id, {
         deleted_at: null
     });
-} 
+}
+
+async function handleChecklistDelete() {
+    const current = checklistDs.checklist?.currentRecord;
+    if (!current) { return; }
+    const hasUpdated = checklistDs.checklist?.update(current?.id, { deleted_at: new Date() });
+    if (hasUpdated) {
+        toast({
+            title: 'Checklist deleted.',
+            description: 'Deleted items are recoverable for 30 days.',
+        });
+    }
+    if (current.folder_id) {
+        router.push(`/folder/${current.folder_id}`);
+    } else {
+        router.push(`/home`);
+    }
+}
 
 onIonViewDidLeave(() => {
     dataSources.manager?.removeDataObject('checklist');
