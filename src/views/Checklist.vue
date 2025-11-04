@@ -6,7 +6,16 @@
                 <template v-if="checklistDs.checklist && checklistDs.checklist.data.length">
                     <BlurredHeader>
                         <div class="flex justify-between items-center">
-                            <Breadcrumb>
+                            <Button
+                                v-if="isMobile"
+                                size="icon"
+                                variant="ghost"
+                                class="rounded-full shadow-none"
+                                aria-label="Open edit menu"
+                            >
+                                <Menu :size="16" aria-hidden="true" />
+                            </Button>
+                            <Breadcrumb v-else>
                                 <BreadcrumbList>
                                     <BreadcrumbItem>
                                         <BreadcrumbLink href="/home" class="inline-flex items-center gap-1.5">
@@ -283,7 +292,8 @@ ChevronDown,
     X,
     ArrowUpDown,
     Check,
-    Settings
+    Settings,
+    Menu
 } from "lucide-vue-next";
 import {
   DropdownMenu,
@@ -320,11 +330,16 @@ import {
 } from '@/components/ui/button-group'
 import Loading from '@/components/custom/UI/Loading.vue';
 import ProfileDropdown from '@/components/custom/ProfileDropdown.vue';
+import { useWindowSize } from '@vueuse/core';
 
 const route = useRoute();
 const itemDetailsDialog = ref();
 const isLoading = ref<boolean>(true);
 const { toast } = useToast();
+
+
+const { width } = useWindowSize();
+const isMobile = computed(() => width.value < 768);
 
 const currentSort = ref<'recent' | 'name'>('recent');
 const itemsView = reactive({

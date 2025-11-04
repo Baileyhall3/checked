@@ -89,6 +89,7 @@
                         <div class="p-2">
                           <div class="flex items-center">
                             <template v-if="checklist.folder_name">
+                              <Folder class="size-4 me-1" aria-hidden="true" />
                               {{ checklist.folder_name }}
                               <ChevronRight class="size-3.5 mx-1" />
                             </template>
