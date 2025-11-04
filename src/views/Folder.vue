@@ -4,44 +4,7 @@
             <Loading v-if="isLoading" />
             <template v-else>
                 <BlurredHeader>
-                    <Breadcrumb>
-                        <BreadcrumbList>
-                            <BreadcrumbItem>
-                                <BreadcrumbLink href="/home" class="inline-flex items-center gap-1.5">
-                                    <Home class="size-4" aria-hidden="true" />
-                                    Home
-                                </BreadcrumbLink>
-                            </BreadcrumbItem>
-                            <BreadcrumbSeparator />
-                            <BreadcrumbItem>
-                                <BreadcrumbPage class="inline-flex items-center gap-1.5">
-                                    <Folder class="size-4" aria-hidden="true" />
-                                    {{ folderDs.folder?.currentRecord?.name }}
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger class="inline-flex items-center gap-1.5">
-                                            <ChevronDown class="size-4" />
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="start">
-                                            <template 
-                                                v-if="folderDs.checklists?.data?.length > 0"
-                                                v-for="(checklist, index) in folderDs.checklists?.data" 
-                                                :key="checklist.id"
-                                            >
-                                                <RouterLink :to="`/checklist/${checklist.id}`">
-                                                    <DropdownMenuItem class="cursor-pointer">
-                                                        {{ checklist.name }}
-                                                    </DropdownMenuItem>
-                                                </RouterLink>
-                                            </template>
-                                            <DropdownMenuItem v-else>
-                                                No checklists created.
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </BreadcrumbPage>
-                            </BreadcrumbItem>
-                        </BreadcrumbList>
-                    </Breadcrumb>
+                    <Breadcrumbs :items="breadcrumbs" />
                     <!-- <div class="w-full flex">
                         <SearchBar />
                         
@@ -150,31 +113,11 @@ import {
 import { ListTodo } from 'lucide-vue-next';
 import { useRoute } from 'vue-router';
 import { useToast } from '@/components/ui/toast';
-import { ref, reactive } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { onIonViewDidEnter, onIonViewDidLeave } from '@ionic/vue';
 import { createDataObject, DataObject } from 'supabase-dataobject-core';
 import { dataSources } from '@/api/dataObjects';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { 
-    ChevronDown, 
-    Folder, 
-    Home, 
-} from "lucide-vue-next";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator ,
-  DropdownMenuLabel
-} from "@/components/ui/dropdown-menu";
+import { Folder, Home } from "lucide-vue-next";
 import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 import RoundedContainer from '@/components/RoundedContainer.vue';
 import DateUtils from '@/utils/DateUtils';
@@ -182,6 +125,8 @@ import SearchBar from '@/components/custom/UI/SearchBar.vue';
 import BlurredHeader from '@/components/header/Blurred.vue';
 import Loading from '@/components/custom/UI/Loading.vue';
 import ProfileDropdown from '@/components/custom/ProfileDropdown.vue';
+import Breadcrumbs from '@/components/custom/UI/Breadcrumbs.vue';
+import type { IBreadcrumbItem } from '@/components/custom/UI/Breadcrumbs.vue';
 
 const createChecklistDialog = ref();
 const route = useRoute();
@@ -192,6 +137,22 @@ const { toast } = useToast();
 const folderDs = reactive({
     folder: null as DataObject | null,
     checklists: null as DataObject | null
+});
+
+const breadcrumbs = computed((): IBreadcrumbItem[] => {
+    const items = [
+        { label: "Home", icon: Home, href: "/home" },
+    ];
+
+    items.push({
+        label: folderDs.folder?.currentRecord?.name,
+        icon: Folder,
+        dropdown: folderDs.checklists?.data?.map(c => ({
+            label: c.name,
+            href: `/checklist/${c.id}`,
+        })),
+    });
+    return items;
 });
 
 onIonViewDidEnter(() => {

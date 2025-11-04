@@ -6,52 +6,8 @@
                 <template v-if="checklistDs.checklist && checklistDs.checklist.data.length">
                     <BlurredHeader>
                         <div class="flex justify-between items-center">
-                            <Button
-                                v-if="isMobile"
-                                size="icon"
-                                variant="ghost"
-                                class="rounded-full shadow-none"
-                                aria-label="Open edit menu"
-                            >
-                                <Menu :size="16" aria-hidden="true" />
-                            </Button>
-                            <Breadcrumb v-else>
-                                <BreadcrumbList>
-                                    <BreadcrumbItem>
-                                        <BreadcrumbLink href="/home" class="inline-flex items-center gap-1.5">
-                                            <Home class="size-4" aria-hidden="true" />
-                                            Home
-                                        </BreadcrumbLink>
-                                    </BreadcrumbItem>
-                                    <template v-if="checklistDs.checklist?.currentRecord?.folder_name">
-                                        <BreadcrumbSeparator />
-                                        <BreadcrumbItem>
-                                            <BreadcrumbLink :href="`/folder/${checklistDs.checklist?.currentRecord.folder_id}`" class="inline-flex items-center gap-1.5">
-                                                <Folder class="size-4" aria-hidden="true" />
-                                                {{ checklistDs.checklist?.currentRecord?.folder_name }}
-                                            </BreadcrumbLink>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger class="inline-flex items-center gap-1.5">
-                                                    <ChevronDown class="size-4" />
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="start">
-                                                    <template v-for="checklist in checklistDs.folderChecklistsLkp?.data" :key="checklist.id">
-                                                        <RouterLink :to="`/checklist/${checklist.id}`">
-                                                            <DropdownMenuItem class="cursor-pointer">{{ checklist.name }}</DropdownMenuItem>
-                                                        </RouterLink>
-                                                    </template>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </BreadcrumbItem>
-                                    </template>
-                                    <BreadcrumbSeparator />
-                                    <BreadcrumbItem>
-                                        <BreadcrumbPage>{{ checklistDs.checklist?.currentRecord?.name }}</BreadcrumbPage>
-                                    </BreadcrumbItem>
-                                </BreadcrumbList>
-                            </Breadcrumb>
+                            <Breadcrumbs :items="breadcrumbs" />
                             <ProfileDropdown />
-                            
                         </div>
                         
                         <div class="w-full flex">
@@ -135,18 +91,26 @@
                         <div class="container mx-auto px-6 py-2">
                             <template v-if="!isLoading">
                                 <div class="flex flex-col space-y-3">
-                                    <div class="bg-white z-50 rounded-md border px-4 py-3 shadow-md" v-if="checklistDs.checklist.currentRecord?.deleted_at">
+                                    <!-- Checklist deleted notice -->
+                                    <div class="bg-white rounded-md border px-4 py-3 shadow-md" v-if="checklistDs.checklist.currentRecord?.deleted_at">
                                         <div
-                                        class="flex flex-col justify-between gap-3 md:flex-row md:items-center"
+                                            class="flex flex-col justify-between gap-3 md:flex-row md:items-center"
                                         >
-                                        <p class="text-sm">
-                                            This checklist was deleted {{ DateUtils.toDateTime(checklistDs.checklist.currentRecord?.deleted_at) }} by {{ checklistDs.checklist.currentRecord?.deleted_by_username }}
-
-                                        </p>
-                                        <div class="flex gap-2 max-md:flex-wrap">
-                                            <Button size="sm">Accept</Button>
-                                            <Button variant="outline" size="sm">Decline</Button>
-                                        </div>
+                                            <div>
+                                                <p class="text-sm">
+                                                    This checklist was deleted {{ DateUtils.toDateTime(checklistDs.checklist.currentRecord?.deleted_at) }} by {{ checklistDs.checklist.currentRecord?.deleted_by_username }}
+                                                </p>
+                                                <p class="text-sm">
+                                                    <span class="font-bold">
+                                                        {{ 30 - DateUtils.dateDiff(new Date(checklistDs.checklist.currentRecord?.deleted_at), new Date()) }} 
+                                                    </span>
+                                                    days until checklist is permanently deleted.
+                                                </p>
+                                            </div>
+                                            <div class="flex gap-2 max-md:flex-wrap">
+                                                <Button size="sm">Recover</Button>
+                                                <Button variant="destructive" size="sm">Delete</Button>
+                                            </div>
                                         </div>
                                     </div>
                                     <!-- Checklist Progress Bar -->
@@ -173,7 +137,7 @@
         
                                     <!-- Add New Item Input -->
                                     <transition name="fade-slide">
-                                        <div v-if="showAddInput" class="flex items-center space-x-2">
+                                        <div v-if="showAddInput && !checklistDs.checklist.currentRecord?.deleted_at" class="flex items-center space-x-2">
                                             <input
                                                 v-model="newItemName"
                                                 type="text"
@@ -189,7 +153,12 @@
         
                                     <!-- Checklist Items -->
                                     <div v-for="(item, index) in checklistDs.checklistItems?.data" :key="index"
-                                        class=" bg-white rounded-2xl shadow-sm px-4 py-3 transition hover:shadow-md"
+                                        :class="{ 
+                                            'bg-gray-200' : checklistDs.checklist.currentRecord?.deleted_at,
+                                            'bg-white' :  !checklistDs.checklist.currentRecord?.deleted_at
+
+                                        }"
+                                        class="  rounded-2xl shadow-sm px-4 py-3 transition hover:shadow-md"
                                     >
                                         <div class="flex justify-between items-center">
                                             <button
@@ -306,12 +275,9 @@ import { createDataObject, DataObject, SortConfig, WhereClause } from 'supabase-
 import { IonContent, IonPage, onIonViewDidEnter, onIonViewDidLeave } from '@ionic/vue';
 import { reactive, ref, computed } from 'vue';
 import { dataSources } from '@/api/dataObjects';
-import RoundedContainer from '@/components/RoundedContainer.vue';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast/use-toast";
-import { userStore } from '@/store/userStore';
 import { 
-ChevronDown, 
     RotateCcw, 
     Folder, 
     Home, 
@@ -324,7 +290,6 @@ ChevronDown,
     ArrowUpDown,
     Check,
     Settings,
-    Menu,
     Share2,
     ListX
 } from "lucide-vue-next";
@@ -338,14 +303,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import DateUtils from '@/utils/DateUtils';
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import {
   Empty,
   EmptyContent,
   EmptyDescription,
@@ -356,13 +313,11 @@ import {
 import ChecklistItemDetails from '@/components/dialogs/ChecklistItemDetails.vue';
 import SearchBar from '@/components/custom/UI/SearchBar.vue';
 import BlurredHeader from '@/components/header/Blurred.vue';
-import {
-  ButtonGroup,
-  ButtonGroupSeparator,
-  ButtonGroupText,
-} from '@/components/ui/button-group'
+import { ButtonGroup, ButtonGroupSeparator, ButtonGroupText } from '@/components/ui/button-group'
 import Loading from '@/components/custom/UI/Loading.vue';
 import ProfileDropdown from '@/components/custom/ProfileDropdown.vue';
+import Breadcrumbs from '@/components/custom/UI/Breadcrumbs.vue';
+import type { IBreadcrumbItem } from '@/components/custom/UI/Breadcrumbs.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -371,10 +326,6 @@ const checklistDetailsDialog = ref();
 const confirmDialog = ref();
 const isLoading = ref<boolean>(true);
 const { toast } = useToast();
-
-
-const { width } = useWindowSize();
-const isMobile = computed(() => width.value < 768);
 
 const currentSort = ref<'recent' | 'name'>('recent');
 const itemsView = reactive({
@@ -392,6 +343,32 @@ const totalCount = computed(() => checklistDs.checklistItems?.data?.length || 0)
 const completedCount = computed(() => checklistDs.checklistItems?.data?.filter((item: any) => item.is_checked)?.length || 0);
 const progressPercent = computed(() => {
     return totalCount.value === 0 ? 0 : Math.round((completedCount.value / totalCount.value) * 100);
+});
+
+const breadcrumbs = computed((): IBreadcrumbItem[] => {
+    const items = [
+        { label: "Home", icon: Home, href: "/home" },
+    ];
+
+    if (checklistDs.checklist?.currentRecord?.folder_name) {
+        items.push({
+            label: checklistDs.checklist.currentRecord.folder_name,
+            icon: Folder,
+            href: `/folder/${checklistDs.checklist.currentRecord.folder_id}`,
+            dropdown: checklistDs.folderChecklistsLkp?.data?.map(c => ({
+                label: c.name,
+                href: `/checklist/${c.id}`,
+            })),
+        });
+    }
+
+    if (checklistDs.checklist?.currentRecord?.name) {
+        items.push({
+            label: checklistDs.checklist.currentRecord?.name,
+        });
+    }
+
+    return items;
 });
 
 onIonViewDidEnter(() => {

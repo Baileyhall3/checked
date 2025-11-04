@@ -154,6 +154,20 @@ class DateUtils {
 
         return `${hours}:${minutes}`;
     }
+
+    /**
+     * Get the difference in days between 2 dates.
+     * @param date1 - Lower date
+     * @param date2 - Higher date
+     * @returns number of days
+     */
+    static dateDiff(date1: Date, date2: Date): number {
+        const d1 = new Date(date1.getFullYear(), date1.getMonth(), date1.getDate());
+        const d2 = new Date(date2.getFullYear(), date2.getMonth(), date2.getDate());
+
+        const diffMs = d2.getTime() - d1.getTime();
+        return Math.round(diffMs / (1000 * 60 * 60 * 24));
+    }
 }
 
 export default DateUtils;
