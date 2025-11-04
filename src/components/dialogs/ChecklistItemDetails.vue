@@ -2,29 +2,32 @@
     <Dialog v-model:open="isDialogOpen">
         <DialogContent class="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
             <DialogHeader class="contents space-y-0 text-left">
-                <DialogTitle class="border-b px-6 py-4 text-base">
-                    <div class="flex justify-between items-center">
-                        <button
-                            v-if="!props.checklistItem.deleted_at"
-                            class="mr-2 hover:text-indigo-500 transition"
-                            :class="{ 
-                                'text-green-600' : props.checklistItem.is_checked, 
-                                'text-gray-400' : !props.checklistItem.is_checked
-                            }"
-                            @click="toggleCheck(props.checklistItem)"
-                        >
-                            <component :is="props.checklistItem.is_checked ? CheckCircle2Icon : CircleIcon" class="w-6 h-6" />
-                        </button>
-                        <div class="w-full">
-                            <input
-                                v-model="props.checklistItem.name"
-                                type="text"
-                                class="flex-1 bg-transparent border-none focus:outline-none text-gray-800 w-full"
-                            />
-                        </div>
+                <div class="px-6 py-2 text-base border-b">
+                    <div class="flex justify-between items-start">
+                    <button
+                        v-if="!props.checklistItem.deleted_at"
+                        class="mr-2 hover:text-indigo-500 transition"
+                        :class="{ 
+                        'text-green-600': props.checklistItem.is_checked, 
+                        'text-gray-400': !props.checklistItem.is_checked
+                        }"
+                        @click="toggleCheck(props.checklistItem)"
+                    >
+                        <component :is="props.checklistItem.is_checked ? CheckCircle2Icon : CircleIcon" class="w-6 h-6" />
+                    </button>
+
+                    <div class="w-full pe-4 font-semibold tracking-tight">
+                        <textarea
+                            ref="nameInput"
+                            v-model="props.checklistItem.name"
+                            class="block w-full bg-transparent border-none focus:outline-none text-gray-800 resize-none overflow-hidden leading-relaxed"
+                            @input="autoResize"
+                        ></textarea>
                     </div>
-                </DialogTitle>
+                    </div>
+                </div>
             </DialogHeader>
+
             <!-- <DialogDescription class="px-6">
                 <span class="italic">
                     Created by {{ props.checklistItem.created_by_username }} at {{ DateUtils.toDateTime(props.checklistItem.created_at) }}
@@ -41,6 +44,7 @@
                             v-model="props.checklistItem.description"
                             :maxLength="maxLength"
                             aria-describedby="desc"
+                            style="min-height: 8rem;"
                         />
                         <p
                             id="desc"
@@ -55,13 +59,19 @@
                         </p>
                     </div>
                 </form>
-                <div class="flex flex-col">
-                    <span class="italic text-sm text-gray-500">
-                        Created by {{ props.checklistItem.created_by_username }} {{ DateUtils.toDateTime(props.checklistItem.created_at) }}
-                    </span>
-                    <span class="italic text-sm text-gray-500">
-                        Last updated by {{ props.checklistItem.updated_by_username }} {{ DateUtils.toDateTime(props.checklistItem.updated_at) }}
-                    </span>
+                <div class="flex flex-col space-y-4">
+                    <div class="flex flex-col">
+                        <span class="font-medium">Created</span>
+                        <p class="text-sm text-muted-foreground">
+                            {{ DateUtils.toDateTime(props.checklistItem.created_at) }} by {{ props.checklistItem.created_by_username }}
+                        </p>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="font-medium">Last Updated</span>
+                        <p class="text-sm text-muted-foreground">
+                            {{ DateUtils.toDateTime(props.checklistItem.updated_at) }} by {{ props.checklistItem.updated_by_username }}
+                        </p>
+                    </div>
                 </div>
                 <DialogFooter class="pt-4 gap-2">
                     <DialogClose asChild>
@@ -106,6 +116,17 @@ const props = defineProps<{
 
 const isDialogOpen = ref<boolean>(false);
 const isSaving = ref<boolean>(false);
+const nameInput = ref(null);
+
+const autoResize = (ev) => {
+    const el = ev?.target ?? nameInput.value;
+    if (!el) return;
+    // make sure box-sizing is predictable
+    el.style.boxSizing = 'border-box';
+    el.style.height = 'auto';
+    // use scrollHeight for natural height; add 1px to avoid clipping in some browsers
+    el.style.height = `${el.scrollHeight + 1}px`;
+};
 
 const maxLength = 180;
 const characterCount = computed(() => props.checklistItem.description?.length ?? maxLength);

@@ -22,8 +22,8 @@
             </Blurred>
             <template v-if="dataSources.user?.currentRecord">
                 <div class="min-h-screen bg-gray-100">
-                    <div class="container mx-auto px-6 py-2">
-                        <RoundedContainer>
+                    <div class="container mx-auto px-6 py-8">
+                        <RoundedContainer class="mb-8">
                             <div class="flex rounded-t-xl p-2 justify-between" :style="{ 'background-color' : dataSources.user?.currentRecord.bg_colour || '#ccc' }">
                                 <div
                                     class="relative flex size-20 items-center justify-center overflow-hidden rounded-full border-4 border-background bg-muted shadow-xs shadow-black/10 group"
@@ -128,6 +128,9 @@
                                 </div>
                             </form>
                         </RoundedContainer>
+                        <!-- <RoundedContainer class="p-2">
+                            <div class="text-lg font-medium">Actions</div>
+                        </RoundedContainer> -->
                     </div>
                 </div>
             </template>

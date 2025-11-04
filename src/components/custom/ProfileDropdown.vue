@@ -2,7 +2,7 @@
     <template v-if="userStore.isAuthenticated && dataSources.user?.currentRecord">
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <div v-if="dataSources.user?.currentRecord.profile_picture_url" 
+                <!-- <div v-if="dataSources.user?.currentRecord.profile_picture_url" 
                     class=" w-7 h-7 flex items-center justify-center rounded-full overflow-hidden cursor-pointer">
                     <img :src="dataSources.user?.currentRecord.profile_picture_url" alt="Profile Image" class="object-cover w-full h-full" />
                 </div>
@@ -11,10 +11,20 @@
                     :style="{ backgroundColor: dataSources.user?.currentRecord.bg_colour || '#ccc' }"
                 >
                     {{ dataSources.user?.currentRecord.username.charAt(0).toUpperCase() }}
-                </div>
+                </div> -->
+                
+                <Button 
+                    variant="ghost"
+                    size="icon"
+                    class="rounded-full shadow-none ml-3"
+                    aria-label="Open profile dropdown"
+                >
+                    <CircleUserRoundIcon class="size-5" />
+                </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent class="w-56">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <!-- <DropdownMenuLabel>My Account</DropdownMenuLabel> -->
+                <DropdownMenuLabel>{{ dataSources.user.currentRecord.username }}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                     <RouterLink to="/profile">
@@ -64,6 +74,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { userStore } from "@/store/userStore";
-import { CircleUserRound, Settings2, Users, LogOut } from "lucide-vue-next";
+import { CircleUserRound, Settings2, Users, LogOut, CircleUserRoundIcon } from "lucide-vue-next";
 import { dataSources } from "@/api/dataObjects";
 </script>
