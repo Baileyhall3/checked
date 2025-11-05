@@ -72,7 +72,7 @@
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem class="cursor-pointer">
-                                                <ListX class="size-4" aria-hidden="true" />
+                                                <ListX class="size-4 opacity-60" aria-hidden="true" />
                                                 Deleted Items
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
@@ -88,7 +88,7 @@
                         </div>
                     </BlurredHeader>
                     <div class="min-h-screen bg-gray-100">
-                        <div class="container mx-auto px-6 py-2">
+                        <div class="container mx-auto px-6 pt-2 pb-6">
                             <template v-if="!isLoading">
                                 <div class="flex flex-col space-y-3">
                                     <!-- Checklist deleted notice -->
@@ -152,72 +152,9 @@
                                     </transition>
         
                                     <!-- Checklist Items -->
-                                    <div v-for="(item, index) in checklistDs.checklistItems?.data" :key="index"
-                                        :class="{ 
-                                            'bg-gray-200' : checklistDs.checklist.currentRecord?.deleted_at,
-                                            'bg-white' :  !checklistDs.checklist.currentRecord?.deleted_at
-
-                                        }"
-                                        class="  rounded-2xl shadow-sm px-4 py-3 transition hover:shadow-md"
-                                    >
-                                        <div class="flex justify-between items-center">
-                                            <button
-                                                v-if="!item.deleted_at"
-                                                class="mr-2 hover:text-indigo-500 transition"
-                                                :class="{ 
-                                                    'text-green-600' : item.is_checked, 
-                                                    'text-gray-400' : !item.is_checked
-                                                }"
-                                                @click="toggleCheck(item)"
-                                            >
-                                                <component :is="item.is_checked ? CheckCircle2Icon : CircleIcon" class="w-6 h-6" />
-                                            </button>
-                                            <Trash v-else class="w-6 h-6 text-red-600 mr-2" />
-                                            <div class="w-full">
-                                                <input
-                                                    v-model="item.name"
-                                                    type="text"
-                                                    :disabled="item.deleted_at"
-                                                    :title="item.name"
-                                                    class="flex-1 bg-transparent border-none focus:outline-none text-gray-800 w-full truncate"
-                                                    :class="{ 'text-gray-800' : item.deleted_at || item.is_checked }"
-                                                />
-                                            </div>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button
-                                                        size="icon"
-                                                        variant="ghost"
-                                                        class="rounded-full shadow-none ml-3"
-                                                        aria-label="Open edit menu"
-                                                    >
-                                                        <Ellipsis :size="16" aria-hidden="true" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent>
-                                                    <DropdownMenuItem class="cursor-pointer" @click="openItemDetails(item)">
-                                                        <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
-                                                        Details
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem class="cursor-pointer text-red-600" @click="setDeleted(item)" v-if="!item.deleted_at">
-                                                        <Trash class="size-4" aria-hidden="true" />
-                                                        Delete
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem class="cursor-pointer" @click="recoverItem(item)" v-else>
-                                                        <RotateCcw class="size-4" aria-hidden="true" />
-                                                        Recover
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </div>
-                                        <span v-if="item.deleted_at" class="text-red-600 italic text-sm">
-                                            Deleted {{ DateUtils.toDateTime(item.deleted_at) }} by {{ item.deleted_by_username }}
-                                        </span>
-                                        <span class="text-sm text-gray-600">
-                                            {{ item.description }}
-                                        </span>
-                                    </div>
+                                    <template v-for="(item, index) in checklistDs.checklistItems?.data" :key="item.id">
+                                        <ChecklistItem :item="item" :checklistData="checklistDs.checklistItems" />
+                                    </template>
                                 </div>
                             </template>
                         </div>
@@ -274,18 +211,14 @@ import { useRoute, useRouter } from 'vue-router';
 import { createDataObject, DataObject, SortConfig, WhereClause } from 'supabase-dataobject-core';
 import { IonContent, IonPage, onIonViewDidEnter, onIonViewDidLeave } from '@ionic/vue';
 import { reactive, ref, computed } from 'vue';
-import { dataSources } from '@/api/dataObjects';
+import { dataSources, checklistFields, checklistItemsFields } from '@/api/dataObjects';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast/use-toast";
 import { 
-    RotateCcw, 
     Folder, 
     Home, 
     Trash, 
     TextAlignStart, 
-    CircleIcon, 
-    CheckCircle2Icon, 
-    Ellipsis, 
     X,
     ArrowUpDown,
     Check,
@@ -318,6 +251,9 @@ import Loading from '@/components/custom/UI/Loading.vue';
 import ProfileDropdown from '@/components/custom/ProfileDropdown.vue';
 import Breadcrumbs from '@/components/custom/UI/Breadcrumbs.vue';
 import type { IBreadcrumbItem } from '@/components/custom/UI/Breadcrumbs.vue';
+import ChecklistDetails from '@/components/dialogs/ChecklistDetails.vue';
+import Confirm from '@/components/dialogs/Confirm.vue';
+import ChecklistItem from '@/components/custom/UI/ChecklistItem.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -396,26 +332,7 @@ async function createDataObjects(id: number) {
             whereClauses: [
                 { field: 'id', operator: 'equals', value: id }
             ],
-            fields: [
-                { name: "id" },
-                { name: "prim_key" },
-                { name: "name" },
-                { name: "is_template" },
-                { name: "created_at" },
-                { name: "updated_at" },
-                { name: "folder_id" },
-                { name: "folder_name" },
-                { name: "owner_id" },
-                { name: "owner_username" },
-                { name: "owner_email" },
-                { name: "updated_by_id" },
-                { name: "updated_by_username" },
-                { name: "deleted_at" },
-                { name: "deleted_by_username" },
-                { name: "items_updated_at" },
-                { name: "items_updated_by_id" },
-                { name: "items_updated_by_username" },
-            ],
+            fields: checklistFields,
             recordLimit: 1
         }); 
 
@@ -468,23 +385,7 @@ async function createDataObjects(id: number) {
                 masterBindingField: 'id'
             },
             sort: { field: "created_at", direction: 'desc' },
-            fields: [
-                { name: "id" },
-                { name: "prim_key" },
-                { name: "name" },
-                { name: "description" },
-                { name: "checklist_id" },
-                { name: "is_checked" },
-                { name: "created_at" },
-                { name: "created_by_id" },
-                { name: "created_by_username" },
-                { name: "updated_at" },
-                { name: "updated_by_id" },
-                { name: "updated_by_username" },
-                { name: "deleted_by_id" },
-                { name: "deleted_by_username" },
-                { name: "deleted_at" },
-            ]
+            fields: checklistItemsFields
         }); 
 
         checklistDs.checklistItems?.on("fieldChanged", (record, updates) => {
@@ -540,34 +441,6 @@ function updateView(key: 'checked' | 'deleted') {
         whereClauses.push({ field: 'deleted_at', operator: 'isnull' });
     }
     checklistDs.checklistItems.whereClauses = whereClauses
-}
-
-function toggleCheck(item: any) {
-    checklistDs.checklistItems?.update(item.id, {
-        is_checked: !item.is_checked
-    });
-}
-
-function openItemDetails(item: any) {
-    checklistDs.checklistItems.currentRecord = item;
-    itemDetailsDialog.value.show();
-}
-
-function setDeleted(item: any) {
-    checklistDs.checklistItems?.update(item.id, {
-        deleted_at: new Date()
-    });
-
-    toast({
-        title: 'Item deleted.',
-        description: 'Deleted items are recoverable for 30 days.',
-    });
-}
-
-function recoverItem(item: any) {
-    checklistDs.checklistItems?.update(item.id, {
-        deleted_at: null
-    });
 }
 
 async function handleChecklistDelete() {

@@ -11,7 +11,10 @@
                 <AlertDialogCancel @click="emit('cancelled')">
                     {{ props.cancelText }}
                 </AlertDialogCancel>
-                <AlertDialogAction @click="emit('confirmed')">
+                <AlertDialogAction 
+                    :class="{ 'bg-red-600' : props.confirmType === 'delete' }"
+                    @click="emit('confirmed')"
+                >
                     {{ props.confirmText }}
                 </AlertDialogAction>
             </AlertDialogFooter>
@@ -33,15 +36,19 @@ import {
 } from '@/components/ui/alert-dialog';
 import { ref } from 'vue';
 
+type ConfirmButtonType = 'default' | 'delete'
+
 const props = withDefaults(defineProps<{
     title?: string;
     description?: string;
     confirmText?: string;
     cancelText?: string;
+    confirmType?: ConfirmButtonType
 }>(), {
     title: 'Please Confirm',
     confirmText: 'Confirm',
-    cancelText: 'Cancel'
+    cancelText: 'Cancel',
+    confirmType: 'default'
 });
 
 const emit = defineEmits<{

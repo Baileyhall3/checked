@@ -37,7 +37,7 @@
                 <div class="flex flex-col pb-4">
                     <span class="font-medium">Last Updated</span>
                     <p class="text-sm text-muted-foreground">
-                        {{ DateUtils.toDateTime(props.checklist.items_updated_at) }} by {{ props.checklist.items_updated_by_username }}
+                        {{ DateUtils.toDateTime(props.checklist.items_updated_at) }} {{ props.checklist.items_updated_by_username ? ` by ${props.checklist.items_updated_by_username}` : '' }}
                     </p>
                 </div>
                 <DialogFooter class="pt-4 gap-2">

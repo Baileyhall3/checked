@@ -58,8 +58,57 @@
                             characters left
                         </p>
                     </div>
+
+                    <!-- <div class="*:not-first:mt-2">
+                        <Popover>
+                            <PopoverTrigger as-child>
+                                <FormControl>
+                                    <Button
+                                        variant="outline" :class="cn(
+                                        'w-[240px] ps-3 text-start font-normal',
+                                        !value && 'text-muted-foreground',
+                                        )"
+                                    >
+                                        <span>{{ value ? df.format(toDate(value)) : "Pick a date" }}</span>
+                                        <Calendar class="ms-auto h-4 w-4 opacity-50" />
+                                    </Button>
+                                <input hidden>
+                                </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent class="w-auto p-0">
+                                <Calendar
+                                v-model:placeholder="placeholder"
+                                :model-value="value"
+                                calendar-label="Date of birth"
+                                initial-focus
+                                :min-value="new CalendarDate(1900, 1, 1)"
+                                :max-value="today(getLocalTimeZone())"
+                                @update:model-value="(v) => {
+                                    if (v) {
+                                    setFieldValue('dob', v.toString())
+                                    }
+                                    else {
+                                    setFieldValue('dob', undefined)
+                                    }
+                                }"
+                                />
+                            </PopoverContent>
+                        </Popover>
+                    </div> -->
                 </form>
                 <div class="flex flex-col space-y-4">
+                    <div class="flex flex-col text-red-600" v-if="props.checklistItem.deleted_at">
+                        <span class="font-medium">Deleted</span>
+                        <p class="text-sm text-muted-foreground">
+                            {{ DateUtils.toDateTime(props.checklistItem.deleted_at) }} by {{ props.checklistItem.deleted_by_username }}
+                        </p>
+                    </div>
+                    <div class="flex flex-col" v-if="props.checklistItem.locked_at">
+                        <span class="font-medium">Locked</span>
+                        <p class="text-sm text-muted-foreground">
+                            {{ DateUtils.toDateTime(props.checklistItem.locked_at) }} by {{ props.checklistItem.locked_by_username }}
+                        </p>
+                    </div>
                     <div class="flex flex-col">
                         <span class="font-medium">Created</span>
                         <p class="text-sm text-muted-foreground">
@@ -107,7 +156,8 @@ import { useToast } from "@/components/ui/toast/use-toast";
 import { ref, computed } from 'vue';
 import Textarea from '../ui/textarea/Textarea.vue';
 import DateUtils from '@/utils/DateUtils';
-import { CheckCircle2Icon, CircleIcon } from 'lucide-vue-next';
+import { CheckCircle2Icon, CircleIcon, Calendar } from 'lucide-vue-next';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 const props = defineProps<{
     checklistItem: DataObjectRecord;
