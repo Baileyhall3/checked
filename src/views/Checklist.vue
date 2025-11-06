@@ -82,7 +82,6 @@
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
-        
                                 </ButtonGroup>
                             </ButtonGroup>
                         </div>
@@ -274,6 +273,13 @@ const checklistDs = reactive({
     checklistItems: null as DataObject | null,
     folderChecklistsLkp: null as DataObject | null
 });
+
+// const totalCount = computed(() => checklistDs.checklist?.currentRecord?.items_count || 0);
+// const completedCount = computed(() => checklistDs.checklist?.currentRecord?.items_checked_count || 0);
+// const progressPercent = computed(() => {
+//     const current = checklistDs.checklist?.currentRecord;
+//     return completedCount.value === 0 ? 0 : Math.round((completedCount.value / totalCount.value) * 100)
+// });
 
 const totalCount = computed(() => checklistDs.checklistItems?.data?.length || 0);
 const completedCount = computed(() => checklistDs.checklistItems?.data?.filter((item: any) => item.is_checked)?.length || 0);

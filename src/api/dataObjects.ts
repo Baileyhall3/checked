@@ -173,4 +173,11 @@ export const checklistFields: DataObjectField[] = [
     { name: "items_updated_by_id" },
     { name: "items_updated_by_username" },
     { name: "deleted_by_username" },
+    { name: "items_count" },
+    { name: "items_checked_count" },
+    { name: "pin_protected_at" },
+    { name: "pin_hash" },
+    { name: "pin_set_by_id" },
+    { name: "pin_set_by_username" },
+    { name: "pin_type" },
 ]

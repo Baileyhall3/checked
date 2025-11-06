@@ -67,6 +67,68 @@
                             <div class="w-full">
                                 <SearchBar />
                             </div>
+                            <ButtonGroup>
+                                <ButtonGroup >
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                size="icon"
+                                                variant="secondary"
+                                                class="rounded-xl shadow-none bg-white hover:bg-gray-200"
+                                                aria-label="Open sort"
+                                            >
+                                                <ArrowUpDown :size="16" aria-hidden="true" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('recent')">
+                                                Most Recent
+                                                <Check class="size-4" aria-hidden="true" v-if="currentSort === 'recent'" />
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('name')">
+                                                Name
+                                                <Check class="size-4" aria-hidden="true" v-if="currentSort === 'name'" />
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuLabel>Show</DropdownMenuLabel>
+                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('completed')">
+                                                Completed Checklists
+                                                <Check class="size-4" aria-hidden="true" v-if="checklistsView.completed" />
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('deleted')">
+                                                Deleted Checklists
+                                                <Check class="size-4" aria-hidden="true" v-if="checklistsView.deleted" />
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                    <ButtonGroupSeparator />
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                size="icon"
+                                                variant="secondary"
+                                                class="rounded-xl shadow-none bg-white hover:bg-gray-200"
+                                                aria-label="Open settings"
+                                            >
+                                                <Settings :size="16" aria-hidden="true" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuLabel>Folder Actions</DropdownMenuLabel>
+                                            <DropdownMenuItem class="cursor-pointer" @click="checklistDetailsDialog.show()">
+                                                <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
+                                                Details
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem class="cursor-pointer text-red-600" @click="confirmDialog.show()">
+                                                <Trash class="size-4" aria-hidden="true" />
+                                                Delete Folder
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </ButtonGroup>
+                            </ButtonGroup>
                             <Button @click="createChecklistDialog.show()" class="text-white rounded-xl">
                                 Add New
                             </Button>
@@ -75,19 +137,9 @@
                         <div v-if="folderDs.checklists && folderDs.checklists?.data.length > 0">
                             <div class="text-lg font-medium">Folder Checklists</div>
                             <RoundedContainer class=" flex flex-col">
-                                <div v-for="(checklist, index) in folderDs.checklists?.data" 
-                                    :key="checklist.id"
-                                    class="cursor-pointer border-b hover:bg-gray-200"
-                                >
-                                    <RouterLink :to="`/checklist/${checklist.id}`">
-                                        <div class="p-2">
-                                            <span class="text-lg font-medium">{{ checklist.name }}</span>
-                                            <p class="text-muted-foreground text-sm">
-                                                {{ DateUtils.toDateTime(checklist.items_updated_at ?? checklist.created_at) }}
-                                            </p>
-                                        </div>
-                                    </RouterLink>
-                                </div>
+                                <template v-for="(checklist, index) in folderDs.checklists?.data" :key="checklist.id">
+                                    <Checklist :checklist="checklist" :checklist-data="folderDs.checklists" />
+                                </template>
                             </RoundedContainer>
                         </div>
                     </div>
@@ -95,7 +147,7 @@
             </template>
         </IonContent>
 
-    <CreateChecklist ref="createChecklistDialog" :folder="folderDs.folder?.currentRecord" @checklist-created="refreshChecklists" />
+        <CreateChecklist ref="createChecklistDialog" :folder="folderDs.folder?.currentRecord" @checklist-created="refreshChecklists" />
     </IonPage>
 </template>
 
@@ -115,9 +167,9 @@ import { useRoute } from 'vue-router';
 import { useToast } from '@/components/ui/toast';
 import { ref, reactive, computed } from 'vue';
 import { onIonViewDidEnter, onIonViewDidLeave } from '@ionic/vue';
-import { createDataObject, DataObject } from 'supabase-dataobject-core';
-import { dataSources } from '@/api/dataObjects';
-import { Folder, Home } from "lucide-vue-next";
+import { createDataObject, DataObject, SortConfig, WhereClause } from 'supabase-dataobject-core';
+import { checklistFields, dataSources } from '@/api/dataObjects';
+import { Folder, Home, Settings, TextAlignStart, Trash, Check, ArrowUpDown, Ellipsis, RotateCcw, Lock, LockOpen } from "lucide-vue-next";
 import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 import RoundedContainer from '@/components/RoundedContainer.vue';
 import DateUtils from '@/utils/DateUtils';
@@ -127,12 +179,28 @@ import Loading from '@/components/custom/UI/Loading.vue';
 import ProfileDropdown from '@/components/custom/ProfileDropdown.vue';
 import Breadcrumbs from '@/components/custom/UI/Breadcrumbs.vue';
 import type { IBreadcrumbItem } from '@/components/custom/UI/Breadcrumbs.vue';
+import { ButtonGroup, ButtonGroupSeparator, ButtonGroupText } from '@/components/ui/button-group'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator ,
+  DropdownMenuLabel
+} from "@/components/ui/dropdown-menu";
+import Checklist from '@/components/custom/UI/Checklist.vue';
 
 const createChecklistDialog = ref();
 const route = useRoute();
 const itemDetailsDialog = ref();
 const isLoading = ref<boolean>(true);
 const { toast } = useToast();
+
+const currentSort = ref<'recent' | 'name'>('recent');
+const checklistsView = reactive({
+    completed: true,
+    deleted: false,
+});
 
 const folderDs = reactive({
     folder: null as DataObject | null,
@@ -210,32 +278,35 @@ async function createDataObjects(id: number) {
                 childBindingField: 'folder_id',
                 masterBindingField: 'id'
             },
-            sort: { field: "created_at", direction: 'desc' },
-            fields: [
-                { name: "id" },
-                { name: "prim_key" },
-                { name: "name" },
-                { name: "is_template" },
-                { name: "created_at" },
-                { name: "updated_at" },
-                { name: "folder_id" },
-                { name: "folder_name" },
-                { name: "owner_id" },
-                { name: "owner_username" },
-                { name: "owner_email" },
-                { name: "updated_by_id" },
-                { name: "updated_by_username" },
-                { name: "deleted_at" },
-                { name: "items_updated_at" },
-                { name: "items_updated_by_id" },
-                { name: "items_updated_by_username" },
+            whereClauses: [
+                { field: 'deleted_at', operator: 'isnull' }
             ],
+            sort: { field: "created_at", direction: 'desc' },
+            fields: checklistFields,
         }); 
     } catch (err) {
         console.error(err);
     } finally {
         isLoading.value = false;
     }
+}
+
+function updateSort(sort: 'recent' | 'name') {
+    currentSort.value = sort;
+    const sortConfig: SortConfig = sort === 'recent' ? { field: "created_at", direction: 'desc' } : { field: "name", direction: 'asc' };
+    folderDs.checklists?.updateSort(sortConfig);
+}
+
+function updateView(key: 'completed' | 'deleted') {
+    checklistsView[key] = !checklistsView[key];
+    const whereClauses: WhereClause[] = [];
+    if (!checklistsView.completed) {
+        whereClauses.push({ field: 'is_checked', operator: 'equals', value: false });
+    }
+    if (!checklistsView.deleted) {
+        whereClauses.push({ field: 'deleted_at', operator: 'isnull' });
+    }
+    folderDs.checklists.whereClauses = whereClauses
 }
 
 function refreshChecklists() {

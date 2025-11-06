@@ -20,7 +20,7 @@
                     'text-green-600' : item.is_checked, 
                     'text-gray-400' : !item.is_checked
                 }"
-                @click="toggleCheck(item)"
+                @click="toggleCheck()"
             >
                 <component :is="item.is_checked ? CheckCircle2Icon : CircleIcon" class="w-6 h-6" />
             </button>
@@ -136,8 +136,12 @@ import Confirm from '@/components/dialogs/Confirm.vue';
 const props = defineProps<{
     item: DataObjectRecord;
     checklistData: DataObject;
-    disabled?: boolean
+    disabled?: boolean;
 }>();
+
+const emit = defineEmits<{
+    (e: 'item-checked', item: DataObjectRecord): void;
+}>()
 
 const itemDetailsDialog = ref();
 const confirmDialog = ref();
@@ -152,6 +156,7 @@ function toggleCheck() {
     props.checklistData.update(props.item.id, {
         is_checked: !props.item.is_checked
     });
+    emit('item-checked', props.item);
 }
 
 function openItemDetails() {
