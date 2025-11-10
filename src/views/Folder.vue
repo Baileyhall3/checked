@@ -123,7 +123,7 @@
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem class="cursor-pointer text-red-600" @click="confirmDialog.show()">
                                                 <Trash class="size-4" aria-hidden="true" />
-                                                Delete Folder
+                                                Delete
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
@@ -135,10 +135,13 @@
                         </div>
     
                         <div v-if="folderDs.checklists && folderDs.checklists?.data.length > 0">
-                            <div class="text-lg font-medium">Folder Checklists</div>
                             <RoundedContainer class=" flex flex-col">
                                 <template v-for="(checklist, index) in folderDs.checklists?.data" :key="checklist.id">
-                                    <Checklist :checklist="checklist" :checklist-data="folderDs.checklists" />
+                                    <Checklist 
+                                        :checklist="checklist" 
+                                        :checklist-data="folderDs.checklists" 
+                                        hideFolder
+                                    />
                                 </template>
                             </RoundedContainer>
                         </div>
@@ -245,11 +248,9 @@ async function createDataObjects(id: number) {
             canInsert: false,
             canUpdate: true,
             canDelete: true,
-            masterDataObjectBinding: {
-                masterDataObjectId: 'user',
-                childBindingField: 'user_id',
-                masterBindingField: 'id'
-            },
+            whereClauses: [
+                { field: 'id', operator: 'equals', value: id }
+            ],
             sort: { field: "created_at", direction: 'desc' },
             fields: [
                 { name: "id" },

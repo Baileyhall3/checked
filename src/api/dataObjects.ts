@@ -38,7 +38,8 @@ export const dataSources = reactive({
     myChecklists: null as DataObject | null,
     checklistItems: null as DataObject | null,
     myFolders: null as DataObject | null,
-    checklistsNoFolderLkp: null as DataObject | null
+    checklistsNoFolderLkp: null as DataObject | null,
+    deletedChecklists: null as DataObject | null,
 });
 
 /**
@@ -78,9 +79,28 @@ export async function initDataObjects(url: string, key: string, currentUserId: n
             masterBindingField: 'id'
         },
         sort: { field: "created_at", direction: 'desc' },
-        // whereClauses: [
-        //     { field: 'folder_id', operator: 'isnull' }
-        // ],
+        whereClauses: [
+            { field: 'folder_id', operator: 'isnull' },
+            { field: 'deleted_at', operator: 'isnull' }
+        ],
+        fields: checklistFields
+    }); 
+
+    dataSources.deletedChecklists = await createDataObject('deleted_checklists', {
+        viewName: 'checklists_view',
+        tableName: 'checklists',
+        canInsert: true,
+        canUpdate: true,
+        canDelete: true,
+        masterDataObjectBinding: {
+            masterDataObjectId: 'user',
+            childBindingField: 'owner_id',
+            masterBindingField: 'id'
+        },
+        sort: { field: "created_at", direction: 'desc' },
+        whereClauses: [
+            { field: 'deleted_at', operator: 'isnotnull' }
+        ],
         fields: checklistFields
     }); 
 

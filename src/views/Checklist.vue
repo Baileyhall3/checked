@@ -60,27 +60,10 @@
                                                 <Settings :size="16" aria-hidden="true" />
                                             </Button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
-                                            <DropdownMenuLabel>Checklist Actions</DropdownMenuLabel>
-                                            <DropdownMenuItem class="cursor-pointer" @click="checklistDetailsDialog.show()">
-                                                <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
-                                                Details
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem class="cursor-pointer">
-                                                <Share2 class="size-4 opacity-60" aria-hidden="true" />
-                                                Sharing
-                                            </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem class="cursor-pointer">
-                                                <ListX class="size-4 opacity-60" aria-hidden="true" />
-                                                Deleted Items
-                                            </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem class="cursor-pointer text-red-600" @click="confirmDialog.show()">
-                                                <Trash class="size-4" aria-hidden="true" />
-                                                Delete Checklist
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
+                                        <ChecklistDropdownContent 
+                                            :checklist="checklistDs.checklist.currentRecord"
+                                            :checklist-data="checklistDs.checklist"
+                                        />
                                     </DropdownMenu>
                                 </ButtonGroup>
                             </ButtonGroup>
@@ -223,7 +206,9 @@ import {
     Check,
     Settings,
     Share2,
-    ListX
+    ListX,
+    Eye,
+    EyeOff
 } from "lucide-vue-next";
 import {
   DropdownMenu,
@@ -253,6 +238,7 @@ import type { IBreadcrumbItem } from '@/components/custom/UI/Breadcrumbs.vue';
 import ChecklistDetails from '@/components/dialogs/ChecklistDetails.vue';
 import Confirm from '@/components/dialogs/Confirm.vue';
 import ChecklistItem from '@/components/custom/UI/ChecklistItem.vue';
+import ChecklistDropdownContent from '@/components/custom/UI/ChecklistDropdownContent.vue';
 
 const route = useRoute();
 const router = useRouter();
