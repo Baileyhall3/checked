@@ -1,7 +1,7 @@
 <template>
     <DropdownMenuContent>
         <DropdownMenuLabel v-if="props.label">{{ props.label }}</DropdownMenuLabel>
-        <DropdownMenuItem class="cursor-pointer" @click="openFolderDetails()">
+        <DropdownMenuItem class="cursor-pointer" @click="folderDetailsDialog.show()">
             <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
             Details
         </DropdownMenuItem>
@@ -10,7 +10,7 @@
             v-if="!folder.pin_protected_at"
             class="cursor-pointer" 
             title="Locking this item will prevent people from updating it"
-            @click="openPinDialog()" 
+            @click="pinSetupDialog.show()" 
         >
             <EyeOff class="size-4 opacity-60" aria-hidden="true" />
             Set PIN
@@ -65,6 +65,8 @@
             </div>
         </RadioGroup>
     </Confirm>
+    <FolderDetails ref="folderDetailsDialog" :folder="props.folder" :data-object="props.folderData" />
+    <PINSetup ref="pinSetupDialog" :item="props.folder" :data-object="props.folderData" type="folder" />
 </template>
 
 <script setup lang="ts">
@@ -78,6 +80,8 @@ import { Label } from "@/components/ui/label";
 import { useRouter, useRoute  } from 'vue-router';
 import { supabase } from "@/api/supabase";
 import { useToast } from '@/components/ui/toast';
+import FolderDetails from '@/components/dialogs/FolderDetails.vue';
+import PINSetup from '@/components/dialogs/PINSetup.vue';
 
 const props = defineProps<{
     folder: DataObjectRecord;
@@ -85,6 +89,8 @@ const props = defineProps<{
     label?: string;
 }>();
 
+const pinSetupDialog = ref();
+const folderDetailsDialog = ref();
 const confirmDialog = ref();
 const deleteOption = ref<'cascade' | 'nothing'>('nothing');
 

@@ -143,6 +143,12 @@
             </template>
         </IonContent>
 
+        <EnterPIN 
+            ref="enterPinDialog" 
+            :item="folderDs.folder?.currentRecord" 
+            type="folder" 
+            @pin-accepted="initChecklistsDs"
+        />
         <CreateChecklist ref="createChecklistDialog" :folder="folderDs.folder?.currentRecord" @checklist-created="refreshChecklists" />
     </IonPage>
 </template>
@@ -186,14 +192,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Checklist from '@/components/custom/UI/Checklist.vue';
 import FolderDropdownContent from '@/components/custom/UI/FolderDropdownContent.vue';
+import EnterPIN from '@/components/dialogs/EnterPIN.vue';
 
+const enterPinDialog = ref();
 const createChecklistDialog = ref();
 const route = useRoute();
-const itemDetailsDialog = ref();
 const isLoading = ref<boolean>(true);
 const { toast } = useToast();
 
-const currentSort = ref<'recent' | 'name'>('recent');
+const currentSort = ref<'recent' | 'updated' | 'name'>('recent');
+
+// type CurrentSort = { name: string, field: string}
 const checklistsView = reactive({
     completed: true,
     deleted: false,
@@ -254,6 +263,21 @@ async function createDataObjects(id: number) {
             folderDs.folder = folderData;
         }
 
+        if (folderDs.folder?.currentRecord?.pin_protected_at) {
+            enterPinDialog.value.show();
+        } else {
+            await initChecklistsDs();
+        }
+    } catch (err) {
+        console.error(err);
+    } finally {
+        isLoading.value = false;
+    }
+}
+
+async function initChecklistsDs() {
+    try {
+        isLoading.value = true;
         folderDs.checklists = await createDataObject('folder_checklists', {
             viewName: 'checklists_view',
             tableName: 'checklists',
@@ -278,7 +302,8 @@ async function createDataObjects(id: number) {
     }
 }
 
-function updateSort(sort: 'recent' | 'name') {
+// TODO: last_updated sort
+function updateSort(sort: 'recent' | 'updated' | 'name') {
     currentSort.value = sort;
     const sortConfig: SortConfig = sort === 'recent' ? { field: "created_at", direction: 'desc' } : { field: "name", direction: 'asc' };
     folderDs.checklists?.updateSort(sortConfig);

@@ -44,7 +44,7 @@
                 <!-- <ChevronRight class="size-3.5 mx-1" /> -->
             </div>
             <p class="text-muted-foreground text-sm">
-                {{ DateUtils.toDateTime(checklist.items_updated_at ?? checklist.created_at) }}
+                {{ DateUtils.toRelevantDateOrTime(checklist.items_updated_at ?? checklist.created_at) }}
             </p>
         </div>
     </div>
