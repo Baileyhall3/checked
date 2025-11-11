@@ -166,7 +166,7 @@ async function createChecklist() {
     if (error) {
       toast({
           title: 'Could not create checklist. An error occurred.',
-          description: `Error: ${error}`,
+          description: `Error: ${error.message}`,
           variant: "destructive"
       });
       throw new Error(`Error creating checklist: ${error.message}`);

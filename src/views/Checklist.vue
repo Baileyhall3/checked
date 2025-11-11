@@ -61,6 +61,7 @@
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <ChecklistDropdownContent 
+                                            label="Checklist Details"
                                             :checklist="checklistDs.checklist.currentRecord"
                                             :checklist-data="checklistDs.checklist"
                                         />
@@ -199,16 +200,10 @@ import { useToast } from "@/components/ui/toast/use-toast";
 import { 
     Folder, 
     Home, 
-    Trash, 
-    TextAlignStart, 
     X,
     ArrowUpDown,
     Check,
     Settings,
-    Share2,
-    ListX,
-    Eye,
-    EyeOff
 } from "lucide-vue-next";
 import {
   DropdownMenu,

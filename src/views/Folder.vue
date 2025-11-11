@@ -114,18 +114,11 @@
                                                 <Settings :size="16" aria-hidden="true" />
                                             </Button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
-                                            <DropdownMenuLabel>Folder Actions</DropdownMenuLabel>
-                                            <DropdownMenuItem class="cursor-pointer" @click="checklistDetailsDialog.show()">
-                                                <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
-                                                Details
-                                            </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem class="cursor-pointer text-red-600" @click="confirmDialog.show()">
-                                                <Trash class="size-4" aria-hidden="true" />
-                                                Delete
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
+                                        <FolderDropdownContent 
+                                            label="Folder Actions"
+                                            :folder="folderDs.folder?.currentRecord"
+                                            :folder-data="folderDs.folder"
+                                        />
                                     </DropdownMenu>
                                 </ButtonGroup>
                             </ButtonGroup>
@@ -171,7 +164,7 @@ import { useToast } from '@/components/ui/toast';
 import { ref, reactive, computed } from 'vue';
 import { onIonViewDidEnter, onIonViewDidLeave } from '@ionic/vue';
 import { createDataObject, DataObject, SortConfig, WhereClause } from 'supabase-dataobject-core';
-import { checklistFields, dataSources } from '@/api/dataObjects';
+import { checklistFields, dataSources, folderFields } from '@/api/dataObjects';
 import { Folder, Home, Settings, TextAlignStart, Trash, Check, ArrowUpDown, Ellipsis, RotateCcw, Lock, LockOpen } from "lucide-vue-next";
 import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 import RoundedContainer from '@/components/RoundedContainer.vue';
@@ -192,6 +185,7 @@ import {
   DropdownMenuLabel
 } from "@/components/ui/dropdown-menu";
 import Checklist from '@/components/custom/UI/Checklist.vue';
+import FolderDropdownContent from '@/components/custom/UI/FolderDropdownContent.vue';
 
 const createChecklistDialog = ref();
 const route = useRoute();
@@ -252,15 +246,7 @@ async function createDataObjects(id: number) {
                 { field: 'id', operator: 'equals', value: id }
             ],
             sort: { field: "created_at", direction: 'desc' },
-            fields: [
-                { name: "id" },
-                { name: "prim_key" },
-                { name: "name" },
-                { name: "user_id" },
-                { name: "created_at" },
-                { name: "username" },
-                { name: "checklist_count" },
-            ],
+            fields: folderFields,
             recordLimit: 1
         }); 
 

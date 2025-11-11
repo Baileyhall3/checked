@@ -20,31 +20,10 @@
                                 <Ellipsis :size="16" aria-hidden="true" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuItem class="cursor-pointer" @click="openFolderDetails()">
-                                <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
-                                Details
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                                v-if="!folder.pin_protected_at"
-                                class="cursor-pointer" 
-                                title="Locking this item will prevent people from updating it"
-                                @click="lockItem()" 
-                            >
-                                <Lock class="size-4 opacity-60" aria-hidden="true" />
-                                Lock
-                            </DropdownMenuItem>
-                            <DropdownMenuItem class="cursor-pointer" @click="unlockItem()" v-else>
-                                <LockOpen class="size-4" aria-hidden="true" />
-                                Unlock
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem class="cursor-pointer text-red-600" @click="setDeleted()">
-                                <Trash class="size-4" aria-hidden="true" />
-                                Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
+                        <FolderDropdownContent 
+                            :folder="props.folder"
+                            :folder-data="props.folderData"
+                        />
                     </DropdownMenu>
                 </div>
             </div>
@@ -61,6 +40,7 @@ import { DataObject, DataObjectRecord } from 'supabase-dataobject-core';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { TextAlignStart, Trash, Ellipsis, Lock, LockOpen } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
+import FolderDropdownContent from './FolderDropdownContent.vue';
 
 const props = defineProps<{
     folder: DataObjectRecord;

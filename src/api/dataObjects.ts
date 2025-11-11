@@ -116,15 +116,7 @@ export async function initDataObjects(url: string, key: string, currentUserId: n
             masterBindingField: 'id'
         },
         sort: { field: "created_at", direction: 'desc' },
-        fields: [
-            { name: "id" },
-            { name: "prim_key" },
-            { name: "name" },
-            { name: "user_id" },
-            { name: "created_at" },
-            { name: "username" },
-            { name: "checklist_count" },
-        ]
+        fields: folderFields
     }); 
 
     dataSources.checklistsNoFolderLkp = await createDataObject('no_folder_checklists_lkp', {
@@ -200,4 +192,17 @@ export const checklistFields: DataObjectField[] = [
     { name: "pin_set_by_id" },
     { name: "pin_set_by_username" },
     { name: "pin_type" },
+]
+
+export const folderFields: DataObjectField[] = [
+    { name: "id" },
+    { name: "prim_key" },
+    { name: "name" },
+    { name: "user_id" },
+    { name: "created_at" },
+    { name: "username" },
+    { name: "checklist_count" },
+    { name: "pin_protected_at" },
+    { name: "pin_hash" },
+    { name: "pin_type" }
 ]

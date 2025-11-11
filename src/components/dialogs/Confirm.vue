@@ -7,6 +7,7 @@
                     {{ props.description }}
                 </AlertDialogDescription>
             </AlertDialogHeader>
+            <slot></slot>
             <AlertDialogFooter>
                 <AlertDialogCancel @click="emit('cancelled')">
                     {{ props.cancelText }}

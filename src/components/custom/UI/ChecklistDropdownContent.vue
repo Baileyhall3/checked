@@ -1,5 +1,6 @@
 <template>
     <DropdownMenuContent>
+        <DropdownMenuLabel v-if="props.label">{{ props.label }}</DropdownMenuLabel>
         <DropdownMenuItem class="cursor-pointer" @click="openChecklistDetails()">
             <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
             Details
@@ -69,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { TextAlignStart, Trash, RotateCcw, EyeOff, Eye, ListX, Share2 } from "lucide-vue-next";
 import { DataObject, DataObjectRecord } from 'supabase-dataobject-core';
 import ChecklistDetails from '@/components/dialogs/ChecklistDetails.vue';
@@ -82,6 +83,7 @@ import { useToast } from '@/components/ui/toast';
 const props = defineProps<{
     checklist: DataObjectRecord;
     checklistData: DataObject;
+    label?: string;
 }>();
 
 const checklistDetailsDialog = ref();
