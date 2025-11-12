@@ -186,6 +186,13 @@
             ref="confirmDialog" 
             @confirmed="handleChecklistDelete"
         />
+
+        <EnterPIN 
+            ref="enterPinDialog" 
+            :item="checklistDs.checklist?.currentRecord" 
+            type="checklist" 
+            @pin-accepted="initOthersDs"
+        />
     </IonPage>
 </template>
 
@@ -197,16 +204,9 @@ import { reactive, ref, computed } from 'vue';
 import { dataSources, checklistFields, checklistItemsFields } from '@/api/dataObjects';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast/use-toast";
-import { 
-    Folder, 
-    Home, 
-    X,
-    ArrowUpDown,
-    Check,
-    Settings,
-} from "lucide-vue-next";
+import { Folder, Home, X, ArrowUpDown, Check, Settings } from "lucide-vue-next";
 import {
-  DropdownMenu,
+DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
@@ -234,12 +234,16 @@ import ChecklistDetails from '@/components/dialogs/ChecklistDetails.vue';
 import Confirm from '@/components/dialogs/Confirm.vue';
 import ChecklistItem from '@/components/custom/UI/ChecklistItem.vue';
 import ChecklistDropdownContent from '@/components/custom/UI/ChecklistDropdownContent.vue';
+import EnterPIN from '@/components/dialogs/EnterPIN.vue';
 
 const route = useRoute();
 const router = useRouter();
+
 const itemDetailsDialog = ref();
 const checklistDetailsDialog = ref();
 const confirmDialog = ref();
+const enterPinDialog = ref();
+
 const isLoading = ref<boolean>(true);
 const { toast } = useToast();
 
@@ -323,7 +327,6 @@ async function createDataObjects(id: number) {
             recordLimit: 1
         }); 
 
-        
         if (checklistData?.data.length) {
             checklistDs.checklist = checklistData;
             // checklistDs.checklist?.on("fieldChanged", (record, updates) => {
@@ -332,8 +335,23 @@ async function createDataObjects(id: number) {
             //     }
             // })
         }
-        
-        if (checklistData?.currentRecord?.folder_name) {
+
+        if (checklistDs.checklist?.currentRecord?.pin_protected_at) {
+            enterPinDialog.value.show();
+        } else {
+            await initOthersDs();
+        }
+    } catch (err) {
+        console.error(err);
+    } finally {
+        isLoading.value = false;
+    }
+}
+
+async function initOthersDs() {
+    try {
+        isLoading.value = true;
+        if (checklistDs.checklist?.currentRecord?.folder_name) {
             checklistDs.folderChecklistsLkp = await createDataObject('folder_checklists_lkp', {
                 viewName: 'checklists_view',
                 masterDataObjectBinding: {
@@ -379,7 +397,7 @@ async function createDataObjects(id: number) {
             if ('name' in updates) {
                 checklistDs.checklistItems?.saveChanges(); // causing issues with saving in details dialog
             }
-        })
+        });
     } catch (err) {
         console.error(err);
     } finally {

@@ -15,7 +15,7 @@
             <EyeOff class="size-4 opacity-60" aria-hidden="true" />
             Set PIN
         </DropdownMenuItem>
-        <DropdownMenuItem class="cursor-pointer" @click="openRemovePinDialog()" v-else>
+        <DropdownMenuItem class="cursor-pointer" @click="pinRemoveDialog.show()" v-else>
             <Eye class="size-4" aria-hidden="true" />
             Remove PIN
         </DropdownMenuItem>
@@ -67,6 +67,7 @@
     </Confirm>
     <FolderDetails ref="folderDetailsDialog" :folder="props.folder" :data-object="props.folderData" />
     <PINSetup ref="pinSetupDialog" :item="props.folder" :data-object="props.folderData" type="folder" />
+    <PINRemove ref="pinRemoveDialog" :item="props.folder" :data-object="props.folderData" type="folder" />
 </template>
 
 <script setup lang="ts">
@@ -82,6 +83,7 @@ import { supabase } from "@/api/supabase";
 import { useToast } from '@/components/ui/toast';
 import FolderDetails from '@/components/dialogs/FolderDetails.vue';
 import PINSetup from '@/components/dialogs/PINSetup.vue';
+import PINRemove from '@/components/dialogs/PINRemove.vue';
 
 const props = defineProps<{
     folder: DataObjectRecord;
@@ -92,6 +94,7 @@ const props = defineProps<{
 const pinSetupDialog = ref();
 const folderDetailsDialog = ref();
 const confirmDialog = ref();
+const pinRemoveDialog =ref();
 const deleteOption = ref<'cascade' | 'nothing'>('nothing');
 
 const { toast } = useToast();

@@ -15,12 +15,12 @@
             v-if="!checklist.pin_protected_at"
             class="cursor-pointer" 
             title="Locking this item will prevent people from updating it"
-            @click="openPinDialog()" 
+            @click="pinSetupDialog.show()" 
         >
             <EyeOff class="size-4 opacity-60" aria-hidden="true" />
             Set PIN
         </DropdownMenuItem>
-        <DropdownMenuItem class="cursor-pointer" @click="openRemovePinDialog()" v-else>
+        <DropdownMenuItem class="cursor-pointer" @click="pinRemoveDialog.show()" v-else>
             <Eye class="size-4" aria-hidden="true" />
             Remove PIN
         </DropdownMenuItem>
@@ -67,6 +67,8 @@
         confirm-type="delete"
         @confirmed="hardDeleteItem"
     />
+    <PINSetup ref="pinSetupDialog" :item="props.checklist" :data-object="props.checklistData" type="checklist" />
+    <PINRemove ref="pinRemoveDialog" :item="props.checklist" :data-object="props.checklistData" type="checklist" />
 </template>
 
 <script setup lang="ts">
@@ -77,8 +79,8 @@ import ChecklistDetails from '@/components/dialogs/ChecklistDetails.vue';
 import Confirm from '@/components/dialogs/Confirm.vue';
 import { ref } from 'vue';
 import { useToast } from '@/components/ui/toast';
-
-// TODO: Injection keys?
+import PINSetup from "@/components/dialogs/PINSetup.vue";
+import PINRemove from "@/components/dialogs/PINRemove.vue";
 
 const props = defineProps<{
     checklist: DataObjectRecord;
@@ -89,6 +91,8 @@ const props = defineProps<{
 const checklistDetailsDialog = ref();
 const confirmDialog = ref();
 const hardDeleteConfirmDialog = ref();
+const pinSetupDialog = ref();
+const pinRemoveDialog = ref();
 
 const { toast } = useToast();
 

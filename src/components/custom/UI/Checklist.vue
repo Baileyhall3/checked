@@ -8,7 +8,11 @@
                         class="size-5 text-red-600 mr-2" 
                         :title="`Deleted by ${checklist.deleted_by_username} ${DateUtils.toDateTime(checklist.deleted_at)}`"
                     />
-                    
+                    <Lock 
+                        v-if="checklist.pin_protected_at" 
+                        class="w-5 h-5 text-gray-600 mr-2" 
+                        :title="`PIN set ${DateUtils.toDateTime(checklist.pin_protected_at)} by ${checklist.pin_set_by_username}`"
+                    />
                     <RouterLink :to="`/checklist/${checklist.id}`" class="cursor-pointer hover:underline">
                         <span class="text-lg font-medium">{{ checklist.name }}</span>
                     </RouterLink>
@@ -73,7 +77,7 @@
 import DateUtils from '@/utils/DateUtils';
 import { DataObject, DataObjectRecord } from 'supabase-dataobject-core';
 import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Trash, Ellipsis, Folder } from "lucide-vue-next";
+import { Trash, Ellipsis, Folder, Lock } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
 import ChecklistDetails from '@/components/dialogs/ChecklistDetails.vue';
 import Confirm from '@/components/dialogs/Confirm.vue';
