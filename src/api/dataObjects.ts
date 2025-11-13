@@ -164,6 +164,8 @@ export const checklistItemsFields: DataObjectField[] = [
     { name: "priority" },
     { name: "bg_colour" },
     { name: "sort_order" },
+    { name: "folder_id" },
+    { name: "folder_name" },
 ]
 
 export const checklistFields: DataObjectField[] = [

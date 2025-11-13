@@ -63,71 +63,96 @@
                                 </EmptyDescription>
                             </EmptyContent>
                         </Empty>
-                        <div class="flex items-center space-x-2 mb-8" v-else>
-                            <div class="w-full">
+                        <template v-else>
+                            <div class="flex items-center space-x-2 mb-4 justify-between">
+                                <ToggleGroup
+                                    class="divide-background inline-flex divide-x"
+                                    type="single"
+                                    v-model="listView"
+                                >
+                                    <ToggleGroupItem
+                                        class="bg-primary/80 text-primary-foreground hover:bg-primary hover:text-primary-foreground data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                                        aria-label="Align Left"
+                                        value="checklists"
+                                    >
+                                        <Folder :size="16" aria-hidden="true" />
+                                    </ToggleGroupItem>
+                                    <ToggleGroupItem
+                                        class="bg-primary/80 text-primary-foreground hover:bg-primary hover:text-primary-foreground data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                                        aria-label="Align Center"
+                                        value="items"
+                                        @click="loadChecklistItems"
+                                    >
+                                        <ListTodo :size="16" aria-hidden="true" />
+                                    </ToggleGroupItem>
+                                </ToggleGroup>
+                                <div class="flex gap-2">
+                                    <ButtonGroup>
+                                        <ButtonGroup >
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        size="icon"
+                                                        variant="secondary"
+                                                        class="rounded-xl shadow-none bg-white hover:bg-gray-200"
+                                                        aria-label="Open sort"
+                                                    >
+                                                        <ArrowUpDown :size="16" aria-hidden="true" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent>
+                                                    <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+                                                    <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('recent')">
+                                                        Most Recent
+                                                        <Check class="size-4" aria-hidden="true" v-if="currentSort === 'recent'" />
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('name')">
+                                                        Name
+                                                        <Check class="size-4" aria-hidden="true" v-if="currentSort === 'name'" />
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuLabel>Show</DropdownMenuLabel>
+                                                    <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('completed')">
+                                                        Completed Checklists
+                                                        <Check class="size-4" aria-hidden="true" v-if="checklistsView.completed" />
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('deleted')">
+                                                        Deleted Checklists
+                                                        <Check class="size-4" aria-hidden="true" v-if="checklistsView.deleted" />
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                            <ButtonGroupSeparator />
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        size="icon"
+                                                        variant="secondary"
+                                                        class="rounded-xl shadow-none bg-white hover:bg-gray-200"
+                                                        aria-label="Open settings"
+                                                    >
+                                                        <Settings :size="16" aria-hidden="true" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <FolderDropdownContent 
+                                                    label="Folder Actions"
+                                                    :folder="folderDs.folder?.currentRecord"
+                                                    :folder-data="folderDs.folder"
+                                                />
+                                            </DropdownMenu>
+                                        </ButtonGroup>
+                                    </ButtonGroup>
+                                    <Button @click="createChecklistDialog.show()" class="text-white rounded-xl">
+                                        Add New
+                                    </Button>
+                                </div>
+                            </div>
+                            <div class="w-full mb-8">
                                 <SearchBar />
                             </div>
-                            <ButtonGroup>
-                                <ButtonGroup >
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button
-                                                size="icon"
-                                                variant="secondary"
-                                                class="rounded-xl shadow-none bg-white hover:bg-gray-200"
-                                                aria-label="Open sort"
-                                            >
-                                                <ArrowUpDown :size="16" aria-hidden="true" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
-                                            <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('recent')">
-                                                Most Recent
-                                                <Check class="size-4" aria-hidden="true" v-if="currentSort === 'recent'" />
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('name')">
-                                                Name
-                                                <Check class="size-4" aria-hidden="true" v-if="currentSort === 'name'" />
-                                            </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuLabel>Show</DropdownMenuLabel>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('completed')">
-                                                Completed Checklists
-                                                <Check class="size-4" aria-hidden="true" v-if="checklistsView.completed" />
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('deleted')">
-                                                Deleted Checklists
-                                                <Check class="size-4" aria-hidden="true" v-if="checklistsView.deleted" />
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                    <ButtonGroupSeparator />
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button
-                                                size="icon"
-                                                variant="secondary"
-                                                class="rounded-xl shadow-none bg-white hover:bg-gray-200"
-                                                aria-label="Open settings"
-                                            >
-                                                <Settings :size="16" aria-hidden="true" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <FolderDropdownContent 
-                                            label="Folder Actions"
-                                            :folder="folderDs.folder?.currentRecord"
-                                            :folder-data="folderDs.folder"
-                                        />
-                                    </DropdownMenu>
-                                </ButtonGroup>
-                            </ButtonGroup>
-                            <Button @click="createChecklistDialog.show()" class="text-white rounded-xl">
-                                Add New
-                            </Button>
-                        </div>
+                        </template>
     
-                        <div v-if="folderDs.checklists && folderDs.checklists?.data.length > 0">
+                        <div v-if="folderDs.checklists && folderDs.checklists?.data.length > 0 && listView == 'checklists'">
                             <RoundedContainer class=" flex flex-col">
                                 <template v-for="(checklist, index) in folderDs.checklists?.data" :key="checklist.id">
                                     <Checklist 
@@ -138,6 +163,21 @@
                                 </template>
                             </RoundedContainer>
                         </div>
+                        <template v-else-if="folderDs.checklistItems && folderDs.checklistItems?.data.length > 0">
+                            <div v-for="checklist in folderDs.checklistItems?.groupedData" :key="checklist.groupValue" class="mb-8">
+                                <span class="text-xl font-medium flex items-center">
+                                    <ListTodo class="me-2" aria-hidden="true" />
+                                    <RouterLink :to="`/checklist/${checklist.additionalFields.checklist_id}`" class="cursor-pointer hover:underline">
+                                        {{ checklist.groupValue }}
+                                    </RouterLink>
+                                </span>
+                                <div class="space-y-3">
+                                    <template v-for="(item, index) in checklist.records" :key="item.id">
+                                        <ChecklistItem :item="item" :checklistData="folderDs.checklistItems" />
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
                     </div>
                 </div>
             </template>
@@ -164,17 +204,15 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { ListTodo } from 'lucide-vue-next';
 import { useRoute } from 'vue-router';
 import { useToast } from '@/components/ui/toast';
 import { ref, reactive, computed } from 'vue';
 import { onIonViewDidEnter, onIonViewDidLeave } from '@ionic/vue';
 import { createDataObject, DataObject, SortConfig, WhereClause } from 'supabase-dataobject-core';
-import { checklistFields, dataSources, folderFields } from '@/api/dataObjects';
-import { Folder, Home, Settings, TextAlignStart, Trash, Check, ArrowUpDown, Ellipsis, RotateCcw, Lock, LockOpen } from "lucide-vue-next";
+import { checklistFields, dataSources, folderFields, checklistItemsFields } from '@/api/dataObjects';
+import { Folder, Home, Settings, Check, ArrowUpDown, LayoutGrid, LayoutList, ListTodo } from "lucide-vue-next";
 import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 import RoundedContainer from '@/components/RoundedContainer.vue';
-import DateUtils from '@/utils/DateUtils';
 import SearchBar from '@/components/custom/UI/SearchBar.vue';
 import BlurredHeader from '@/components/header/Blurred.vue';
 import Loading from '@/components/custom/UI/Loading.vue';
@@ -193,6 +231,8 @@ import {
 import Checklist from '@/components/custom/UI/Checklist.vue';
 import FolderDropdownContent from '@/components/custom/UI/FolderDropdownContent.vue';
 import EnterPIN from '@/components/dialogs/EnterPIN.vue';
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import ChecklistItem from '@/components/custom/UI/ChecklistItem.vue';
 
 const enterPinDialog = ref();
 const createChecklistDialog = ref();
@@ -201,6 +241,7 @@ const isLoading = ref<boolean>(true);
 const { toast } = useToast();
 
 const currentSort = ref<'recent' | 'updated' | 'name'>('recent');
+const listView = ref<'checklists' | 'items'>('checklists');
 
 // type CurrentSort = { name: string, field: string}
 const checklistsView = reactive({
@@ -210,7 +251,8 @@ const checklistsView = reactive({
 
 const folderDs = reactive({
     folder: null as DataObject | null,
-    checklists: null as DataObject | null
+    checklists: null as DataObject | null,
+    checklistItems: null as DataObject | null
 });
 
 const breadcrumbs = computed((): IBreadcrumbItem[] => {
@@ -295,6 +337,26 @@ async function initChecklistsDs() {
             sort: { field: "created_at", direction: 'desc' },
             fields: checklistFields,
         }); 
+
+        folderDs.checklistItems = await createDataObject('folder_checklist_items', {
+            viewName: 'checklist_items_view',
+            tableName: 'checklist_items',
+            canInsert: true,
+            canUpdate: true,
+            canDelete: true,
+            whereClauses: [
+                { field: 'deleted_at', operator: 'isnull' }
+            ],
+            masterDataObjectBinding: {
+                masterDataObjectId: 'folder',
+                childBindingField: 'folder_id',
+                masterBindingField: 'id'
+            },
+            sort: { field: "created_at", direction: 'desc' },
+            fields: checklistItemsFields,
+            autoRefresh: false,
+            groupBy: { field: 'checklist', additionalFields: ['checklist_id'] }
+        }); 
     } catch (err) {
         console.error(err);
     } finally {
@@ -319,6 +381,19 @@ function updateView(key: 'completed' | 'deleted') {
         whereClauses.push({ field: 'deleted_at', operator: 'isnull' });
     }
     folderDs.checklists.whereClauses = whereClauses
+}
+
+async function loadChecklistItems() {
+    try {
+        isLoading.value = true;
+        await folderDs.checklistItems?.refresh();
+        console.log('checklist items ', folderDs.checklistItems?.groupedData)
+
+    } catch(err) {
+        console.error(err);
+    } finally {
+        isLoading.value = false;
+    }
 }
 
 function refreshChecklists() {
