@@ -47,9 +47,22 @@
                 </RouterLink>
                 <!-- <ChevronRight class="size-3.5 mx-1" /> -->
             </div>
-            <p class="text-muted-foreground text-sm">
-                {{ DateUtils.toRelevantDateOrTime(checklist.items_updated_at ?? checklist.created_at) }}
-            </p>
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-muted-foreground text-sm">
+                        {{ DateUtils.toRelevantDateOrTime(checklist.items_updated_at ?? checklist.created_at) }}
+                    </p>
+                </div>
+                <div class="me-2">
+                    <LayoutList 
+                        v-if="checklist.is_template && !checklist.deleted_at" 
+                        :size="16" 
+                        aria-hidden="true" 
+                        class="text-muted-foreground" 
+                        title="Checklist is a template"
+                    />
+                </div>
+            </div>
         </div>
     </div>
 
@@ -77,7 +90,7 @@
 import DateUtils from '@/utils/DateUtils';
 import { DataObject, DataObjectRecord } from 'supabase-dataobject-core';
 import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Trash, Ellipsis, Folder, Lock } from "lucide-vue-next";
+import { Trash, Ellipsis, Folder, Lock, LayoutList } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
 import ChecklistDetails from '@/components/dialogs/ChecklistDetails.vue';
 import Confirm from '@/components/dialogs/Confirm.vue';

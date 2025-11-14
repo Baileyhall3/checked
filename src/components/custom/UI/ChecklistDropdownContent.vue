@@ -6,11 +6,14 @@
             Details
         </DropdownMenuItem>
         <DropdownMenuSeparator />
+        <DropdownMenuItem class="cursor-pointer" @click="copyChecklistDialog.show()">
+            <Copy class="size-4 opacity-60" aria-hidden="true" />
+            Copy
+        </DropdownMenuItem>
         <DropdownMenuItem class="cursor-pointer">
             <Share2 class="size-4 opacity-60" aria-hidden="true" />
-            Sharing
+            Share
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
         <DropdownMenuItem 
             v-if="!checklist.pin_protected_at"
             class="cursor-pointer" 
@@ -69,11 +72,12 @@
     />
     <PINSetup ref="pinSetupDialog" :item="props.checklist" :data-object="props.checklistData" type="checklist" />
     <PINRemove ref="pinRemoveDialog" :item="props.checklist" :data-object="props.checklistData" type="checklist" />
+    <CopyChecklist ref="copyChecklistDialog" :checklist="props.checklist" @checklist-copied="handleChecklistCopied" />
 </template>
 
 <script setup lang="ts">
 import { DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
-import { TextAlignStart, Trash, RotateCcw, EyeOff, Eye, ListX, Share2 } from "lucide-vue-next";
+import { TextAlignStart, Trash, RotateCcw, EyeOff, Eye, ListX, Share2, Copy } from "lucide-vue-next";
 import { DataObject, DataObjectRecord } from 'supabase-dataobject-core';
 import ChecklistDetails from '@/components/dialogs/ChecklistDetails.vue';
 import Confirm from '@/components/dialogs/Confirm.vue';
@@ -81,6 +85,7 @@ import { ref } from 'vue';
 import { useToast } from '@/components/ui/toast';
 import PINSetup from "@/components/dialogs/PINSetup.vue";
 import PINRemove from "@/components/dialogs/PINRemove.vue";
+import CopyChecklist from "@/components/dialogs/CopyChecklist.vue";
 
 const props = defineProps<{
     checklist: DataObjectRecord;
@@ -93,6 +98,7 @@ const confirmDialog = ref();
 const hardDeleteConfirmDialog = ref();
 const pinSetupDialog = ref();
 const pinRemoveDialog = ref();
+const copyChecklistDialog = ref();
 
 const { toast } = useToast();
 
@@ -118,5 +124,9 @@ function recoverItem() {
     props.checklistData.update(props.checklist.id, {
         deleted_at: null
     });
+}
+
+function handleChecklistCopied() {
+    props.checklistData.refresh();
 }
 </script>

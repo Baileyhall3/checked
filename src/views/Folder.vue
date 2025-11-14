@@ -147,7 +147,7 @@
                                     </Button>
                                 </div>
                             </div>
-                            <div class="w-full mb-8">
+                            <div class="w-full mb-4">
                                 <SearchBar />
                             </div>
                         </template>
@@ -387,7 +387,7 @@ async function loadChecklistItems() {
     try {
         isLoading.value = true;
         await folderDs.checklistItems?.refresh();
-        console.log('checklist items ', folderDs.checklistItems?.groupedData)
+        console.log('checklist items ', folderDs.checklistItems)
 
     } catch(err) {
         console.error(err);
@@ -403,7 +403,9 @@ function refreshChecklists() {
 onIonViewDidLeave(() => {
     dataSources.manager?.removeDataObject('folder');
     dataSources.manager?.removeDataObject('folder_checklists');
+    dataSources.manager?.removeDataObject('folder_checklist_items');
     folderDs.folder = null;
     folderDs.checklists = null;
+    folderDs.checklistItems = null;
 });
 </script>

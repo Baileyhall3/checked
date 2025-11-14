@@ -46,7 +46,7 @@
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem class="cursor-pointer" @click="userStore.signOut();">
+                <DropdownMenuItem class="cursor-pointer" @click="logOut">
                     <LogOut class="size-4" aria-hidden="true" />
                     Log out
                 </DropdownMenuItem>
@@ -76,4 +76,12 @@ import { Button } from "@/components/ui/button";
 import { userStore } from "@/store/userStore";
 import { CircleUserRound, Settings2, Users, LogOut, CircleUserRoundIcon } from "lucide-vue-next";
 import { dataSources } from "@/api/dataObjects";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
+function logOut() {
+    userStore.signOut();
+    router.push(`/`);
+}
 </script>
