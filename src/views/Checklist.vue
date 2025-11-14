@@ -9,137 +9,145 @@
                             <Breadcrumbs :items="breadcrumbs" />
                             <ProfileDropdown />
                         </div>
-                        
-                        <div class="w-full flex">
-                            <SearchBar />
-                            
-                            <ButtonGroup>
-                                <ButtonGroup class="ml-3">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button
-                                                size="icon"
-                                                variant="secondary"
-                                                class="rounded-xl shadow-none"
-                                                aria-label="Open sort"
-                                            >
-                                                <ArrowUpDown :size="16" aria-hidden="true" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
-                                            <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('recent')">
-                                                Most Recent
-                                                <Check class="size-4" aria-hidden="true" v-if="currentSort === 'recent'" />
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('name')">
-                                                Name
-                                                <Check class="size-4" aria-hidden="true" v-if="currentSort === 'name'" />
-                                            </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuLabel>Show</DropdownMenuLabel>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('checked')">
-                                                Checked Items
-                                                <Check class="size-4" aria-hidden="true" v-if="itemsView.checked" />
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('deleted')">
-                                                Deleted Items
-                                                <Check class="size-4" aria-hidden="true" v-if="itemsView.deleted" />
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                    <ButtonGroupSeparator />
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button
-                                                size="icon"
-                                                variant="secondary"
-                                                class="rounded-xl shadow-none"
-                                                aria-label="Open settings"
-                                            >
-                                                <Settings :size="16" aria-hidden="true" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <ChecklistDropdownContent 
-                                            label="Checklist Details"
-                                            :checklist="checklistDs.checklist.currentRecord"
-                                            :checklist-data="checklistDs.checklist"
-                                        />
-                                    </DropdownMenu>
-                                </ButtonGroup>
-                            </ButtonGroup>
-                        </div>
                     </BlurredHeader>
                     <div class="min-h-screen bg-gray-100">
-                        <div class="container mx-auto px-6 pt-2 pb-6">
-                            <template v-if="!isLoading">
-                                <div class="flex flex-col space-y-3">
-                                    <!-- Checklist deleted notice -->
-                                    <div class="bg-white rounded-md border px-4 py-3 shadow-md" v-if="checklistDs.checklist.currentRecord?.deleted_at">
-                                        <div
-                                            class="flex flex-col justify-between gap-3 md:flex-row md:items-center"
-                                        >
-                                            <div>
-                                                <p class="text-sm">
-                                                    This checklist was deleted {{ DateUtils.toDateTime(checklistDs.checklist.currentRecord?.deleted_at) }} by {{ checklistDs.checklist.currentRecord?.deleted_by_username }}
-                                                </p>
-                                                <p class="text-sm">
-                                                    <span class="font-bold">
-                                                        {{ 30 - DateUtils.dateDiff(new Date(checklistDs.checklist.currentRecord?.deleted_at), new Date()) }} 
-                                                    </span>
-                                                    days until checklist is permanently deleted.
-                                                </p>
-                                            </div>
-                                            <div class="flex gap-2 max-md:flex-wrap">
-                                                <Button size="sm">Recover</Button>
-                                                <Button variant="destructive" size="sm">Delete</Button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- Checklist Progress Bar -->
-                                    <div v-if="checklistDs.checklistItems?.data?.length" class="mt-4 mb-6">
-                                        <div class="flex justify-between text-sm text-gray-600 mb-1">
-                                            <span>Progress</span>
-                                            <span>{{ completedCount }} / {{ totalCount }}</span>
-                                        </div>
-        
-                                        <div
-                                            class="bg-gray-200 h-2 w-full overflow-hidden rounded-full"
-                                            role="progressbar"
-                                            :aria-valuenow="progressPercent"
-                                            aria-valuemin="0"
-                                            :aria-valuemax="100"
-                                            aria-label="Checklist progress"
-                                        >
-                                            <div
-                                                class="h-full bg-indigo-500 transition-all duration-500 ease-out"
-                                                :style="{ width: `${progressPercent}%` }"
-                                            ></div>
-                                        </div>
-                                    </div>
-        
-                                    <!-- Add New Item Input -->
-                                    <transition name="fade-slide">
-                                        <div v-if="showAddInput && !checklistDs.checklist.currentRecord?.deleted_at" class="flex items-center space-x-2">
-                                            <input
-                                                v-model="newItemName"
-                                                type="text"
-                                                placeholder="New checklist item..."
-                                                class="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                                                @keyup.enter="addItem"
+                        <div class="container mx-auto px-6 py-8">
+                            <div class="w-full flex mb-4">
+                                <SearchBar />
+                                
+                                <ButtonGroup>
+                                    <ButtonGroup class="ml-3">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button
+                                                    size="icon"
+                                                    variant="secondary"
+                                                    class="rounded-xl shadow-none bg-white hover:bg-gray-200"
+                                                    aria-label="Open sort"
+                                                >
+                                                    <ArrowUpDown :size="16" aria-hidden="true" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent>
+                                                <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('recent')">
+                                                    Most Recent
+                                                    <Check class="size-4" aria-hidden="true" v-if="currentSort === 'recent'" />
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('name')">
+                                                    Name
+                                                    <Check class="size-4" aria-hidden="true" v-if="currentSort === 'name'" />
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+
+                                                <DropdownMenuLabel>Show</DropdownMenuLabel>
+                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('progressBar')">
+                                                    Progress Bar
+                                                    <Check class="size-4" aria-hidden="true" v-if="itemsView.progressBar" />
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('createNew')">
+                                                    New Item Input
+                                                    <Check class="size-4" aria-hidden="true" v-if="itemsView.createNew" />
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('checked')">
+                                                    Checked Items
+                                                    <Check class="size-4" aria-hidden="true" v-if="itemsView.checked" />
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('deleted')">
+                                                    Deleted Items
+                                                    <Check class="size-4" aria-hidden="true" v-if="itemsView.deleted" />
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                        <ButtonGroupSeparator />
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button
+                                                    size="icon"
+                                                    variant="secondary"
+                                                    class="rounded-xl shadow-none bg-white hover:bg-gray-200"
+                                                    aria-label="Open settings"
+                                                >
+                                                    <Settings :size="16" aria-hidden="true" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <ChecklistDropdownContent 
+                                                label="Checklist Details"
+                                                :checklist="checklistDs.checklist.currentRecord"
+                                                :checklist-data="checklistDs.checklist"
                                             />
-                                            <Button @click="addItem" class="text-white rounded-xl">
-                                                Add
-                                            </Button>
+                                        </DropdownMenu>
+                                    </ButtonGroup>
+                                </ButtonGroup>
+                            </div>
+                            <div class="flex flex-col space-y-3">
+                                <!-- Checklist deleted notice -->
+                                <div class="bg-white rounded-md border px-4 py-3 shadow-md" v-if="checklistDs.checklist.currentRecord?.deleted_at">
+                                    <div
+                                        class="flex flex-col justify-between gap-3 md:flex-row md:items-center"
+                                    >
+                                        <div>
+                                            <p class="text-sm">
+                                                This checklist was deleted {{ DateUtils.toDateTime(checklistDs.checklist.currentRecord?.deleted_at) }} by {{ checklistDs.checklist.currentRecord?.deleted_by_username }}
+                                            </p>
+                                            <p class="text-sm">
+                                                <span class="font-bold">
+                                                    {{ 30 - DateUtils.dateDiff(new Date(checklistDs.checklist.currentRecord?.deleted_at), new Date()) }} 
+                                                </span>
+                                                days until checklist is permanently deleted.
+                                            </p>
                                         </div>
-                                    </transition>
-        
-                                    <!-- Checklist Items -->
-                                    <template v-for="(item, index) in checklistDs.checklistItems?.data" :key="item.id">
-                                        <ChecklistItem :item="item" :checklistData="checklistDs.checklistItems" />
-                                    </template>
+                                        <div class="flex gap-2 max-md:flex-wrap">
+                                            <Button size="sm">Recover</Button>
+                                            <Button variant="destructive" size="sm">Delete</Button>
+                                        </div>
+                                    </div>
                                 </div>
-                            </template>
+                                <!-- Checklist Progress Bar -->
+                                 <transition name="fade-slide">
+                                     <div v-if="checklistDs.checklistItems?.data?.length && itemsView.progressBar" class="mb-4">
+                                         <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                             <span>Progress</span>
+                                             <span>{{ completedCount }} / {{ totalCount }}</span>
+                                         </div>
+         
+                                         <div
+                                             class="bg-gray-200 h-2 w-full overflow-hidden rounded-full"
+                                             role="progressbar"
+                                             :aria-valuenow="progressPercent"
+                                             aria-valuemin="0"
+                                             :aria-valuemax="100"
+                                             aria-label="Checklist progress"
+                                         >
+                                             <div
+                                                 class="h-full bg-indigo-500 transition-all duration-500 ease-out"
+                                                 :style="{ width: `${progressPercent}%` }"
+                                             ></div>
+                                         </div>
+                                     </div>
+                                 </transition>
+    
+                                <!-- Add New Item Input -->
+                                <transition name="fade-slide">
+                                    <div v-if="itemsView.createNew && !checklistDs.checklist.currentRecord?.deleted_at" class="flex items-center my-4">
+                                        <input
+                                            v-model="newItemName"
+                                            type="text"
+                                            placeholder="New checklist item..."
+                                            class="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                                            @keyup.enter="addItem"
+                                        />
+                                        <Button @click="addItem" class="text-white rounded-xl">
+                                            Add
+                                        </Button>
+                                    </div>
+                                </transition>
+    
+                                <!-- Checklist Items -->
+                                <template v-for="(item, index) in checklistDs.checklistItems?.data" :key="item.id">
+                                    <ChecklistItem :item="item" :checklistData="checklistDs.checklistItems" />
+                                </template>
+                            </div>
                         </div>
                     </div>
                 </template>
@@ -249,6 +257,8 @@ const { toast } = useToast();
 
 const currentSort = ref<'recent' | 'name'>('recent');
 const itemsView = reactive({
+    progressBar: true,
+    createNew: true,
     checked: true,
     deleted: false,
 });
@@ -405,12 +415,7 @@ async function initOthersDs() {
     }
 }
 
-const showAddInput = ref(true);
 const newItemName = ref("");
-
-// function toggleAddInput() {
-//     showAddInput.value = !showAddInput.value;
-// }
 
 async function addItem() {
     if (newItemName.value.trim() === "") return;
@@ -427,7 +432,6 @@ async function addItem() {
         });
     }
     newItemName.value = "";
-    // showAddInput.value = false;
 }
 
 function updateSort(sort: 'recent' | 'name') {
@@ -436,16 +440,18 @@ function updateSort(sort: 'recent' | 'name') {
     checklistDs.checklistItems?.updateSort(sortConfig);
 }
 
-function updateView(key: 'checked' | 'deleted') {
+function updateView(key: 'checked' | 'deleted' | 'progressBar' | 'createNew') {
     itemsView[key] = !itemsView[key];
-    const whereClauses: WhereClause[] = [];
-    if (!itemsView.checked) {
-        whereClauses.push({ field: 'is_checked', operator: 'equals', value: false });
+    if (key === 'checked' || key === 'deleted') {
+        const whereClauses: WhereClause[] = [];
+        if (!itemsView.checked) {
+            whereClauses.push({ field: 'is_checked', operator: 'equals', value: false });
+        }
+        if (!itemsView.deleted) {
+            whereClauses.push({ field: 'deleted_at', operator: 'isnull' });
+        }
+        checklistDs.checklistItems.whereClauses = whereClauses
     }
-    if (!itemsView.deleted) {
-        whereClauses.push({ field: 'deleted_at', operator: 'isnull' });
-    }
-    checklistDs.checklistItems.whereClauses = whereClauses
 }
 
 async function handleChecklistDelete() {
