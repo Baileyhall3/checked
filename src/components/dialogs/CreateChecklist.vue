@@ -29,13 +29,12 @@
                         {{ errors.username }}
                     </p> -->
                 </div>
-                <div class="*:not-first:mt-2">
+                <div class="*:not-first:mt-2" v-if="!props.folder">
                     <Label for="checklistFolder">Folder</Label>
                     <div class="select-input">
                         <Select 
-                          :default-value="props.folder?.id" 
                           class="select-input" 
-                          :disabled="dataSources.myFolders?.data.length === 0 || props.folder?.id"
+                          :disabled="dataSources.myFolders?.data.length === 0"
                           v-model="checklistData.folder_id"
                         >
                             <SelectTrigger id="checklistFolder" class="relative ps-9 rounded-lg">
@@ -52,6 +51,20 @@
                                 </template>
                             </SelectContent>
                         </Select>
+                    </div>
+                </div>
+                <div class="items-top flex gap-x-2 pb-4 mt-2">
+                    <Checkbox id="isTemplate" v-model="checklistData.redirect" />
+                    <div class="grid gap-1.5 leading-none">
+                        <label
+                            for="isTemplate"
+                            class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                            Open Checklist
+                        </label>
+                        <p class="text-sm text-muted-foreground">
+                          Check this to open the checklist once it has been created.
+                        </p>
                     </div>
                 </div>
             </form>
@@ -98,6 +111,8 @@ import { userStore } from "@/store/userStore";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/ui/toast/use-toast";
 import { dataSources } from "@/api/dataObjects";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useRouter } from "vue-router";
 
 interface ChecklistMember {
     id: number;
@@ -122,11 +137,14 @@ const checklistData = reactive({
     folder_id: props.folder?.id ?? null,
     folder: props.folder?.name ?? '',
     checklistMembers: [],
-    owner_id: userStore.userProfile?.id
+    owner_id: userStore.userProfile?.id,
+    redirect: true
 });
 
 const isCreating = ref<boolean>(false);
 const isDialogOpen = ref<boolean>(false);
+
+const router = useRouter();
 
 const { contains } = useFilter({ sensitivity: 'base' })
 
@@ -174,6 +192,10 @@ async function createChecklist() {
       toast({title: 'Checklist created!'});
       emit("checklist-created");
       resetChecklistData();
+      if (checklistData.redirect) {
+        const newChecklistId = data[0].checklist_id;
+        router.push(`/checklist/${newChecklistId}`);
+      }
       close();
     }
 

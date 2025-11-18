@@ -134,10 +134,7 @@
                                             </DropdownMenu>
                                         </ButtonGroup>
                                     </ButtonGroup>
-                                    <Button @click="createChecklistDialog.show()" class="text-white rounded-xl">
-                                        <Plus v-if="isMobile" :size="16" aria-hidden="true" />
-                                        <span v-else>Add New</span>
-                                    </Button>
+                                    <AddNewBtn @add-clicked="createChecklistDialog.show()" />
                                 </div>
                             </div>
                         </template>
@@ -200,7 +197,7 @@ import { ref, reactive, computed } from 'vue';
 import { onIonViewDidEnter, onIonViewDidLeave } from '@ionic/vue';
 import { createDataObject, DataObject, SortConfig, WhereClause } from 'supabase-dataobject-core';
 import { checklistFields, dataSources, folderFields, checklistItemsFields } from '@/api/dataObjects';
-import { Folder, Home, Settings, Check, ArrowUpDown, LayoutGrid, LayoutList, ListTodo, Plus } from "lucide-vue-next";
+import { Folder, Home, Settings, Check, ArrowUpDown, ListTodo } from "lucide-vue-next";
 import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 import RoundedContainer from '@/components/RoundedContainer.vue';
 import SearchBar from '@/components/custom/UI/SearchBar.vue';
@@ -222,7 +219,7 @@ import Checklist from '@/components/custom/UI/Checklist.vue';
 import FolderDropdownContent from '@/components/custom/UI/FolderDropdownContent.vue';
 import EnterPIN from '@/components/dialogs/EnterPIN.vue';
 import ChecklistItem from '@/components/custom/UI/ChecklistItem.vue';
-import { useWindowSize } from "@vueuse/core";
+import AddNewBtn from '@/components/custom/UI/buttons/AddNewBtn.vue';
 
 const enterPinDialog = ref();
 const createChecklistDialog = ref();
@@ -232,9 +229,6 @@ const { toast } = useToast();
 
 const currentSort = ref<'recent' | 'updated' | 'name'>('recent');
 const listView = ref<'checklists' | 'items'>('checklists');
-
-const { width } = useWindowSize();
-const isMobile = computed(() => width.value < 768);
 
 // type CurrentSort = { name: string, field: string}
 const checklistsView = reactive({

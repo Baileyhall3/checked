@@ -21,6 +21,20 @@
                         class="border-gray-300 focus:ring-blue-500"
                     />
                 </div>
+                <div class="items-top flex gap-x-2 pb-4 mt-2">
+                    <Checkbox id="isTemplate" v-model="folderData.redirect" />
+                    <div class="grid gap-1.5 leading-none">
+                        <label
+                            for="isTemplate"
+                            class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                            Open Folder
+                        </label>
+                        <p class="text-sm text-muted-foreground">
+                          Check this to open the folder once it has been created.
+                        </p>
+                    </div>
+                </div>
                 <!-- <div class="*:not-first:mt-2" v-if="options.length > 0">
                     <Label>Select Checklists</Label>
                     <MultiSelect
@@ -67,6 +81,8 @@ import { useToast } from "@/components/ui/toast/use-toast";
 import { MultiSelect, type Option } from "@/components/ui/multi-select";
 import { createDataObject, DataObject } from "supabase-dataobject-core";
 import { dataSources } from "@/api/dataObjects";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useRouter } from "vue-router";
 
 const emit = defineEmits<{
     (e: 'folder-created'): void
@@ -79,10 +95,13 @@ const values = ref<Option[]>([]);
 const options = ref<Option[]>([]);
 const isLoaded = ref<boolean>(false);
 
+const router = useRouter();
+
 const folderData = reactive({
     name: '',
     user_id: userStore.userProfile?.id,
-    checklistIds: []
+    checklistIds: [],
+    redirect: true
 });
 
 async function createFolder() {
@@ -105,12 +124,13 @@ async function createFolder() {
             return; 
         }
 
-
         const { data, error } = await supabase.rpc('create_folder', {
             p_name: folderData.name,
             p_user_id: folderData.user_id,
             p_checklist_ids: folderData.checklistIds
         });
+
+        console.log('folder data ', data)
 
         if (error) {
         toast({
@@ -123,6 +143,10 @@ async function createFolder() {
             toast({title: 'Folder created!'});
             emit("folder-created");
             resetChecklistData();
+            if (folderData.redirect) {
+                const newFolderId = data[0].out_id;
+                router.push(`/folder/${newFolderId}`);
+            }
             close();
         }
     } catch (err) {

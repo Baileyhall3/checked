@@ -137,9 +137,7 @@
                                             class="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                                             @keyup.enter="addItem"
                                         />
-                                        <Button @click="addItem" class="text-white rounded-xl">
-                                            Add
-                                        </Button>
+                                        <AddNewBtn class="ms-2" add-terminology="Add" @add-clicked="addItem" />
                                     </div>
                                 </transition>
     
@@ -243,6 +241,7 @@ import Confirm from '@/components/dialogs/Confirm.vue';
 import ChecklistItem from '@/components/custom/UI/ChecklistItem.vue';
 import ChecklistDropdownContent from '@/components/custom/UI/ChecklistDropdownContent.vue';
 import EnterPIN from '@/components/dialogs/EnterPIN.vue';
+import AddNewBtn from '@/components/custom/UI/buttons/AddNewBtn.vue';
 
 const route = useRoute();
 const router = useRouter();
