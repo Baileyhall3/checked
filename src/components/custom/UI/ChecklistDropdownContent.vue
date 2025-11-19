@@ -14,6 +14,10 @@
             <Share2 class="size-4 opacity-60" aria-hidden="true" />
             Share
         </DropdownMenuItem>
+        <DropdownMenuItem class="cursor-pointer" title="Move this checklist to another folder">
+            <MoveLeft class="size-4 opacity-60" aria-hidden="true" />
+            Move
+        </DropdownMenuItem>
         <DropdownMenuItem 
             v-if="!checklist.pin_protected_at"
             class="cursor-pointer" 
@@ -77,7 +81,7 @@
 
 <script setup lang="ts">
 import { DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
-import { TextAlignStart, Trash, RotateCcw, EyeOff, Eye, ListX, Share2, Copy } from "lucide-vue-next";
+import { TextAlignStart, Trash, RotateCcw, EyeOff, Eye, ListX, Share2, Copy, MoveLeft } from "lucide-vue-next";
 import { DataObject, DataObjectRecord } from 'supabase-dataobject-core';
 import ChecklistDetails from '@/components/dialogs/ChecklistDetails.vue';
 import Confirm from '@/components/dialogs/Confirm.vue';

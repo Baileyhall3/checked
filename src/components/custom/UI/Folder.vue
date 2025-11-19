@@ -32,9 +32,20 @@
                     </DropdownMenu>
                 </div>
             </div>
-            <p class="text-muted-foreground text-sm">
-                {{ DateUtils.toRelevantDateOrTime(folder.created_at) }}
-            </p>
+            <div class="flex justify-between items-center w-full">
+                <div>
+                    <p class="text-muted-foreground text-sm">
+                        {{ DateUtils.toRelevantDateOrTime(folder.created_at) }}
+                    </p>
+                </div>
+                <div class="flex items-center text-muted-foreground text-sm" 
+                    :title="`Folder has ${folder.checklist_count} checklist${folder.checklist_count !== 1 ? 's' : ''}`">
+                    <p class="me-1">
+                        {{ folder.checklist_count }}
+                    </p>
+                    <ListTodo :size="16" class="me-2" />
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -43,7 +54,7 @@
 import DateUtils from '@/utils/DateUtils';
 import { DataObject, DataObjectRecord } from 'supabase-dataobject-core';
 import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Ellipsis, Lock } from "lucide-vue-next";
+import { Ellipsis, Lock, ListTodo } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
 import FolderDropdownContent from './FolderDropdownContent.vue';
 

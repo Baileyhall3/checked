@@ -10,8 +10,7 @@
           Organize your life effortlessly using smart checklists and folders.
         </p>
       </div>
-
-
+      
       <!-- Illustration -->
       <div class="w-full max-w-md mb-10">
         <img
@@ -186,7 +185,6 @@ import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 import { ref } from 'vue';
 import RoundedContainer from '@/components/RoundedContainer.vue';
 import { dataSources } from '@/api/dataObjects';
-import DateUtils from '@/utils/DateUtils';
 import UnauthenticatedHeader from '@/components/header/Unauthenticated.vue';
 import { onIonViewDidEnter, onIonViewDidLeave } from '@ionic/vue';
 import SearchBar from '@/components/custom/UI/SearchBar.vue';

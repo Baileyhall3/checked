@@ -18,9 +18,6 @@
                     </RouterLink>
                 </div>
                 <div>
-                    <span class="text-lg font-medium text-muted-foreground">
-                        {{ checklist.items_checked_count }}/{{ checklist.items_count }}
-                    </span>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
@@ -61,6 +58,9 @@
                         class="text-muted-foreground" 
                         title="Checklist is a template"
                     />
+                    <span class="text-sm font-medium text-muted-foreground">
+                        {{ checklist.items_checked_count }}/{{ checklist.items_count }}
+                    </span>
                 </div>
             </div>
         </div>
