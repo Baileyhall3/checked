@@ -41,7 +41,10 @@
                 </BlurredHeader>   
                 <div class="min-h-screen bg-gray-100">
                     <div class="container mx-auto px-6 py-8">
-                        <Empty class="bg-white shadow-lg rounded-xl p-6 mb-8" v-if="folderDs.checklists?.data.length === 0">
+                        <Empty 
+                            v-if="folderDs.checklists?.data.length === 0 && !searchQuery && !folderDs.checklists.state.isRefreshing"
+                            class="bg-white shadow-lg rounded-xl p-6 mb-8" 
+                        >
                             <EmptyHeader>
                                 <EmptyMedia variant="icon">
                                     <ListTodo />
@@ -66,7 +69,7 @@
                         <template v-else>
                             <div class="flex items-center space-x-2 mb-4 justify-between">
                                 <div class="flex gap-2 w-full">
-                                    <SearchBar />
+                                    <SearchBar @search-entered="handleSearchQuery" />
                                     <ButtonGroup>
                                         <ButtonGroup>
                                             <DropdownMenu>
@@ -94,11 +97,11 @@
 
                                                     <DropdownMenuLabel>Show</DropdownMenuLabel>
                                                     <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('completed')">
-                                                        Completed Checklists
+                                                        Completed
                                                         <Check class="size-4" aria-hidden="true" v-if="checklistsView.completed" />
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('deleted')">
-                                                        Deleted Checklists
+                                                        Deleted
                                                         <Check class="size-4" aria-hidden="true" v-if="checklistsView.deleted" />
                                                     </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
@@ -152,17 +155,18 @@
                         </div>
                         <template v-else-if="folderDs.checklistItems && folderDs.checklistItems?.data.length > 0">
                             <div v-for="checklist in folderDs.checklistItems?.groupedData" :key="checklist.groupValue" class="mb-8">
-                                <span class="text-xl font-medium flex items-center">
-                                    <ListTodo class="me-2" aria-hidden="true" />
-                                    <RouterLink :to="`/checklist/${checklist.additionalFields.checklist_id}`" class="cursor-pointer hover:underline">
-                                        {{ checklist.groupValue }}
-                                    </RouterLink>
-                                </span>
-                                <div class="space-y-3">
-                                    <template v-for="(item, index) in checklist.records" :key="item.id">
-                                        <ChecklistItem :item="item" :checklistData="folderDs.checklistItems" />
+                                <ChecklistItemsGroup
+                                    :checklist-data="folderDs.checklistItems"
+                                    :items="checklist.records"
+                                    collapsible
+                                >
+                                    <template #header>
+                                        <ListTodo class="me-2" aria-hidden="true" />
+                                        <RouterLink :to="`/checklist/${checklist.additionalFields.checklist_id}`" class="cursor-pointer hover:underline">
+                                            {{ checklist.groupValue }}
+                                        </RouterLink>
                                     </template>
-                                </div>
+                                </ChecklistItemsGroup>
                             </div>
                         </template>
                     </div>
@@ -220,6 +224,7 @@ import FolderDropdownContent from '@/components/custom/UI/FolderDropdownContent.
 import EnterPIN from '@/components/dialogs/EnterPIN.vue';
 import ChecklistItem from '@/components/custom/UI/ChecklistItem.vue';
 import AddNewBtn from '@/components/custom/UI/buttons/AddNewBtn.vue';
+import ChecklistItemsGroup from '@/components/custom/ChecklistItemsGroup.vue';
 
 const enterPinDialog = ref();
 const createChecklistDialog = ref();
@@ -229,6 +234,8 @@ const { toast } = useToast();
 
 const currentSort = ref<'recent' | 'updated' | 'name'>('recent');
 const listView = ref<'checklists' | 'items'>('checklists');
+
+const searchQuery = ref('');
 
 // type CurrentSort = { name: string, field: string}
 const checklistsView = reactive({
@@ -351,6 +358,11 @@ async function initChecklistsDs() {
     }
 }
 
+function handleSearchQuery(query: string) {
+    searchQuery.value = query;
+    updateWhereClauses();
+}
+
 // TODO: last_updated sort
 function updateSort(sort: 'recent' | 'updated' | 'name') {
     currentSort.value = sort;
@@ -360,6 +372,10 @@ function updateSort(sort: 'recent' | 'updated' | 'name') {
 
 function updateView(key: 'completed' | 'deleted') {
     checklistsView[key] = !checklistsView[key];
+    updateWhereClauses();
+}
+
+function updateWhereClauses() {
     const whereClauses: WhereClause[] = [];
     if (!checklistsView.completed) {
         whereClauses.push({ field: 'is_checked', operator: 'equals', value: false });
@@ -367,14 +383,23 @@ function updateView(key: 'completed' | 'deleted') {
     if (!checklistsView.deleted) {
         whereClauses.push({ field: 'deleted_at', operator: 'isnull' });
     }
-    folderDs.checklists.whereClauses = whereClauses
+    if (searchQuery.value) {
+        whereClauses.push({ field: 'name', operator: 'ilike', value: searchQuery.value });
+    }
+
+    if (listView.value === 'checklists') {
+        folderDs.checklists.whereClauses = whereClauses;
+    } else {
+        folderDs.checklistItems.whereClauses = whereClauses;
+    }
 }
 
-function updateGroupBy(view: 'checklists' | 'items') {
+async function updateGroupBy(view: 'checklists' | 'items') {
     listView.value = view;
     if (view === 'items') {
-        loadChecklistItems();
+        await loadChecklistItems();
     }
+    updateWhereClauses();
 }
 
 async function loadChecklistItems() {

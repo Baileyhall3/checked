@@ -13,8 +13,7 @@
                     <div class="min-h-screen bg-gray-100">
                         <div class="container mx-auto px-6 py-8">
                             <div class="w-full flex mb-4">
-                                <SearchBar />
-                                
+                                <SearchBar @search-entered="handleSearchQuery" />
                                 <ButtonGroup>
                                     <ButtonGroup class="ml-3">
                                         <DropdownMenu>
@@ -254,6 +253,7 @@ const enterPinDialog = ref();
 const isLoading = ref<boolean>(true);
 const { toast } = useToast();
 
+const searchQuery = ref<string>('');
 const currentSort = ref<'recent' | 'name'>('recent');
 const itemsView = reactive({
     progressBar: true,
@@ -442,15 +442,28 @@ function updateSort(sort: 'recent' | 'name') {
 function updateView(key: 'checked' | 'deleted' | 'progressBar' | 'createNew') {
     itemsView[key] = !itemsView[key];
     if (key === 'checked' || key === 'deleted') {
-        const whereClauses: WhereClause[] = [];
-        if (!itemsView.checked) {
-            whereClauses.push({ field: 'is_checked', operator: 'equals', value: false });
-        }
-        if (!itemsView.deleted) {
-            whereClauses.push({ field: 'deleted_at', operator: 'isnull' });
-        }
-        checklistDs.checklistItems.whereClauses = whereClauses
+        updateWhereClauses();
     }
+}
+
+function handleSearchQuery(query: string) {
+    searchQuery.value = query;
+    updateWhereClauses();
+}
+
+function updateWhereClauses() {
+    const whereClauses: WhereClause[] = [];
+    if (!itemsView.checked) {
+        whereClauses.push({ field: 'is_checked', operator: 'equals', value: false });
+    }
+    if (!itemsView.deleted) {
+        whereClauses.push({ field: 'deleted_at', operator: 'isnull' });
+    }
+    if (searchQuery.value) {
+        whereClauses.push({ field: 'name', operator: 'ilike', value: searchQuery.value });
+    }
+
+    checklistDs.checklistItems.whereClauses = whereClauses
 }
 
 async function handleChecklistDelete() {
