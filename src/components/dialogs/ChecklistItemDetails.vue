@@ -59,6 +59,24 @@
                         </p>
                     </div>
 
+                    <div>
+                        <span>
+                            Background Colour
+                        </span>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button
+                                    type="button"
+                                    class="focus-visible:border-ring focus-visible:ring-ring/50 flex size-8 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white transition-[color,box-shadow] outline-none hover:bg-black/80 focus-visible:ring-[3px]"
+                                    aria-label="Change background colour"
+                                >
+                                    <Palette class="size-4" aria-hidden="true" />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <ColoursDropdown :current-colour="props.checklistItem.bg_colour" @colour-selected="setNewColour" />
+                        </DropdownMenu>
+                    </div>
+
                     <!-- <div class="*:not-first:mt-2">
                         <Popover>
                             <PopoverTrigger as-child>
@@ -156,8 +174,10 @@ import { useToast } from "@/components/ui/toast/use-toast";
 import { ref, computed } from 'vue';
 import Textarea from '../ui/textarea/Textarea.vue';
 import DateUtils from '@/utils/DateUtils';
-import { CheckCircle2Icon, CircleIcon, Calendar } from 'lucide-vue-next';
+import { CheckCircle2Icon, CircleIcon, Calendar, Palette } from 'lucide-vue-next';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import ColoursDropdown from '../custom/UI/ColoursDropdown.vue';
 
 const props = defineProps<{
     checklistItem: DataObjectRecord;
@@ -195,6 +215,10 @@ async function saveChanges() {
     } finally {
         isSaving.value = false;        
     }
+}
+
+function setNewColour(colour: string) {
+    props.checklistItem.bg_colour = colour;
 }
 
 const show = () => {

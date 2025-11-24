@@ -71,23 +71,7 @@
                                                 <Palette class="size-4" aria-hidden="true" />
                                             </button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
-                                            <DropdownMenuLabel>Select Colour</DropdownMenuLabel>
-                                            <div class="flex flex-wrap justify-center gap-4 border-t pt-6 w-full p-4">
-                                                <div v-for="colour in selectableColours"
-                                                    :key="colour"
-                                                    class="flex items-center justify-center rounded-full text-white text-lg font-semibold cursor-pointer transition duration-200"
-                                                    @click="setNewColour(colour)"
-                                                    :style="{
-                                                        width: '1rem',
-                                                        height: '1rem',
-                                                        backgroundColor: colour,
-                                                        border: colour === dataSources.user?.currentRecord.bg_colour ? '2px solid black' : 'none'
-                                                    }"
-                                                >
-                                                </div>
-                                            </div>
-                                        </DropdownMenuContent>
+                                        <ColoursDropdown :current-colour="dataSources.user?.currentRecord.bg_colour" @colour-selected="setNewColour" />
                                     </DropdownMenu>
                                 </div>
                             </div>
@@ -139,8 +123,6 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute } from 'vue-router';
-import { createDataObject, DataObject } from 'supabase-dataobject-core';
 import { IonContent, IonPage, onIonViewDidEnter, onIonViewDidLeave } from '@ionic/vue';
 import { dataSources } from '@/api/dataObjects';
 import RoundedContainer from '@/components/RoundedContainer.vue';
@@ -148,17 +130,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LucideImagePlus, Home, Palette } from 'lucide-vue-next';
-import { useTemplateRef, ref } from 'vue';
-import { useObjectUrl } from '@vueuse/core';
+import { ref } from 'vue';
 import { Spinner } from "@/components/ui/spinner";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator ,
-  DropdownMenuLabel
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -171,8 +145,7 @@ import Blurred from '@/components/header/Blurred.vue';
 import ProfileDropdown from '@/components/custom/ProfileDropdown.vue';
 import { userStore } from '@/store/userStore';
 import { useToast } from "@/components/ui/toast/use-toast";
-
-// const current = dataSources.user?.currentRecord;
+import ColoursDropdown from '@/components/custom/UI/ColoursDropdown.vue';
 
 const isSaving = ref<boolean>(false);
 const fileInputRef = ref<HTMLInputElement | null>(null);
@@ -181,23 +154,6 @@ const previewUrl = ref<string | null>(null);
 const selectedFile = ref<File | null>(null);
 
 const { toast } = useToast(); 
-
-const selectableColours = [
-    '#FF6B6B', // red
-    '#6BCB77', // green
-    '#4D96FF', // blue
-    '#FFD93D', // yellow
-    '#FF6EC7', // pink
-    '#9D4EDD', // purple
-    '#00C49A', // teal
-    '#FFA07A', // light salmon
-    '#20B2AA', // light sea green
-    '#778899'  // light slate gray
-]
-
-// onIonViewDidEnter(() => {
-//     dataSources.user?.refresh();
-// });
 
 const handleFileChange = async (event: Event) => {
     hasRemovedProfilePicture.value = false;

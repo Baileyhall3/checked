@@ -1,7 +1,10 @@
 <template>
     <Button @click="handleBtnClick" class="text-white rounded-xl" :class="props.class">
         <Plus v-if="isMobile" :size="16" aria-hidden="true" />
-        <span v-else>{{ props.addTerminology }}</span>
+        <template v-else>
+            <span>{{ props.addTerminology }}</span>
+            <slot></slot>
+        </template>
     </Button>
 </template>
 

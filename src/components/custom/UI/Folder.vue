@@ -35,7 +35,7 @@
             <div class="flex justify-between items-center w-full">
                 <div>
                     <p class="text-muted-foreground text-sm">
-                        {{ DateUtils.toRelevantDateOrTime(folder.created_at) }}
+                        {{ DateUtils.toRelevantDateOrTime(folder.content_updated_at ?? folder.created_at) }}
                     </p>
                 </div>
                 <div class="flex items-center text-muted-foreground text-sm" 

@@ -338,11 +338,6 @@ async function createDataObjects(id: number) {
 
         if (checklistData?.data.length) {
             checklistDs.checklist = checklistData;
-            // checklistDs.checklist?.on("fieldChanged", (record, updates) => {
-            //     if ('name' in updates) {
-            //         checklistDs.checklist?.saveChanges();
-            //     }
-            // })
         }
 
         if (checklistDs.checklist?.currentRecord?.pin_protected_at) {
@@ -401,12 +396,6 @@ async function initOthersDs() {
             sort: { field: "created_at", direction: 'desc' },
             fields: checklistItemsFields
         }); 
-
-        checklistDs.checklistItems?.on("fieldChanged", (record, updates) => {
-            if ('name' in updates) {
-                checklistDs.checklistItems?.saveChanges(); // causing issues with saving in details dialog
-            }
-        });
     } catch (err) {
         console.error(err);
     } finally {

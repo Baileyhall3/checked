@@ -117,6 +117,9 @@ async function tryDeleteFolder() {
 async function deleteFolder() {
     const hasDeleted = await props.folderData.delete(props.folder.id);
     if (hasDeleted) {
+        toast({
+            title: 'Folder deleted successfully.',
+        });
         redirectToHome();
     }
 }

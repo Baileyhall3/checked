@@ -77,21 +77,17 @@
               <template v-else>
                 <div class="flex items-center space-x-2 mb-8">
                     <div class="w-full">
-                      <SearchBar />
+                      <SearchBar @search-entered="handleSearchQuery" />
                     </div>
-                    <!-- <Button @click="createChecklistDialog.show()" class="text-white rounded-xl">
-                        Add New
-                    </Button> -->
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button>
-                          Add New
+                        <AddNewBtn add-terminology="Add...">
                           <ChevronDown
                             :size="16"
                             class="-me-1 opacity-60 rounded-xl"
                             aria-hidden="true"
                           />
-                        </Button>
+                        </AddNewBtn>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
                         <DropdownMenuItem @click="createChecklistDialog.show()" class="cursor-pointer"> 
@@ -191,9 +187,11 @@ import SearchBar from '@/components/custom/UI/SearchBar.vue';
 import CreateFolder from '@/components/dialogs/CreateFolder.vue';
 import Checklist from '@/components/custom/UI/Checklist.vue';
 import Folder from '@/components/custom/UI/Folder.vue';
+import AddNewBtn from '@/components/custom/UI/buttons/AddNewBtn.vue';
 
 const createChecklistDialog = ref();
 const createFolderDialog = ref();
+const searchQuery = ref<string>('');
 
 function refreshChecklists() {
   dataSources.myChecklists?.refresh();
@@ -207,6 +205,10 @@ function refreshFolders() {
 onIonViewDidEnter(() => {
   refreshChecklists();
 });
+
+function handleSearchQuery(query: string) {
+  searchQuery.value = query;
+}
 </script>
 
 <style scoped>

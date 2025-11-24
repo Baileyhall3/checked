@@ -40,6 +40,7 @@ export const dataSources = reactive({
     myFolders: null as DataObject | null,
     checklistsNoFolderLkp: null as DataObject | null,
     deletedChecklists: null as DataObject | null,
+    templateChecklists: null as DataObject | null
 });
 
 /**
@@ -115,7 +116,7 @@ export async function initDataObjects(url: string, key: string, currentUserId: n
             childBindingField: 'user_id',
             masterBindingField: 'id'
         },
-        sort: { field: "created_at", direction: 'desc' },
+        sort: { field: "content_updated_at", direction: 'asc' },
         fields: folderFields
     }); 
 
@@ -126,6 +127,18 @@ export async function initDataObjects(url: string, key: string, currentUserId: n
         whereClauses: [
             { field: 'owner_id', operator: 'equals', value: currentUserId },
             { field: 'folder_id', operator: 'isnull' }
+        ],
+        fields: checklistFields
+    }); 
+
+    dataSources.templateChecklists = await createDataObject('template_checklists', {
+        viewName: 'checklists_view',
+        tableName: 'checklists',
+        autoRefresh: false,
+        whereClauses: [
+            { field: 'owner_id', operator: 'equals', value: currentUserId },
+            { field: 'folder_id', operator: 'isnull' },
+            { field: 'is_template', operator: 'equals', value: true }
         ],
         fields: checklistFields
     }); 
@@ -206,5 +219,6 @@ export const folderFields: DataObjectField[] = [
     { name: "checklist_count" },
     { name: "pin_protected_at" },
     { name: "pin_hash" },
-    { name: "pin_type" }
+    { name: "pin_type" },
+    { name: "content_updated_at" }
 ]

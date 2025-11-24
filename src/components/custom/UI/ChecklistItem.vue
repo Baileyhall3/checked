@@ -32,6 +32,7 @@
                     :title="item.name"
                     class="flex-1 bg-transparent border-none focus:outline-none text-gray-800 w-full truncate"
                     :class="{ 'text-gray-800' : item.deleted_at || item.is_checked }"
+                    @blur="saveChanges"
                 />
             </div>
             <DropdownMenu>
@@ -184,6 +185,10 @@ function setDeleted() {
         title: 'Item deleted.',
         description: 'Deleted items are recoverable for 30 days.',
     });
+}
+
+function saveChanges() {
+    props.checklistData.saveChanges();
 }
 
 function tryHardDeleteItem() {
