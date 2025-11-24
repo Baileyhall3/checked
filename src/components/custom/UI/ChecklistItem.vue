@@ -1,5 +1,8 @@
 <template>
-    <div class="bg-white rounded-2xl shadow-sm px-4 py-3 transition hover:shadow-md">
+    <div 
+        class="checklist-item bg-white rounded-2xl shadow-sm px-4 py-3 pl-5 transition hover:shadow-md relative"
+        :style="{ '--item-colour': item.bg_colour }"
+    >
         <div class="flex justify-between items-center">
             <template v-if="itemIsDisabled">
                 <Trash 
@@ -32,7 +35,6 @@
                     :title="item.name"
                     class="flex-1 bg-transparent border-none focus:outline-none text-gray-800 w-full truncate"
                     :class="{ 'text-gray-800' : item.deleted_at || item.is_checked }"
-                    @blur="saveChanges"
                 />
             </div>
             <DropdownMenu>
@@ -187,10 +189,6 @@ function setDeleted() {
     });
 }
 
-function saveChanges() {
-    props.checklistData.saveChanges();
-}
-
 function tryHardDeleteItem() {
     confirmDialog.value.show();
 }
@@ -205,3 +203,22 @@ function recoverItem() {
     });
 }
 </script>
+
+<style scoped>
+.checklist-item::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 8px;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        var(--item-colour),
+        color-mix(in srgb, var(--item-colour), white 30%)
+    );
+    border-top-left-radius: 1rem;
+    border-bottom-left-radius: 1rem;
+}
+
+</style>

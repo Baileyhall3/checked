@@ -2,7 +2,10 @@
     <Dialog v-model:open="isDialogOpen">
         <DialogContent class="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
             <DialogHeader class="contents space-y-0 text-left">
-                <div class="px-6 py-2 text-base border-b">
+                <div 
+                    class="header-accent px-6 py-2 text-base border-b relative"
+                    :style="{ '--item-colour': props.checklistItem.bg_colour }"
+                >
                     <div class="flex justify-between items-start">
                     <button
                         v-if="!props.checklistItem.deleted_at"
@@ -27,12 +30,6 @@
                     </div>
                 </div>
             </DialogHeader>
-
-            <!-- <DialogDescription class="px-6">
-                <span class="italic">
-                    Created by {{ props.checklistItem.created_by_username }} at {{ DateUtils.toDateTime(props.checklistItem.created_at) }}
-                </span>
-            </DialogDescription> -->
 
             <div class="px-6 pt-4 pb-6">
                 <form class="space-y-4 pb-4">
@@ -231,3 +228,17 @@ const close = () => {
 
 defineExpose({show, close})
 </script>
+
+<style scoped>
+.header-accent::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 10px;                 /* Thickness of the coloured strip */
+    height: 100%;
+    background: var(--item-colour);
+    border-top-left-radius: 0.75rem;     /* Match your rounded style if needed */
+}
+
+</style>

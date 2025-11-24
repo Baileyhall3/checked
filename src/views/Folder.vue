@@ -93,6 +93,10 @@
                                                         Name
                                                         <Check class="size-4" aria-hidden="true" v-if="currentSort === 'name'" />
                                                     </DropdownMenuItem>
+                                                    <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('created')">
+                                                        Date Created
+                                                        <Check class="size-4" aria-hidden="true" v-if="currentSort === 'created'" />
+                                                    </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
 
                                                     <DropdownMenuLabel>Show</DropdownMenuLabel>
@@ -232,7 +236,7 @@ const route = useRoute();
 const isLoading = ref<boolean>(true);
 const { toast } = useToast();
 
-const currentSort = ref<'recent' | 'updated' | 'name'>('recent');
+const currentSort = ref<'recent' | 'created' | 'name'>('recent');
 const listView = ref<'checklists' | 'items'>('checklists');
 
 const searchQuery = ref('');
@@ -328,7 +332,7 @@ async function initChecklistsDs() {
             whereClauses: [
                 { field: 'deleted_at', operator: 'isnull' }
             ],
-            sort: { field: "created_at", direction: 'desc' },
+            sort: { field: "items_updated_at", direction: 'desc' },
             fields: checklistFields,
         }); 
 
@@ -363,10 +367,16 @@ function handleSearchQuery(query: string) {
     updateWhereClauses();
 }
 
-// TODO: last_updated sort
-function updateSort(sort: 'recent' | 'updated' | 'name') {
+// TODO: sort direction
+function updateSort(sort: 'recent' | 'created' | 'name') {
     currentSort.value = sort;
-    const sortConfig: SortConfig = sort === 'recent' ? { field: "created_at", direction: 'desc' } : { field: "name", direction: 'asc' };
+    let sortField = 'items_updated_at';
+    if (sort === 'created') {
+        sortField = 'created_at';
+    } else if (sort === 'name') {
+        sortField = 'name';
+    }
+    const sortConfig: SortConfig = { field: sortField, direction: 'desc' };
     folderDs.checklists?.updateSort(sortConfig);
 }
 
