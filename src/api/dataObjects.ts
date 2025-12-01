@@ -116,7 +116,7 @@ export async function initDataObjects(url: string, key: string, currentUserId: n
             childBindingField: 'user_id',
             masterBindingField: 'id'
         },
-        sort: { field: "content_updated_at", direction: 'asc' },
+        sort: { field: "content_updated_at", direction: 'desc' }, // TODO: handle null values
         fields: folderFields
     }); 
 
@@ -207,6 +207,13 @@ export const checklistFields: DataObjectField[] = [
     { name: "pin_set_by_id" },
     { name: "pin_set_by_username" },
     { name: "pin_type" },
+    { name: "created_by_id" },
+    { name: "created_by_username" },
+    { name: "copied_from_id" },
+    { name: "copied_from_name" },
+    { name: "completed_at" },
+    { name: "completed_by_id" },
+    { name: "completed_by_username" },
 ]
 
 export const folderFields: DataObjectField[] = [

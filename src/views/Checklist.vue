@@ -294,6 +294,7 @@ const breadcrumbs = computed((): IBreadcrumbItem[] => {
             dropdown: checklistDs.folderChecklistsLkp?.data?.map(c => ({
                 label: c.name,
                 href: `/checklist/${c.id}`,
+                isCurrent: c.id === checklistDs.checklist?.currentRecord?.id
             })),
         });
     }

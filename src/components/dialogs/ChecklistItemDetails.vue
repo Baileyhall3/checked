@@ -3,7 +3,7 @@
         <DialogContent class="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
             <DialogHeader class="contents space-y-0 text-left">
                 <div 
-                    class="header-accent px-6 py-2 text-base border-b relative"
+                    class=" px-6 py-2 text-base border-b relative"
                     :style="{ '--item-colour': props.checklistItem.bg_colour }"
                 >
                     <div class="flex justify-between items-start">
@@ -64,7 +64,8 @@
                             <DropdownMenuTrigger asChild>
                                 <button
                                     type="button"
-                                    class="focus-visible:border-ring focus-visible:ring-ring/50 flex size-8 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white transition-[color,box-shadow] outline-none hover:bg-black/80 focus-visible:ring-[3px]"
+                                    :style="{ backgroundColor: props.checklistItem.bg_colour }"
+                                    class="focus-visible:border-ring focus-visible:ring-ring/50 flex size-8 cursor-pointer items-center justify-center rounded-full text-white transition-[color,box-shadow] outline-none hover:opacity-80 focus-visible:ring-[3px]"
                                     aria-label="Change background colour"
                                 >
                                     <Palette class="size-4" aria-hidden="true" />

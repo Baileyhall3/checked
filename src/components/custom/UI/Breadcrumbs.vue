@@ -37,10 +37,12 @@
                             <ChevronDown class="size-4" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start">
+                            <DropdownMenuLabel>Folder</DropdownMenuLabel>
                             <template v-for="subItem in item.dropdown" :key="subItem.href">
                                 <RouterLink :to="subItem.href">
-                                    <DropdownMenuItem class="cursor-pointer">
+                                    <DropdownMenuItem class="cursor-pointer justify-between">
                                         {{ subItem.label }}
+                                        <Check class="size-4" aria-hidden="true" v-if="subItem.isCurrent" />
                                     </DropdownMenuItem>
                                 </RouterLink>
                             </template>
@@ -69,17 +71,24 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-vue-next";
+import { ChevronDown, Check } from "lucide-vue-next";
 import type { Component } from "vue";
 import { computed } from 'vue';
 import { useWindowSize } from "@vueuse/core";
+
+export interface IBreadcrumbDropdownOption {
+    createNewFn?: () => void;
+    includeSearchBar?: boolean;
+}
 
 export interface IBreadcrumbItem {
     href: string;
     icon: Component;
     label: string;
-    dropdown?: IBreadcrumbItem[]
+    isCurrent?: boolean;
+    dropdown?: IBreadcrumbItem[];
 }
 
 const props = defineProps<{
