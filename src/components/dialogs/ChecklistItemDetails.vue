@@ -64,7 +64,7 @@
                             <DropdownMenuTrigger asChild>
                                 <button
                                     type="button"
-                                    :style="{ backgroundColor: props.checklistItem.bg_colour }"
+                                    :style="{ backgroundColor: props.checklistItem.bg_colour ?? 'rgb(0 0 0 / 0.6)' }"
                                     class="focus-visible:border-ring focus-visible:ring-ring/50 flex size-8 cursor-pointer items-center justify-center rounded-full text-white transition-[color,box-shadow] outline-none hover:opacity-80 focus-visible:ring-[3px]"
                                     aria-label="Change background colour"
                                 >
@@ -216,7 +216,11 @@ async function saveChanges() {
 }
 
 function setNewColour(colour: string) {
-    props.checklistItem.bg_colour = colour;
+    if (props.checklistItem.bg_colour === colour) {
+        props.checklistItem.bg_colour = null;
+    } else {
+        props.checklistItem.bg_colour = colour;
+    }
 }
 
 const show = () => {
