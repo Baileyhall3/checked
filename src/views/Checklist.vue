@@ -251,7 +251,7 @@ const enterPinDialog = ref();
 const isLoading = ref<boolean>(true);
 const { toast } = useToast();
 
-const layout = ref<any>();
+const layout = ref<ChecklistLayout>();
 const preferences = ref<any>();
 
 const searchQuery = ref<string>('');

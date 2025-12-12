@@ -5,34 +5,6 @@
             <template v-else>
                 <BlurredHeader>
                     <Breadcrumbs :items="breadcrumbs" />
-                    <!-- <div class="w-full flex">
-                        <SearchBar />
-                        
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    size="icon"
-                                    variant="secondary"
-                                    class="rounded-xl shadow-none ml-3"
-                                    aria-label="Open sort"
-                                >
-                                    <ArrowUpDown :size="16" aria-hidden="true" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('recent')">
-                                    Most Recent
-                                    <Check class="size-4" aria-hidden="true" v-if="currentSort === 'recent'" />
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('name')">
-                                    Name
-                                    <Check class="size-4" aria-hidden="true" v-if="currentSort === 'name'" />
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div> -->
                     <template #rightSide>
                         <div class="flex items-center gap-2">
                             <ProfileDropdown />
@@ -87,37 +59,37 @@
                                                     <DropdownMenuLabel>Sort by</DropdownMenuLabel>
                                                     <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('recent')">
                                                         Most Recent
-                                                        <Check class="size-4" aria-hidden="true" v-if="currentSort === 'recent'" />
+                                                        <Check class="size-4" aria-hidden="true" v-if="preferences.currentSort === 'recent'" />
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('name')">
                                                         Name
-                                                        <Check class="size-4" aria-hidden="true" v-if="currentSort === 'name'" />
+                                                        <Check class="size-4" aria-hidden="true" v-if="preferences.currentSort === 'name'" />
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('created')">
                                                         Date Created
-                                                        <Check class="size-4" aria-hidden="true" v-if="currentSort === 'created'" />
+                                                        <Check class="size-4" aria-hidden="true" v-if="preferences.currentSort === 'created'" />
                                                     </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
 
                                                     <DropdownMenuLabel>Show</DropdownMenuLabel>
                                                     <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('completed')">
                                                         Completed
-                                                        <Check class="size-4" aria-hidden="true" v-if="checklistsView.completed" />
+                                                        <Check class="size-4" aria-hidden="true" v-if="preferences.checklistsView.completed" />
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('deleted')">
                                                         Deleted
-                                                        <Check class="size-4" aria-hidden="true" v-if="checklistsView.deleted" />
+                                                        <Check class="size-4" aria-hidden="true" v-if="preferences.checklistsView.deleted" />
                                                     </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
 
                                                     <DropdownMenuLabel>View</DropdownMenuLabel>
                                                     <DropdownMenuItem class="cursor-pointer justify-between" @click="updateGroupBy('checklists')">
                                                         Checklists
-                                                        <Check class="size-4" aria-hidden="true" v-if="listView === 'checklists'" />
+                                                        <Check class="size-4" aria-hidden="true" v-if="preferences.listView === 'checklists'" />
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem class="cursor-pointer justify-between" @click="updateGroupBy('items')">
                                                         Checklist Items
-                                                        <Check class="size-4" aria-hidden="true" v-if="listView === 'items'" />
+                                                        <Check class="size-4" aria-hidden="true" v-if="preferences.listView === 'items'" />
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -146,7 +118,7 @@
                             </div>
                         </template>
     
-                        <div v-if="folderDs.checklists && folderDs.checklists?.data.length > 0 && listView == 'checklists'">
+                        <div v-if="folderDs.checklists && folderDs.checklists?.data.length > 0 && preferences.listView == 'checklists'">
                             <RoundedContainer class=" flex flex-col">
                                 <template v-for="(checklist, index) in folderDs.checklists?.data" :key="checklist.id">
                                     <Checklist 
@@ -226,9 +198,10 @@ import {
 import Checklist from '@/components/custom/UI/Checklist.vue';
 import FolderDropdownContent from '@/components/custom/UI/FolderDropdownContent.vue';
 import EnterPIN from '@/components/dialogs/EnterPIN.vue';
-import ChecklistItem from '@/components/custom/UI/ChecklistItem.vue';
 import AddNewBtn from '@/components/custom/UI/buttons/AddNewBtn.vue';
 import ChecklistItemsGroup from '@/components/custom/ChecklistItemsGroup.vue';
+import FolderLayout from '@/layouts/FolderLayoutManager';
+import type { FolderSort, FolderListView, ChecklistsView } from '@/layouts/FolderLayoutManager';
 
 const enterPinDialog = ref();
 const createChecklistDialog = ref();
@@ -236,16 +209,10 @@ const route = useRoute();
 const isLoading = ref<boolean>(true);
 const { toast } = useToast();
 
-const currentSort = ref<'recent' | 'created' | 'name'>('recent');
-const listView = ref<'checklists' | 'items'>('checklists');
+const layout = ref<FolderLayout>();
+const preferences = ref<any>();
 
 const searchQuery = ref('');
-
-// type CurrentSort = { name: string, field: string}
-const checklistsView = reactive({
-    completed: true,
-    deleted: false,
-});
 
 const folderDs = reactive({
     folder: null as DataObject | null,
@@ -277,6 +244,16 @@ onIonViewDidEnter(() => {
         console.error('Invalid folder ID:', idParam)
         return
     }
+
+    const folderLayout = new FolderLayout({
+        key: `folder-${id}-layout`, 
+        onPreferenceUpdated: (preference, value) => {
+            console.log('pref updated ', preference, value)
+        }
+    });
+
+    layout.value = folderLayout;
+    preferences.value = folderLayout.preferences;
 
     createDataObjects(id);
 });
@@ -368,8 +345,8 @@ function handleSearchQuery(query: string) {
 }
 
 // TODO: sort direction
-function updateSort(sort: 'recent' | 'created' | 'name') {
-    currentSort.value = sort;
+function updateSort(sort: FolderSort) {
+    layout.value?.updateSort(sort);
     let sortField = 'items_updated_at';
     if (sort === 'created') {
         sortField = 'created_at';
@@ -380,32 +357,32 @@ function updateSort(sort: 'recent' | 'created' | 'name') {
     folderDs.checklists?.updateSort(sortConfig);
 }
 
-function updateView(key: 'completed' | 'deleted') {
-    checklistsView[key] = !checklistsView[key];
+function updateView(key: keyof ChecklistsView) {
+    layout.value?.toggleView(key);
     updateWhereClauses();
 }
 
 function updateWhereClauses() {
     const whereClauses: WhereClause[] = [];
-    if (!checklistsView.completed) {
+    if (!preferences.value.checklistsView.completed) {
         whereClauses.push({ field: 'is_checked', operator: 'equals', value: false });
     }
-    if (!checklistsView.deleted) {
+    if (!preferences.value.checklistsView.deleted) {
         whereClauses.push({ field: 'deleted_at', operator: 'isnull' });
     }
     if (searchQuery.value) {
         whereClauses.push({ field: 'name', operator: 'ilike', value: searchQuery.value });
     }
 
-    if (listView.value === 'checklists') {
+    if (preferences.value.listView === 'checklists') {
         folderDs.checklists.whereClauses = whereClauses;
     } else {
         folderDs.checklistItems.whereClauses = whereClauses;
     }
 }
 
-async function updateGroupBy(view: 'checklists' | 'items') {
-    listView.value = view;
+async function updateGroupBy(view: FolderListView) {
+    layout.value?.updateGroupBy(view);
     if (view === 'items') {
         await loadChecklistItems();
     }
