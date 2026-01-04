@@ -101,7 +101,8 @@
                                         class="border-gray-300 focus:ring-blue-500"
                                     />
                                 </div>
-                                <div class="w-full justify-end flex">
+                                
+                                <div class="w-full justify-end flex gap-2">
                                     <Button type="button" variant="secondary" :disabled="!dataSources.user?.hasChanges" class="border" @click="dataSources.user?.cancelChanges()">
                                         Cancel
                                     </Button>
@@ -111,6 +112,53 @@
                                     </Button>
                                 </div>
                             </form>
+                        </RoundedContainer>
+                        <RoundedContainer class="p-4 mt-6">
+                            <div class="text-lg font-medium mb-3">Start page</div>
+                            <div class="space-y-3">
+                                <!-- Last opened -->
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="startPage"
+                                        value="last_opened"
+                                        :checked="dataSources.user.currentRecord.default_view_type === 'last_opened'"
+                                        @change="setStartPageLastOpened"
+                                    />
+                                    <div>
+                                        <div class="font-medium">Last opened</div>
+                                        <div class="text-sm text-muted-foreground">
+                                            Open where you left off
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <!-- Specific item -->
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="startPage"
+                                        value="specific"
+                                        :checked="isSpecificDefault"
+                                        @change="setStartPageSpecific"
+                                    />
+                                    <div class="flex-1">
+                                        <div class="font-medium flex items-center gap-2">
+                                        <Star class="size-4 text-yellow-400" />
+                                            Specific item
+                                        </div>
+
+                                        <div class="text-sm text-muted-foreground">
+                                            <template v-if="defaultItemLabel">
+                                                {{ defaultItemLabel }}
+                                            </template>
+                                            <template v-else>
+                                                No item selected
+                                            </template>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
                         </RoundedContainer>
                         <!-- <RoundedContainer class="p-2">
                             <div class="text-lg font-medium">Actions</div>
@@ -129,8 +177,8 @@ import RoundedContainer from '@/components/RoundedContainer.vue';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LucideImagePlus, Home, Palette } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { LucideImagePlus, Home, Palette, Star } from 'lucide-vue-next';
+import { ref, computed } from 'vue';
 import { Spinner } from "@/components/ui/spinner";
 import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import {
@@ -152,6 +200,8 @@ const fileInputRef = ref<HTMLInputElement | null>(null);
 const hasRemovedProfilePicture = ref<boolean>(false);
 const previewUrl = ref<string | null>(null);
 const selectedFile = ref<File | null>(null);
+            
+const user = computed(() => dataSources.user?.currentRecord);
 
 const { toast } = useToast(); 
 
@@ -188,5 +238,47 @@ function setNewColour(colour: string) {
     if (dataSources.user?.currentRecord) {
         dataSources.user.currentRecord.bg_colour = colour;
     }
+}
+
+const isSpecificDefault = computed(() =>
+    user.value?.default_view_type === 'checklist' ||
+    user.value?.default_view_type === 'folder'
+);
+
+const defaultItemLabel = computed(() => {
+    if (!user.value) return null;
+
+    if (user.value.default_view_type === 'checklist') {
+        return `Checklist: ${user.value.default_view_id}`;
+        // later you can resolve the actual name
+    }
+
+    if (user.value.default_view_type === 'folder') {
+        return `Folder: ${user.value.default_view_id}`;
+    }
+
+    return null;
+});
+
+function setStartPageLastOpened() {
+  if (!user.value) return;
+
+  user.value.default_view_type = 'last_opened';
+  user.value.default_view_id = null;
+}
+
+function setStartPageSpecific() {
+  if (!user.value) return;
+
+  // If they already have a starred item, do nothing
+  if (isSpecificDefault.value) return;
+
+  toast({
+    title: 'Choose a default item',
+    description: 'Use the star on a checklist or folder to set it as your start page.'
+  });
+
+  // Revert radio visually if needed
+  user.value.default_view_type = 'last_opened';
 }
 </script>

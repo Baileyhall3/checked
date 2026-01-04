@@ -148,6 +148,20 @@ export async function initDataObjects(url: string, key: string, currentUserId: n
 
 
 // #region Fields
+const userFields : DataObjectField[] = [
+    { name: "id" },
+    { name: "prim_key" },
+    { name: "username" },
+    { name: "email" },
+    { name: "created_at" },
+    { name: "profile_picture_url" },
+    { name: "auth_id" },
+    { name: "bg_colour" },
+    { name: "default_view_type" },
+    { name: "default_view_id" },
+    { name: "last_opened_type" },
+    { name: "last_opened_id" },
+];
 
 export const checklistItemsFields: DataObjectField[] = [
     { name: "id" },

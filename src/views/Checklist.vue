@@ -308,7 +308,13 @@ onIonViewDidEnter(() => {
 
     if (isNaN(id)) {
         console.error('Invalid checklist ID:', idParam)
-        return
+        return;
+    }
+
+    if (dataSources.user?.currentRecord) {
+        dataSources.user.currentRecord.last_opened_type = 'checklist';
+        dataSources.user.currentRecord.last_opened_id = id;
+        dataSources.user?.saveChanges();
     }
 
     const checklistLayout = new ChecklistLayout({
