@@ -65,8 +65,9 @@
                         class="text-muted-foreground" 
                         title="Checklist is a template"
                     />
-                    <span class="text-sm font-medium text-muted-foreground">
+                    <span class="text-sm font-medium text-muted-foreground flex items-center">
                         {{ checklist.items_checked_count }}/{{ checklist.items_count }}
+                        <CircleCheckBig :size="14" class="ms-1" />
                     </span>
                 </div>
             </div>
@@ -97,7 +98,7 @@
 import DateUtils from '@/utils/DateUtils';
 import { DataObject, DataObjectRecord } from 'supabase-dataobject-core';
 import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Trash, Ellipsis, Folder, Lock, LayoutList } from "lucide-vue-next";
+import { Trash, Ellipsis, Folder, Lock, LayoutList, CircleCheckBig } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
 import ChecklistDetails from '@/components/dialogs/ChecklistDetails.vue';
 import Confirm from '@/components/dialogs/Confirm.vue';

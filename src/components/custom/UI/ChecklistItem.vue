@@ -91,9 +91,19 @@
         <!-- <span v-if="item.deleted_at" class="text-red-600 italic text-sm">
             Deleted {{ DateUtils.toDateTime(item.deleted_at) }} by {{ item.deleted_by_username }}
         </span> -->
-        <span class="text-sm text-gray-600">
-            {{ item.description }}
-        </span>
+        <div class="flex justify-between items-start">
+            <div class="text-sm text-gray-600">
+                <div
+                    class="prose prose-sm
+                        prose-ul:list-disc prose-ul:list-inside prose-ul:pl-0
+                        prose-ol:list-decimal prose-ol:list-inside prose-ol:pl-0"
+                    v-html="item.description"
+                ></div>
+            </div>
+            <!-- <div>
+                <Text class="text-gray-600 mr-2" :size="16" />
+            </div> -->
+        </div>
     </div>
 
     <ChecklistItemDetails 
@@ -121,7 +131,8 @@ import {
     CheckCircle2Icon, 
     Ellipsis, 
     Lock,
-    LockOpen
+    LockOpen,
+    Text
 } from "lucide-vue-next";
 import {
   DropdownMenu,
@@ -140,6 +151,7 @@ const props = defineProps<{
     item: DataObjectRecord;
     checklistData: DataObject;
     disabled?: boolean;
+
 }>();
 
 const emit = defineEmits<{
@@ -220,5 +232,16 @@ function recoverItem() {
     border-top-left-radius: 1rem;
     border-bottom-left-radius: 1rem;
 }
+</style>
+<style>
+    .prose ul {
+      list-style: disc;
+      padding-left: 1.5rem;
+    }
+    
+    .prose ol {
+      list-style: decimal;
+      padding-left: 1.5rem;
+    }
 
 </style>

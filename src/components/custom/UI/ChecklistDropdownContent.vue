@@ -14,7 +14,7 @@
             <Share2 class="size-4 opacity-60" aria-hidden="true" />
             Share
         </DropdownMenuItem>
-        <DropdownMenuItem class="cursor-pointer" title="Move this checklist to another folder">
+        <DropdownMenuItem class="cursor-pointer" title="Move this checklist to another folder" @click="moveChecklistDialog.show()">
             <MoveLeft class="size-4 opacity-60" aria-hidden="true" />
             Move
         </DropdownMenuItem>
@@ -77,6 +77,7 @@
     <PINSetup ref="pinSetupDialog" :item="props.checklist" :data-object="props.checklistData" type="checklist" />
     <PINRemove ref="pinRemoveDialog" :item="props.checklist" :data-object="props.checklistData" type="checklist" />
     <CopyChecklist ref="copyChecklistDialog" :checklist="props.checklist" @checklist-copied="handleChecklistCopied" />
+    <MoveChecklist ref="moveChecklistDialog" :checklist="props.checklist" @checklist-moved="handleChecklistMoved" />
 </template>
 
 <script setup lang="ts">
@@ -90,6 +91,7 @@ import { useToast } from '@/components/ui/toast';
 import PINSetup from "@/components/dialogs/PINSetup.vue";
 import PINRemove from "@/components/dialogs/PINRemove.vue";
 import CopyChecklist from "@/components/dialogs/CopyChecklist.vue";
+import MoveChecklist from "@/components/dialogs/MoveChecklist.vue";
 
 const props = defineProps<{
     checklist: DataObjectRecord;
@@ -103,6 +105,7 @@ const hardDeleteConfirmDialog = ref();
 const pinSetupDialog = ref();
 const pinRemoveDialog = ref();
 const copyChecklistDialog = ref();
+const moveChecklistDialog = ref();
 
 const { toast } = useToast();
 
@@ -132,5 +135,9 @@ function recoverItem() {
 
 function handleChecklistCopied() {
     props.checklistData.refresh();
+}
+
+function handleChecklistMoved(newFolderId: number) {
+    // redirect
 }
 </script>

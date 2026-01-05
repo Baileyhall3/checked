@@ -33,27 +33,9 @@
 
             <div class="px-6 pt-4 pb-6">
                 <form class="space-y-4 pb-4">
-                    <div class="*:not-first:mt-2">
-                        <Label for="description">Description</Label>
-                        <Textarea
-                            if="description"
-                            placeholder="Add a description to this item"
-                            v-model="props.checklistItem.description"
-                            :maxLength="maxLength"
-                            aria-describedby="desc"
-                            style="min-height: 8rem;"
-                        />
-                        <p
-                            id="desc"
-                            class="text-muted-foreground mt-2 text-right text-xs"
-                            role="status"
-                            aria-live="polite"
-                        >
-                            <span class="tabular-nums">
-                                {{ maxLength - characterCount }}
-                            </span>
-                            characters left
-                        </p>
+                    <div class="flex flex-col">
+                        <span class="font-medium">Description</span>
+                        <TextEditor v-model="props.checklistItem.description" />
                     </div>
 
                     <div>
@@ -176,6 +158,7 @@ import { CheckCircle2Icon, CircleIcon, Calendar, Palette } from 'lucide-vue-next
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import ColoursDropdown from '../custom/UI/ColoursDropdown.vue';
+import TextEditor from '../custom/UI/input/TextEditor.vue';
 
 const props = defineProps<{
     checklistItem: DataObjectRecord;
@@ -196,8 +179,8 @@ const autoResize = (ev) => {
     el.style.height = `${el.scrollHeight + 1}px`;
 };
 
-const maxLength = 180;
-const characterCount = computed(() => props.checklistItem.description?.length ?? maxLength);
+// const maxLength = 180;
+// const characterCount = computed(() => props.checklistItem.description?.length ?? maxLength);
 
 function toggleCheck(item: any) {
     item.is_checked = !item.is_checked;
