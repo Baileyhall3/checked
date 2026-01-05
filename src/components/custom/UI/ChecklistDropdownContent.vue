@@ -6,6 +6,16 @@
             Details
         </DropdownMenuItem>
         <DropdownMenuSeparator />
+        <DropdownMenuItem class="cursor-pointer" @click="setChecklistDefault()">
+            <Star 
+                class="size-4 opacity-60" 
+                aria-hidden="true" 
+                :class="isDefaultChecklist
+                    ? 'fill-yellow-400 text-yellow-400'
+                    : 'text-muted-foreground'"
+            />
+            {{ isDefaultChecklist ? 'Remove' : 'Set' }} Default
+        </DropdownMenuItem>
         <DropdownMenuItem class="cursor-pointer" @click="copyChecklistDialog.show()">
             <Copy class="size-4 opacity-60" aria-hidden="true" />
             Copy
@@ -81,15 +91,16 @@
 
 <script setup lang="ts">
 import { DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
-import { TextAlignStart, Trash, RotateCcw, EyeOff, Eye, ListX, Share2, Copy, MoveLeft } from "lucide-vue-next";
+import { TextAlignStart, Trash, RotateCcw, EyeOff, Eye, ListX, Share2, Copy, MoveLeft, Star } from "lucide-vue-next";
 import { DataObject, DataObjectRecord } from 'supabase-dataobject-core';
 import ChecklistDetails from '@/components/dialogs/ChecklistDetails.vue';
 import Confirm from '@/components/dialogs/Confirm.vue';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useToast } from '@/components/ui/toast';
 import PINSetup from "@/components/dialogs/PINSetup.vue";
 import PINRemove from "@/components/dialogs/PINRemove.vue";
 import CopyChecklist from "@/components/dialogs/CopyChecklist.vue";
+import { dataSources } from '@/api/dataObjects';
 
 const props = defineProps<{
     checklist: DataObjectRecord;
@@ -106,8 +117,34 @@ const copyChecklistDialog = ref();
 
 const { toast } = useToast();
 
+const isDefaultChecklist = computed(() => {
+    return dataSources.user?.currentRecord?.default_view_type === "checklist" &&
+        dataSources.user?.currentRecord?.default_view_id === props.checklist.id;
+});
+
 function openChecklistDetails() {
     checklistDetailsDialog.value.show();
+}
+
+function setChecklistDefault() {
+    if (dataSources.user?.currentRecord) {
+        if (isDefaultChecklist.value) {
+            dataSources.user.currentRecord.default_view_type = 'last_opened';
+            dataSources.user.currentRecord.default_view_id = null;
+            toast({
+                title: 'Default checklist removed.',
+                description: 'No checklist will be opened by default.',
+            });
+        } else {
+            dataSources.user.currentRecord.default_view_type = "checklist";
+            dataSources.user.currentRecord.default_view_id = props.checklist.id;
+            toast({
+                title: 'Checklist set as default.',
+                description: 'This checklist will now be opened by default.',
+            });
+        }
+        dataSources.user.saveChanges();
+    }
 }
 
 async function handleChecklistDelete() {

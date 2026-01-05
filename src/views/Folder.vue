@@ -242,7 +242,13 @@ onIonViewDidEnter(() => {
 
     if (isNaN(id)) {
         console.error('Invalid folder ID:', idParam)
-        return
+        return;
+    }
+
+    if (dataSources.user?.currentRecord) {
+        dataSources.user.currentRecord.last_opened_type = 'folder';
+        dataSources.user.currentRecord.last_opened_id = id;
+        dataSources.user?.saveChanges();
     }
 
     const folderLayout = new FolderLayout({

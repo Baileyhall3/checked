@@ -375,6 +375,3 @@ export const userStore = {
   }
 
 }
-
-// Initialize the store
-userStore.init()

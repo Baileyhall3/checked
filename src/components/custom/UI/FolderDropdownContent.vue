@@ -6,6 +6,16 @@
             Details
         </DropdownMenuItem>
         <DropdownMenuSeparator />
+        <DropdownMenuItem class="cursor-pointer" @click="setFolderDefault()">
+            <Star 
+                class="size-4 opacity-60" 
+                aria-hidden="true" 
+                :class="isDefaultFolder
+                    ? 'fill-yellow-400 text-yellow-400'
+                    : 'text-muted-foreground'"
+            />
+            {{ isDefaultFolder ? 'Remove' : 'Set' }} Default
+        </DropdownMenuItem>
         <DropdownMenuItem 
             v-if="!folder.pin_protected_at"
             class="cursor-pointer" 
@@ -73,9 +83,9 @@
 <script setup lang="ts">
 import { DataObject, DataObjectRecord } from 'supabase-dataobject-core';
 import { DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
-import { TextAlignStart, Trash, Eye, EyeOff } from "lucide-vue-next";
+import { TextAlignStart, Trash, Eye, EyeOff, Star } from "lucide-vue-next";
 import Confirm from '@/components/dialogs/Confirm.vue';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useRouter, useRoute  } from 'vue-router';
@@ -84,6 +94,7 @@ import { useToast } from '@/components/ui/toast';
 import FolderDetails from '@/components/dialogs/FolderDetails.vue';
 import PINSetup from '@/components/dialogs/PINSetup.vue';
 import PINRemove from '@/components/dialogs/PINRemove.vue';
+import { dataSources } from '@/api/dataObjects';
 
 const props = defineProps<{
     folder: DataObjectRecord;
@@ -100,6 +111,32 @@ const deleteOption = ref<'cascade' | 'nothing'>('nothing');
 const { toast } = useToast();
 const router = useRouter();
 const route = useRoute();
+
+const isDefaultFolder = computed(() => {
+    return dataSources.user?.currentRecord?.default_view_type === "folder" &&
+        dataSources.user?.currentRecord?.default_view_id === props.folder.id;
+});
+
+function setFolderDefault() {
+    if (dataSources.user?.currentRecord) {
+        if (isDefaultFolder.value) {
+            dataSources.user.currentRecord.default_view_type = 'last_opened';
+            dataSources.user.currentRecord.default_view_id = null;
+            toast({
+                title: 'Default folder removed.',
+                description: 'No folder will be opened by default.',
+            });
+        } else {
+            dataSources.user.currentRecord.default_view_type = "folder";
+            dataSources.user.currentRecord.default_view_id = props.folder.id;
+            toast({
+                title: 'Folder set as default.',
+                description: 'This folder will now be opened by default.',
+            });
+        }
+        dataSources.user.saveChanges();
+    }
+} 
 
 async function tryDeleteFolder() {
     if (props.folder.checklist_count === 0) {
