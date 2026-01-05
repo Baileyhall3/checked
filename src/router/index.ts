@@ -15,7 +15,8 @@ import Login from '@/views/auth/Login.vue';
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    redirect: '/home'
+    name: 'Root',
+    component: HomePage 
   },
   {
     path: '/home',
@@ -69,31 +70,65 @@ const routes: Array<RouteRecordRaw> = [
   },
 ]
 
-const router = createRouter({
+export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
 });
 
-// Global navigation guard for authentication and SEO
+let startRouteResolved = false;
+
 router.beforeEach(async (to, from, next) => {
-  // Update page title for SEO
-  document.title = to.meta.title || 'Checked'
-  
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
-  const isAuthenticated = userStore.isAuthenticated
-  
-  // Handle authentication requirements
-  if (requiresAuth && !isAuthenticated) {
-    // If the user is not authenticated and the route requires auth, redirect to login
-    next('/login')
-  } else if ((to.path === '/login' || to.path === '/register') && isAuthenticated) {
-    // If the user is authenticated and tries to access login/register pages, redirect to home
-    next('/')
-  } else {
-    // Otherwise proceed as normal
-    next()
+  document.title = to.meta.title || 'Checked';
+
+  console.log('to:', to.path);
+  console.log('userstore ', userStore);
+
+  await userStore.ready();
+
+  if (
+    to.path === '/' &&
+    !startRouteResolved &&
+    userStore.userProfile
+  ) {
+    startRouteResolved = true;
+
+    const profile = userStore.userProfile;
+
+    if (profile.default_view_type === 'checklist' && profile.default_view_id) {
+      return next(`/checklist/${profile.default_view_id}`);
+    }
+
+    if (profile.default_view_type === 'folder' && profile.default_view_id) {
+      return next(`/folder/${profile.default_view_id}`);
+    }
+
+    if (profile.default_view_type === 'last_opened') {
+      if (profile.last_opened_type === 'checklist' && profile.last_opened_id) {
+        return next(`/checklist/${profile.last_opened_id}`);
+      }
+
+      if (profile.last_opened_type === 'folder' && profile.last_opened_id) {
+        return next(`/folder/${profile.last_opened_id}`);
+      }
+    }
+
+    return next('/home');
   }
-})
+
+  const requiresAuth = to.matched.some(r => r.meta.requiresAuth);
+  const isAuthenticated = userStore.isAuthenticated;
+
+  if (requiresAuth && !isAuthenticated) {
+    return next('/login');
+  }
+
+  if ((to.path === '/login' || to.path === '/register') && isAuthenticated) {
+    return next('/home');
+  }
+
+  next();
+});
+
 
 // Handle page reloads and direct URL access
 // This ensures the auth state is properly restored from localStorage/cookies

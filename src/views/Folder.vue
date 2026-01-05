@@ -338,6 +338,10 @@ async function initChecklistsDs() {
             autoRefresh: false,
             groupBy: { field: 'checklist', additionalFields: ['checklist_id'] }
         }); 
+
+        if (preferences.value.listView === 'items') {
+            await loadChecklistItems();
+        }
     } catch (err) {
         console.error(err);
     } finally {

@@ -198,6 +198,11 @@
             type="checklist" 
             @pin-accepted="initOthersDs"
         />
+        <CreateChecklist 
+            ref="createChecklistDialog" 
+            :folder="{id: checklistDs.checklist?.currentRecord?.folder_id, name: checklistDs.checklist?.currentRecord?.folder_name}" 
+            @checklist-created="refreshChecklists" 
+        />
     </IonPage>
 </template>
 
@@ -242,6 +247,7 @@ import ChecklistDropdownContent from '@/components/custom/UI/ChecklistDropdownCo
 import EnterPIN from '@/components/dialogs/EnterPIN.vue';
 import AddNewBtn from '@/components/custom/UI/buttons/AddNewBtn.vue';
 import ChecklistLayout from '@/layouts/ChecklistLayoutManager';
+import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -255,6 +261,8 @@ const layout = ref<ChecklistLayout>();
 const preferences = ref<any>();
 
 const searchQuery = ref<string>('');
+
+const createChecklistDialog = ref();
 
 const checklistDs = reactive({
     checklist: null as DataObject | null,
@@ -290,6 +298,11 @@ const breadcrumbs = computed((): IBreadcrumbItem[] => {
                 href: `/checklist/${c.id}`,
                 isCurrent: c.id === checklistDs.checklist?.currentRecord?.id
             })),
+            dropdownOptions: {
+                createNewFn: () => {
+                    createChecklistDialog.value.show();
+                }
+            }
         });
     }
 
@@ -475,6 +488,10 @@ async function handleChecklistDelete() {
     } else {
         router.push(`/home`);
     }
+}
+
+function refreshChecklists() {
+    checklistDs.folderChecklistsLkp?.refresh();
 }
 
 onIonViewDidLeave(() => {

@@ -56,7 +56,7 @@ async function startApp() {
   await initializeAuth();
   await router.isReady();
 
-  resolveStartRoute();
+  // resolveStartRoute();
   app.mount('#app');
 }
 

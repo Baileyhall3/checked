@@ -1,9 +1,10 @@
-import router from '@/router';
 import { userStore } from '@/store/userStore';
+import router from "@/router";
 
 let startRouteResolved = false;
 
 export function resolveStartRoute() {
+    debugger
     if (router.currentRoute.value.path !== '/') return;
 
     if (startRouteResolved) return;

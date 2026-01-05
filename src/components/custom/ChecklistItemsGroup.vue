@@ -10,11 +10,10 @@
                 variant="ghost"
                 class="rounded-xl shadow-none hover:bg-gray-200"
             >
-                <ChevronRight :size="16" aria-hidden="true" v-if="isCollapsed" />
-                <ChevronDown :size="16" aria-hidden="true" v-else />
+                <ChevronRight :size="16" aria-hidden="true" :style="{ 'transition': 'all 500ms ease', 'transform': `rotate(${isExpanded ? 90 : 0}deg)` }" />
             </Button>
         </div>
-        <div class="space-y-3" v-if="!isCollapsed">
+        <div class="space-y-3" v-if="isExpanded">
             <template v-for="(item, index) in props.items" :key="item.id">
                 <ChecklistItem :item="item" :checklistData="props.checklistData" />
             </template>
@@ -34,11 +33,11 @@ const props = defineProps<{
     checklistData: DataObject;
     headerText?: string;
     collapsible?: boolean;
-}>()
+}>();
 
-const isCollapsed = ref<boolean>(false);
+const isExpanded = ref<boolean>(true);
 
 function toggleCollapse() {
-    isCollapsed.value = !isCollapsed.value;
+    isExpanded.value = !isExpanded.value;
 }
 </script>
