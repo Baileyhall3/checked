@@ -23,6 +23,12 @@ interface UserState {
   isLoaded: boolean;
 }
 
+let resolveReady!: () => void;
+
+const readyPromise = new Promise<void>((resolve) => {
+    resolveReady = resolve;
+});
+
 const state = reactive<UserState>({
   user: null,
   session: null,
@@ -95,7 +101,12 @@ export const userStore = {
       return { success: false, error }
     } finally {
       state.isLoaded = true;
+      resolveReady();
     }
+  },
+
+  ready() {
+    return readyPromise;
   },
 
   updateAuthState(session: Session | null) {
@@ -375,6 +386,3 @@ export const userStore = {
   }
 
 }
-
-// Initialize the store
-userStore.init()

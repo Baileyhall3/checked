@@ -15,6 +15,7 @@
                 >
                     <PinInputGroup class="flex items-center gap-3">
                         <PinInputSlot
+                            type="number"
                             :disabled="isChecking"
                             v-for="(id, index) in 4"
                             :key="id"

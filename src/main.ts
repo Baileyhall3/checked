@@ -13,6 +13,7 @@ import './theme/variables.css';
 import { supabase } from './api/supabase';
 import { userStore } from './store/userStore';
 import { hasAuthState } from './utils/authPersistence';
+import { resolveStartRoute } from './utils/resolveStartRoute';
 
 const app = createApp(App)
   .use(IonicVue)
@@ -39,11 +40,6 @@ async function initializeAuth() {
     // initialize user store (loads persisted state)
     await userStore.init()
 
-    // fetch user profile if logged in
-    if (userStore.user) {
-      await userStore.fetchUserProfile()
-    }
-
     console.log('✅ Auth initialized')
     authInitialized = true
   } catch (err) {
@@ -56,8 +52,12 @@ async function initializeAuth() {
 /* START APP */
 /* -------------------------------------------------- */
 
-initializeAuth().then(() => {
-  router.isReady().then(() => {
-    app.mount('#app')
-  });
-});
+async function startApp() {
+  await initializeAuth();
+  await router.isReady();
+
+  // resolveStartRoute();
+  app.mount('#app');
+}
+
+startApp();

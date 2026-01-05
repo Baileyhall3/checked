@@ -5,22 +5,19 @@
                 <DialogTitle>Move Checklist</DialogTitle>
                 <DialogDescription>
                     <p>
-                        Move <b>{{ props.checklist.name }}</b> to a new folder. 
+                        Move {{ props.checklist.name }} to a new folder. 
                     </p>
-                    <!-- <p>
-                        Copying checklists which are templates will copy all items from the checklists, marking them <span class="font-bold">unchecked</span>.
-                    </p> -->
                 </DialogDescription>
             </DialogHeader>
 
             <form class="mt-4 gap-4 flex flex-col" @submit.prevent="moveChecklist" novalidate>
                 <div class="*:not-first:mt-2">
-                    <Label for="checklistFolder">Select New Folder</Label>
+                    <Label for="checklistFolder">New Folder</Label>
                     <div class="select-input">
                         <Select 
-                          class="select-input" 
-                          :disabled="filteredFolderData.length === 0"
-                          v-model="newFolder.id"
+                            class="select-input" 
+                            :disabled="folderData.length === 0"
+                            v-model="newFolderId"
                         >
                             <SelectTrigger id="checklistFolder" class="relative ps-9 rounded-lg">
                                 <div
@@ -31,7 +28,7 @@
                                 <SelectValue placeholder="Select folder" />
                             </SelectTrigger>
                             <SelectContent>
-                                <template v-for="folder in filteredFolderData" :key="folder.id">
+                                <template v-for="folder in folderData" :key="folder.id">
                                     <SelectItem :value="folder.id">{{ folder.name }}</SelectItem>
                                 </template>
                             </SelectContent>
@@ -65,10 +62,10 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { reactive, ref, computed } from 'vue';
+import { ref, computed } from 'vue';
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/ui/toast/use-toast";
-import { DataObjectRecord } from "supabase-dataobject-core";
+import { DataObject, DataObjectRecord } from "supabase-dataobject-core";
 import {
   Select,
   SelectContent,
@@ -78,9 +75,11 @@ import {
 } from "@/components/ui/select";
 import { Folder } from "lucide-vue-next";
 import { dataSources } from "@/api/dataObjects";
+import { useRouter } from "vue-router";
 
 const props = defineProps<{
     checklist: DataObjectRecord;
+    checklistData: DataObject;
 }>();
 
 const emit = defineEmits<{
@@ -89,21 +88,14 @@ const emit = defineEmits<{
 
 const isMoving = ref<boolean>(false);
 const isDialogOpen = ref<boolean>(false);
-const newFolder = reactive<{
-    id: number | null;
-    name: string | null;
-}>({
-    id: null,
-    name: null
+
+const router = useRouter();
+
+const folderData = computed(() => {
+    return dataSources.myFolders?.data.filter(x => x.id !== props.checklist.folder_id) || [];
 });
 
-const filteredFolderData = computed(() => {
-    let folderData: DataObjectRecord[] = [];
-    if (dataSources.myFolders?.data.length) {
-        folderData = props.checklist.folder_id ? dataSources.myFolders?.data.filter(x => x.id !== props.checklist.folder_id) : dataSources.myFolders?.data;
-    }
-    return folderData;
-});
+const newFolderId = ref<number | null>(null);
 
 async function moveChecklist() {
     const { toast } = useToast();
@@ -111,28 +103,22 @@ async function moveChecklist() {
     try {
         isMoving.value = true;
 
-        if (!newFolder.name) {
+        if (!newFolderId.value) {
             toast({
-                title: 'Could not move checklist.',
+                title: 'Could not copy checklist.',
                 description: 'Please select a folder.',
                 variant: "destructive"
             });
             return; 
         }
 
-        const hasUpdated = await props.checklist?.update(props.checklist?.id, { folder_id: newFolder.id });
-        if (hasUpdated) {
-            toast({title: 'Checklist moved!'});
-            emit("checklist-moved", newFolder.id);
-            newFolder.id = null;
-            newFolder.name = null;
-            close();
-        } else {
-            toast({
-                title: 'Could not move checklist. An error occurred.',
-                variant: "destructive"
-            });
-        }
+        props.checklist.folder_id = newFolderId.value;
+        await props.checklistData.saveChanges();
+
+        toast({title: 'Checklist moved!'});
+        emit("checklist-moved", newFolderId.value);
+        router.push(`/folder/${newFolderId.value}`);
+        // close();
     } catch (err) {
         console.error(err);
     } finally {
@@ -146,6 +132,7 @@ const show = () => {
 
 const close = () => {
     isDialogOpen.value = false;
+    newFolderId.value = null;
 }
 
 defineExpose({show, close})

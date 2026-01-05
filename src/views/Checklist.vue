@@ -29,32 +29,32 @@
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent>
                                                 <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('recent')">
+                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="layout.updateSort('recent')">
                                                     Most Recent
-                                                    <Check class="size-4" aria-hidden="true" v-if="currentSort === 'recent'" />
+                                                    <Check class="size-4" aria-hidden="true" v-if="preferences.currentSort === 'recent'" />
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('name')">
+                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="layout.updateSort('name')">
                                                     Name
-                                                    <Check class="size-4" aria-hidden="true" v-if="currentSort === 'name'" />
+                                                    <Check class="size-4" aria-hidden="true" v-if="preferences.currentSort === 'name'" />
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
 
                                                 <DropdownMenuLabel>Show</DropdownMenuLabel>
-                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('progressBar')">
+                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="layout.updateView('progressBar')">
                                                     Progress Bar
-                                                    <Check class="size-4" aria-hidden="true" v-if="itemsView.progressBar" />
+                                                    <Check class="size-4" aria-hidden="true" v-if="preferences.itemsView.progressBar" />
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('createNew')">
+                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="layout.updateView('createNew')">
                                                     New Item Input
-                                                    <Check class="size-4" aria-hidden="true" v-if="itemsView.createNew" />
+                                                    <Check class="size-4" aria-hidden="true" v-if="preferences.itemsView.createNew" />
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('checked')">
+                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="layout.updateView('checked')">
                                                     Checked Items
-                                                    <Check class="size-4" aria-hidden="true" v-if="itemsView.checked" />
+                                                    <Check class="size-4" aria-hidden="true" v-if="preferences.itemsView.checked" />
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('deleted')">
+                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="layout.updateView('deleted')">
                                                     Deleted Items
-                                                    <Check class="size-4" aria-hidden="true" v-if="itemsView.deleted" />
+                                                    <Check class="size-4" aria-hidden="true" v-if="preferences.itemsView.deleted" />
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
@@ -104,7 +104,7 @@
                                 </div>
                                 <!-- Checklist Progress Bar -->
                                  <transition name="fade-slide">
-                                     <div v-if="checklistDs.checklistItems?.data?.length && itemsView.progressBar" class="mb-4">
+                                     <div v-if="checklistDs.checklistItems?.data?.length && preferences.itemsView.progressBar" class="mb-4">
                                          <div class="flex justify-between text-sm text-gray-600 mb-1">
                                              <span>Progress</span>
                                              <span>{{ completedCount }} / {{ totalCount }}</span>
@@ -128,7 +128,7 @@
     
                                 <!-- Add New Item Input -->
                                 <transition name="fade-slide">
-                                    <div v-if="itemsView.createNew && !checklistDs.checklist.currentRecord?.deleted_at" class="flex items-center my-4">
+                                    <div v-if="preferences.itemsView.createNew && !checklistDs.checklist.currentRecord?.deleted_at" class="flex items-center my-4">
                                         <input
                                             v-model="newItemName"
                                             type="text"
@@ -182,6 +182,11 @@
             type="checklist" 
             @pin-accepted="initOthersDs"
         />
+        <CreateChecklist 
+            ref="createChecklistDialog" 
+            :folder="{id: checklistDs.checklist?.currentRecord?.folder_id, name: checklistDs.checklist?.currentRecord?.folder_name}" 
+            @checklist-created="refreshChecklists" 
+        />
     </IonPage>
 </template>
 
@@ -193,7 +198,7 @@ import { reactive, ref, computed } from 'vue';
 import { dataSources, checklistFields, checklistItemsFields } from '@/api/dataObjects';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast/use-toast";
-import { Folder, Home, X, ArrowUpDown, Check, Settings } from "lucide-vue-next";
+import { Folder, Home, X, ArrowUpDown, Check, Settings, Key } from "lucide-vue-next";
 import {
 DropdownMenu,
   DropdownMenuContent,
@@ -225,6 +230,8 @@ import ChecklistItem from '@/components/custom/UI/ChecklistItem.vue';
 import ChecklistDropdownContent from '@/components/custom/UI/ChecklistDropdownContent.vue';
 import EnterPIN from '@/components/dialogs/EnterPIN.vue';
 import AddNewBtn from '@/components/custom/UI/buttons/AddNewBtn.vue';
+import ChecklistLayout from '@/layouts/ChecklistLayoutManager';
+import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -234,14 +241,12 @@ const enterPinDialog = ref();
 const isLoading = ref<boolean>(true);
 const { toast } = useToast();
 
+const layout = ref<ChecklistLayout>();
+const preferences = ref<any>();
+
 const searchQuery = ref<string>('');
-const currentSort = ref<'recent' | 'name'>('recent');
-const itemsView = reactive({
-    progressBar: true,
-    createNew: true,
-    checked: true,
-    deleted: false,
-});
+
+const createChecklistDialog = ref();
 
 const checklistDs = reactive({
     checklist: null as DataObject | null,
@@ -277,6 +282,11 @@ const breadcrumbs = computed((): IBreadcrumbItem[] => {
                 href: `/checklist/${c.id}`,
                 isCurrent: c.id === checklistDs.checklist?.currentRecord?.id
             })),
+            dropdownOptions: {
+                createNewFn: () => {
+                    createChecklistDialog.value.show();
+                }
+            }
         });
     }
 
@@ -295,8 +305,31 @@ onIonViewDidEnter(() => {
 
     if (isNaN(id)) {
         console.error('Invalid checklist ID:', idParam)
-        return
+        return;
     }
+
+    if (dataSources.user?.currentRecord) {
+        dataSources.user.currentRecord.last_opened_type = 'checklist';
+        dataSources.user.currentRecord.last_opened_id = id;
+        dataSources.user?.saveChanges();
+    }
+
+    const checklistLayout = new ChecklistLayout({
+        key: `checklist-${id}-layout`, 
+        onPreferenceUpdated: (preference, value) => {
+            if (preference == 'currentSort') {
+                const sortConfig: SortConfig = value === 'recent' ? { field: "created_at", direction: 'desc' } : { field: "name", direction: 'asc' };
+                checklistDs.checklistItems?.updateSort(sortConfig);
+            } else if (['progressBar', 'createNew', 'checked', 'deleted'].includes(preference)) {
+                if (preference === 'checked' || preference === 'deleted') {
+                    updateWhereClauses();
+                }
+            }
+        }
+    });
+
+    layout.value = checklistLayout;
+    preferences.value = checklistLayout.preferences;
 
     createDataObjects(id);
 });
@@ -404,19 +437,6 @@ async function addItem() {
     newItemName.value = "";
 }
 
-function updateSort(sort: 'recent' | 'name') {
-    currentSort.value = sort;
-    const sortConfig: SortConfig = sort === 'recent' ? { field: "created_at", direction: 'desc' } : { field: "name", direction: 'asc' };
-    checklistDs.checklistItems?.updateSort(sortConfig);
-}
-
-function updateView(key: 'checked' | 'deleted' | 'progressBar' | 'createNew') {
-    itemsView[key] = !itemsView[key];
-    if (key === 'checked' || key === 'deleted') {
-        updateWhereClauses();
-    }
-}
-
 function handleSearchQuery(query: string) {
     searchQuery.value = query;
     updateWhereClauses();
@@ -424,10 +444,10 @@ function handleSearchQuery(query: string) {
 
 function updateWhereClauses() {
     const whereClauses: WhereClause[] = [];
-    if (!itemsView.checked) {
+    if (!preferences.value.itemsView.checked) {
         whereClauses.push({ field: 'is_checked', operator: 'equals', value: false });
     }
-    if (!itemsView.deleted) {
+    if (!preferences.value.itemsView.deleted) {
         whereClauses.push({ field: 'deleted_at', operator: 'isnull' });
     }
     if (searchQuery.value) {
@@ -452,6 +472,10 @@ async function handleChecklistDelete() {
     } else {
         router.push(`/home`);
     }
+}
+
+function refreshChecklists() {
+    checklistDs.folderChecklistsLkp?.refresh();
 }
 
 onIonViewDidLeave(() => {
