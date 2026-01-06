@@ -6,6 +6,10 @@ import Folder from '@/views/Folder.vue';
 import UserProfile from '@/views/UserProfile.vue';
 import DeletedItems from '@/views/DeletedItems.vue';
 
+import NotFound from '@/views/errors/NotFound.vue';
+import Forbidden from '@/views/errors/Forbidden.vue';
+import ServerError from '@/views/errors/ServerError.vue';
+
 import { userStore } from '@/store/userStore';
 import { hasAuthState } from '@/utils/authPersistence';
 
@@ -48,7 +52,7 @@ const routes: Array<RouteRecordRaw> = [
     component: UserProfile,
     meta: {
         title: 'Profile',
-        // requiresAuth: true
+        requiresAuth: true
       }
   },
   {
@@ -57,7 +61,7 @@ const routes: Array<RouteRecordRaw> = [
     component: Checklist,
     meta: {
       title: 'Checklist',
-      // requiresAuth: true
+      requiresAuth: true
     }
   },
   {
@@ -66,7 +70,7 @@ const routes: Array<RouteRecordRaw> = [
     component: Folder,
     meta: {
       title: 'Folder',
-      // requiresAuth: true
+      requiresAuth: true
     }
   },
   {
@@ -75,8 +79,22 @@ const routes: Array<RouteRecordRaw> = [
     component: DeletedItems,
     meta: {
         title: 'Deleted Items',
-        requiresAuth: true
+        requiresAuth: true,
+        // requiresPremium: true
       }
+  },
+  {
+    path: '/403',
+    component: Forbidden,
+  },
+  {
+    path: '/500',
+    component: ServerError,
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: NotFound,
   },
 ]
 
@@ -126,10 +144,15 @@ router.beforeEach(async (to, from, next) => {
   }
 
   const requiresAuth = to.matched.some(r => r.meta.requiresAuth);
+  const requiresPremium = to.matched.some(r => r.meta.requiresPremium)
   const isAuthenticated = userStore.isAuthenticated;
 
   if (requiresAuth && !isAuthenticated) {
     return next('/login');
+  }
+
+  if (requiresPremium && !userStore.userProfile?.is_premium) {
+    return next('/403')
   }
 
   if ((to.path === '/login' || to.path === '/register') && isAuthenticated) {

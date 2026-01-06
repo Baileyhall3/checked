@@ -1,11 +1,12 @@
 <template>
     <DropdownMenuContent>
-        <DropdownMenuLabel v-if="props.label">{{ props.label }}</DropdownMenuLabel>
+        <!-- <DropdownMenuLabel v-if="props.label">{{ props.label }}</DropdownMenuLabel> -->
         <DropdownMenuItem class="cursor-pointer" @click="folderDetailsDialog.show()">
             <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
             Details
         </DropdownMenuItem>
         <DropdownMenuSeparator />
+        <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuItem class="cursor-pointer" @click="setFolderDefault()">
             <Star 
                 class="size-4 opacity-60" 

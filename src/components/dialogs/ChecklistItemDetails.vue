@@ -146,8 +146,6 @@ import {
     DialogFooter,
     DialogClose
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/ui/toast/use-toast";
@@ -155,7 +153,6 @@ import { ref, computed } from 'vue';
 import Textarea from '../ui/textarea/Textarea.vue';
 import DateUtils from '@/utils/DateUtils';
 import { CheckCircle2Icon, CircleIcon, Calendar, Palette } from 'lucide-vue-next';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import ColoursDropdown from '../custom/UI/ColoursDropdown.vue';
 import TextEditor from '../custom/UI/input/TextEditor.vue';

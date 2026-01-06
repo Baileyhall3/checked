@@ -1,12 +1,12 @@
 <template>
     <DropdownMenuContent>
-        <DropdownMenuLabel v-if="props.label">{{ props.label }}</DropdownMenuLabel>
         <template v-if="!checklist.deleted_at">
             <DropdownMenuItem class="cursor-pointer" @click="openChecklistDetails()">
                 <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
                 Details
             </DropdownMenuItem>
             <DropdownMenuSeparator />
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem class="cursor-pointer" @click="setChecklistDefault()">
                 <Star 
                     class="size-4 opacity-60" 

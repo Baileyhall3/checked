@@ -48,114 +48,112 @@
     <template v-else>
       <UnauthenticatedHeader />
       <IonContent :fullscreen="true">
-        <div class="min-h-screen bg-gray-100">
-          <div class="container mx-auto px-6 py-8">
-              <!-- <div class="text-lg font-medium">Hey, {{ userStore.userProfile?.username }}!</div> -->
-              <Empty class="bg-white shadow-lg rounded-xl p-6 mb-8" v-if="dataSources.myChecklists?.data.length === 0 && dataSources.myFolders?.data.length === 0">
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <ListTodo />
-                  </EmptyMedia>
-                  <EmptyTitle>No Checklists Yet</EmptyTitle>
-                  <EmptyDescription>
-                    You haven't created any checklists yet. Get started by creating your first
-                    checklist!
-                  </EmptyDescription>
-                </EmptyHeader>
-                <EmptyContent>
-                  <div class="flex gap-2">
-                    <Button @click="createChecklistDialog.show()">
-                      Create Checklist
-                    </Button>
+        <MainContent>
+          <!-- <div class="text-lg font-medium">Hey, {{ userStore.userProfile?.username }}!</div> -->
+          <Empty class="bg-white shadow-lg rounded-xl p-6 mb-8" v-if="dataSources.myChecklists?.data.length === 0 && dataSources.myFolders?.data.length === 0">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <ListTodo />
+              </EmptyMedia>
+              <EmptyTitle>No Checklists Yet</EmptyTitle>
+              <EmptyDescription>
+                You haven't created any checklists yet. Get started by creating your first
+                checklist!
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              <div class="flex gap-2">
+                <Button @click="createChecklistDialog.show()">
+                  Create Checklist
+                </Button>
+              </div>
+              <EmptyDescription>
+                Need help? <a href="#">View tutorial</a>
+              </EmptyDescription>
+            </EmptyContent>
+          </Empty>
+          
+          <template v-else>
+            <div class="flex items-center space-x-2 mb-8">
+                <div class="w-full">
+                  <SearchBar @search-entered="handleSearchQuery" />
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <AddNewBtn add-terminology="Add...">
+                      <ChevronDown
+                        :size="16"
+                        class="-me-1 opacity-60 rounded-xl"
+                        aria-hidden="true"
+                      />
+                    </AddNewBtn>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem @click="createChecklistDialog.show()" class="cursor-pointer"> 
+                      <ListTodo :size="16" class="opacity-60" aria-hidden="true" />
+                      Checklist
+                    </DropdownMenuItem>
+                    <DropdownMenuItem @click="createFolderDialog.show()" class="cursor-pointer">
+                      <FolderIcon :size="16" class="opacity-60" aria-hidden="true" />
+                      Folder
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            
+            <div class="mb-8" v-if="dataSources.myFolders && dataSources.myFolders.data.length > 0">
+              <div class="text-xl font-medium flex items-center">
+                <FolderIcon class="me-2" aria-hidden="true" />
+                Folders
+              </div>
+              <RoundedContainer class="flex flex-col">
+                  <template v-for="(folder, index) in dataSources.myFolders?.data" :key="folder.id">
+                      <Folder 
+                        :folder="folder" 
+                        :folder-data="dataSources.myFolders" 
+                      />
+                  </template>
+              </RoundedContainer>
+            </div>
+
+            <div class="mb-8" v-if="dataSources.myChecklists?.data.length">
+              <div class="text-xl font-medium flex items-center">
+                <ListTodo class="me-2" aria-hidden="true" />
+                Checklists
+              </div>
+                <RoundedContainer class=" flex flex-col">
+                    <template v-for="(checklist, index) in dataSources.myChecklists?.data" :key="checklist.id">
+                        <Checklist 
+                          :checklist="checklist" 
+                          :checklist-data="dataSources.myChecklists" 
+                        />
+                    </template>
+                </RoundedContainer>
+            </div>
+
+            <div v-if="dataSources.deletedChecklists?.data && dataSources.deletedChecklists?.data.length > 0">
+              <RouterLink to="/deleted-items" class="cursor-pointer hover:underline text-xl font-medium flex items-center">
+                <Trash class="me-2 text-red-600" aria-hidden="true" />
+                Deleted Checklists ({{ dataSources.deletedChecklists?.data.length }})
+              </RouterLink>
+              <RoundedContainer class=" flex flex-col">
+                  <template v-for="(checklist, index) in dataSources.deletedChecklists?.data.slice(0, 5)" :key="checklist.id">
+                      <Checklist 
+                        :checklist="checklist" 
+                        :checklist-data="dataSources.deletedChecklists" 
+                        hideDeletedIcon
+                        hideItemsCount
+                      />
+                  </template>
+                  <div class="text-center py-4" v-if="dataSources.deletedChecklists.data.length > 5">
+                    <RouterLink to="/deleted-items" class="text-sm text-indigo-600 hover:underline">
+                      View All Deleted Items
+                    </RouterLink>
                   </div>
-                  <EmptyDescription>
-                    Need help? <a href="#">View tutorial</a>
-                  </EmptyDescription>
-                </EmptyContent>
-              </Empty>
-              
-              <template v-else>
-                <div class="flex items-center space-x-2 mb-8">
-                    <div class="w-full">
-                      <SearchBar @search-entered="handleSearchQuery" />
-                    </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <AddNewBtn add-terminology="Add...">
-                          <ChevronDown
-                            :size="16"
-                            class="-me-1 opacity-60 rounded-xl"
-                            aria-hidden="true"
-                          />
-                        </AddNewBtn>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem @click="createChecklistDialog.show()" class="cursor-pointer"> 
-                          <ListTodo :size="16" class="opacity-60" aria-hidden="true" />
-                          Checklist
-                        </DropdownMenuItem>
-                        <DropdownMenuItem @click="createFolderDialog.show()" class="cursor-pointer">
-                          <FolderIcon :size="16" class="opacity-60" aria-hidden="true" />
-                          Folder
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                
-                <div class="mb-8" v-if="dataSources.myFolders && dataSources.myFolders.data.length > 0">
-                  <div class="text-xl font-medium flex items-center">
-                    <FolderIcon class="me-2" aria-hidden="true" />
-                    Folders
-                  </div>
-                  <RoundedContainer class="flex flex-col">
-                      <template v-for="(folder, index) in dataSources.myFolders?.data" :key="folder.id">
-                          <Folder 
-                            :folder="folder" 
-                            :folder-data="dataSources.myFolders" 
-                          />
-                      </template>
-                  </RoundedContainer>
-                </div>
-  
-                <div class="mb-8" v-if="dataSources.myChecklists?.data.length">
-                  <div class="text-xl font-medium flex items-center">
-                    <ListTodo class="me-2" aria-hidden="true" />
-                    Checklists
-                  </div>
-                    <RoundedContainer class=" flex flex-col">
-                        <template v-for="(checklist, index) in dataSources.myChecklists?.data" :key="checklist.id">
-                            <Checklist 
-                              :checklist="checklist" 
-                              :checklist-data="dataSources.myChecklists" 
-                            />
-                        </template>
-                    </RoundedContainer>
-                </div>
-  
-                <div v-if="dataSources.deletedChecklists?.data && dataSources.deletedChecklists?.data.length > 0">
-                  <RouterLink to="/deleted-items" class="cursor-pointer hover:underline text-xl font-medium flex items-center">
-                    <Trash class="me-2 text-red-600" aria-hidden="true" />
-                    Deleted Checklists ({{ dataSources.deletedChecklists?.data.length }})
-                  </RouterLink>
-                  <RoundedContainer class=" flex flex-col">
-                      <template v-for="(checklist, index) in dataSources.deletedChecklists?.data.slice(0, 5)" :key="checklist.id">
-                          <Checklist 
-                            :checklist="checklist" 
-                            :checklist-data="dataSources.deletedChecklists" 
-                            hideDeletedIcon
-                            hideItemsCount
-                          />
-                      </template>
-                      <div class="text-center py-4" v-if="dataSources.deletedChecklists.data.length > 5">
-                        <RouterLink to="/deleted-items" class="text-sm text-indigo-600 hover:underline">
-                          View All Deleted Items
-                        </RouterLink>
-                      </div>
-                  </RoundedContainer>
-                </div>
-              </template>
-          </div>
-        </div>
+              </RoundedContainer>
+            </div>
+          </template>
+        </MainContent>
       </IonContent>
     </template>
 
@@ -194,6 +192,7 @@ import CreateFolder from '@/components/dialogs/CreateFolder.vue';
 import Checklist from '@/components/custom/UI/Checklist.vue';
 import Folder from '@/components/custom/UI/Folder.vue';
 import AddNewBtn from '@/components/custom/UI/buttons/AddNewBtn.vue';
+import MainContent from '@/components/custom/UI/MainContent.vue';
 
 const createChecklistDialog = ref();
 const createFolderDialog = ref();

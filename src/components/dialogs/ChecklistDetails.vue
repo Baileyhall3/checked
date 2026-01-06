@@ -29,6 +29,36 @@
                         </p>
                     </div>
                 </div>
+
+                <!-- <div class="pb-4">
+                    <span>
+                        Theme
+                    </span>
+                    <div class="flex items-center gap-2">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button
+                                    type="button"
+                                    :style="{ backgroundColor: 'rgb(0 0 0 / 0.6)' }"
+                                    class="focus-visible:border-ring focus-visible:ring-ring/50 flex size-8 cursor-pointer items-center justify-center rounded-full text-white transition-[color,box-shadow] outline-none hover:opacity-80 focus-visible:ring-[3px]"
+                                    aria-label="Change background colour"
+                                >
+                                    <Palette class="size-4" aria-hidden="true" />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <ColoursDropdown  @colour-selected="setNewColour" />
+                        </DropdownMenu>
+                        <button
+                            type="button"
+                            :style="{ backgroundColor: 'rgb(0 0 0 / 0.6)' }"
+                            class="focus-visible:border-ring focus-visible:ring-ring/50 flex size-8 cursor-pointer items-center justify-center rounded-full text-white transition-[color,box-shadow] outline-none hover:opacity-80 focus-visible:ring-[3px]"
+                            aria-label="Change background colour"
+                        >
+                            <Image class="size-4" aria-hidden="true" />
+                        </button>
+                    </div>
+                </div> -->
+
                 <div class="flex flex-col pb-4">
                     <span class="font-medium">Owner</span>
                     <p class="text-sm text-muted-foreground">{{ props.checklist.owner_username }}</p>
@@ -73,8 +103,10 @@ import { useToast } from "@/components/ui/toast/use-toast";
 import { ref, computed } from 'vue';
 import Textarea from '../ui/textarea/Textarea.vue';
 import DateUtils from '@/utils/DateUtils';
-import { CheckCircle2Icon, CircleIcon } from 'lucide-vue-next';
+import { Palette, Image } from 'lucide-vue-next';
 import { Checkbox } from "@/components/ui/checkbox"
+import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import ColoursDropdown from '../custom/UI/ColoursDropdown.vue';
 
 const props = defineProps<{
     checklist: DataObjectRecord;
