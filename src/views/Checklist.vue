@@ -179,22 +179,6 @@
             </template>
         </IonContent>
 
-        <ChecklistItemDetails 
-            ref="itemDetailsDialog" 
-            :checklist-item="checklistDs.checklistItems?.currentRecord" 
-            :data-object="checklistDs.checklistItems" 
-        />
-        <ChecklistDetails
-            ref="checklistDetailsDialog"
-            :checklist="checklistDs.checklist?.currentRecord"
-            :data-object="checklistDs.checklist"
-        />
-        <Confirm
-            description="Are you sure you want to delete this checklist? Deleted checklists can be recovered for 30 days. Checklist items will not be editable."
-            ref="confirmDialog" 
-            @confirmed="handleChecklistDelete"
-        />
-
         <EnterPIN 
             ref="enterPinDialog" 
             :item="checklistDs.checklist?.currentRecord" 

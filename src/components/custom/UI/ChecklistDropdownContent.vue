@@ -195,4 +195,8 @@ async function recoverItem() {
 function handleChecklistCopied() {
     props.checklistData.refresh();
 }
+
+function handleChecklistMoved(newFolderId: number) {
+    // redirect
+}
 </script>
