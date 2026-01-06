@@ -40,7 +40,8 @@ export const dataSources = reactive({
     myFolders: null as DataObject | null,
     checklistsNoFolderLkp: null as DataObject | null,
     deletedChecklists: null as DataObject | null,
-    templateChecklists: null as DataObject | null
+    templateChecklists: null as DataObject | null,
+    themes: null as DataObject | null
 });
 
 /**
@@ -143,6 +144,12 @@ export async function initDataObjects(url: string, key: string, currentUserId: n
         fields: checklistFields
     }); 
 
+    dataSources.themes = await createDataObject('themes', {
+        viewName: 'themes',
+        tableName: 'themes',
+        fields: themesFields
+    });
+
     console.log('data sources: ', dataSources);
 }
 
@@ -228,6 +235,9 @@ export const checklistFields: DataObjectField[] = [
     { name: "completed_at" },
     { name: "completed_by_id" },
     { name: "completed_by_username" },
+    { name: "theme_id" },
+    { name: "theme" },
+    { name: "theme_config" },
 ]
 
 export const folderFields: DataObjectField[] = [
@@ -242,4 +252,14 @@ export const folderFields: DataObjectField[] = [
     { name: "pin_hash" },
     { name: "pin_type" },
     { name: "content_updated_at" }
+]
+
+export const themesFields: DataObjectField[] = [
+    { name: "id" },
+    { name: "name" },
+    { name: "config" },
+    { name: "created_at" },
+    { name: "owner_id" },
+    { name: "is_public" },
+    { name: "is_premium" },
 ]

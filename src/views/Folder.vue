@@ -109,7 +109,7 @@
                                                     label="Folder Actions"
                                                     :folder="folderDs.folder?.currentRecord"
                                                     :folder-data="folderDs.folder"
-                                                    />
+                                                />
                                             </DropdownMenu>
                                         </ButtonGroup>
                                     </ButtonGroup>

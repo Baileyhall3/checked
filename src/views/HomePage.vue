@@ -51,7 +51,7 @@
         <div class="min-h-screen bg-gray-100">
           <div class="container mx-auto px-6 py-8">
               <!-- <div class="text-lg font-medium">Hey, {{ userStore.userProfile?.username }}!</div> -->
-              <Empty class="bg-white shadow-lg rounded-xl p-6 mb-8" v-if="dataSources.myChecklists?.data.length === 0">
+              <Empty class="bg-white shadow-lg rounded-xl p-6 mb-8" v-if="dataSources.myChecklists?.data.length === 0 && dataSources.myFolders?.data.length === 0">
                 <EmptyHeader>
                   <EmptyMedia variant="icon">
                     <ListTodo />
@@ -117,7 +117,7 @@
                   </RoundedContainer>
                 </div>
   
-                <div class="mb-8">
+                <div class="mb-8" v-if="dataSources.myChecklists?.data.length">
                   <div class="text-xl font-medium flex items-center">
                     <ListTodo class="me-2" aria-hidden="true" />
                     Checklists
@@ -133,19 +133,25 @@
                 </div>
   
                 <div v-if="dataSources.deletedChecklists?.data && dataSources.deletedChecklists?.data.length > 0">
-                  <div class="text-xl font-medium flex items-center">
+                  <RouterLink to="/deleted-items" class="cursor-pointer hover:underline text-xl font-medium flex items-center">
                     <Trash class="me-2 text-red-600" aria-hidden="true" />
-                    Deleted Checklists
-                  </div>
-                    <RoundedContainer class=" flex flex-col">
-                        <template v-for="(checklist, index) in dataSources.deletedChecklists?.data" :key="checklist.id">
-                            <Checklist 
-                              :checklist="checklist" 
-                              :checklist-data="dataSources.deletedChecklists" 
-                              hideDeletedIcon
-                            />
-                        </template>
-                    </RoundedContainer>
+                    Deleted Checklists ({{ dataSources.deletedChecklists?.data.length }})
+                  </RouterLink>
+                  <RoundedContainer class=" flex flex-col">
+                      <template v-for="(checklist, index) in dataSources.deletedChecklists?.data.slice(0, 5)" :key="checklist.id">
+                          <Checklist 
+                            :checklist="checklist" 
+                            :checklist-data="dataSources.deletedChecklists" 
+                            hideDeletedIcon
+                            hideItemsCount
+                          />
+                      </template>
+                      <div class="text-center py-4" v-if="dataSources.deletedChecklists.data.length > 5">
+                        <RouterLink to="/deleted-items" class="text-sm text-indigo-600 hover:underline">
+                          View All Deleted Items
+                        </RouterLink>
+                      </div>
+                  </RoundedContainer>
                 </div>
               </template>
           </div>

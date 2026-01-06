@@ -4,9 +4,11 @@
             <Loading v-if="isLoading" />
             <template v-else>
                 <template v-if="checklistDs.checklist && checklistDs.checklist.data.length">
-                    <BlurredHeader>
+                    <BlurredHeader :background="resolvedTheme?.config.header.background + '80'"
+                        :text-color="resolvedTheme?.config.header.text"
+                    >
                         <div class="flex justify-between items-center">
-                            <Breadcrumbs :items="breadcrumbs" />
+                            <Breadcrumbs :items="breadcrumbs" :text-color="resolvedTheme?.config.header.text" :muted-color="resolvedTheme?.config.text.muted" />
                             <ProfileDropdown />
                         </div>
                     </BlurredHeader>
@@ -74,6 +76,7 @@
                                                 label="Checklist Details"
                                                 :checklist="checklistDs.checklist.currentRecord"
                                                 :checklist-data="checklistDs.checklist"
+                                                redirectOnDelete
                                             />
                                         </DropdownMenu>
                                     </ButtonGroup>
@@ -97,8 +100,8 @@
                                             </p>
                                         </div>
                                         <div class="flex gap-2 max-md:flex-wrap">
-                                            <Button size="sm">Recover</Button>
-                                            <Button variant="destructive" size="sm">Delete</Button>
+                                            <Button size="sm" @click="recoverChecklist">Recover</Button>
+                                            <Button variant="destructive" size="sm" @click="deleteChecklist">Delete</Button>
                                         </div>
                                     </div>
                                 </div>
@@ -248,6 +251,7 @@ import EnterPIN from '@/components/dialogs/EnterPIN.vue';
 import AddNewBtn from '@/components/custom/UI/buttons/AddNewBtn.vue';
 import ChecklistLayout from '@/layouts/ChecklistLayoutManager';
 import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
+import { useThemes } from '@/composables/useThemes';
 
 const route = useRoute();
 const router = useRouter();
@@ -263,6 +267,16 @@ const preferences = ref<any>();
 const searchQuery = ref<string>('');
 
 const createChecklistDialog = ref();
+
+const { resolveTheme, themeToCssVars } = useThemes()
+
+const resolvedTheme = computed(() =>
+    resolveTheme(checklistDs.checklist?.currentRecord?.theme_id ?? null)
+)
+
+const themeStyle = computed(() =>
+    themeToCssVars(resolvedTheme.value)
+)
 
 const checklistDs = reactive({
     checklist: null as DataObject | null,
@@ -483,10 +497,39 @@ async function handleChecklistDelete() {
             description: 'Deleted items are recoverable for 30 days.',
         });
     }
-    if (current.folder_id) {
-        router.push(`/folder/${current.folder_id}`);
-    } else {
-        router.push(`/home`);
+    redirect();
+}
+
+function redirect() {
+    const current = checklistDs.checklist?.currentRecord;
+    if (current) {
+        if (current.folder_id) {
+            router.push(`/folder/${current.folder_id}`);
+        } else {
+            router.push('/home');
+        }
+    }
+}
+
+async function deleteChecklist() {
+    const current = checklistDs.checklist?.currentRecord;
+    if (!current) { return; }
+    await checklistDs.checklist?.delete(current.id);
+    redirect();
+    toast({
+        title: 'Checklist permanently deleted.',
+    });
+}
+
+async function recoverChecklist() {
+    const current = checklistDs.checklist?.currentRecord;
+    if (current) {
+        await checklistDs.checklist?.update(current.id, {
+            deleted_at: null
+        });
+        toast({
+            title: 'Checklist recovered.',
+        });
     }
 }
 
@@ -516,5 +559,9 @@ onIonViewDidLeave(() => {
 .fade-slide-leave-to {
     opacity: 0;
     transform: translateY(-8px);
+}
+.checklist-root {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
 }
 </style>

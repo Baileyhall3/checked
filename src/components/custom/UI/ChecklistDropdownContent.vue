@@ -1,52 +1,54 @@
 <template>
     <DropdownMenuContent>
         <DropdownMenuLabel v-if="props.label">{{ props.label }}</DropdownMenuLabel>
-        <DropdownMenuItem class="cursor-pointer" @click="openChecklistDetails()">
-            <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
-            Details
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem class="cursor-pointer" @click="setChecklistDefault()">
-            <Star 
-                class="size-4 opacity-60" 
-                aria-hidden="true" 
-                :class="isDefaultChecklist
-                    ? 'fill-yellow-400 text-yellow-400'
-                    : 'text-muted-foreground'"
-            />
-            {{ isDefaultChecklist ? 'Remove' : 'Set' }} Default
-        </DropdownMenuItem>
-        <DropdownMenuItem class="cursor-pointer" @click="copyChecklistDialog.show()">
-            <Copy class="size-4 opacity-60" aria-hidden="true" />
-            Copy
-        </DropdownMenuItem>
-        <DropdownMenuItem class="cursor-pointer">
-            <Share2 class="size-4 opacity-60" aria-hidden="true" />
-            Share
-        </DropdownMenuItem>
-        <DropdownMenuItem class="cursor-pointer" title="Move this checklist to another folder" @click="moveChecklistDialog.show()">
-            <MoveLeft class="size-4 opacity-60" aria-hidden="true" />
-            Move
-        </DropdownMenuItem>
-        <DropdownMenuItem 
-            v-if="!checklist.pin_protected_at"
-            class="cursor-pointer" 
-            title="Locking this item will prevent people from updating it"
-            @click="pinSetupDialog.show()" 
-        >
-            <EyeOff class="size-4 opacity-60" aria-hidden="true" />
-            Set PIN
-        </DropdownMenuItem>
-        <DropdownMenuItem class="cursor-pointer" @click="pinRemoveDialog.show()" v-else>
-            <Eye class="size-4" aria-hidden="true" />
-            Remove PIN
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem class="cursor-pointer">
-            <ListX class="size-4 opacity-60" aria-hidden="true" />
-            Deleted Items
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
+        <template v-if="!checklist.deleted_at">
+            <DropdownMenuItem class="cursor-pointer" @click="openChecklistDetails()">
+                <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
+                Details
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem class="cursor-pointer" @click="setChecklistDefault()">
+                <Star 
+                    class="size-4 opacity-60" 
+                    aria-hidden="true" 
+                    :class="isDefaultChecklist
+                        ? 'fill-yellow-400 text-yellow-400'
+                        : 'text-muted-foreground'"
+                />
+                {{ isDefaultChecklist ? 'Remove' : 'Set' }} Default
+            </DropdownMenuItem>
+            <DropdownMenuItem class="cursor-pointer" @click="copyChecklistDialog.show()">
+                <Copy class="size-4 opacity-60" aria-hidden="true" />
+                Copy
+            </DropdownMenuItem>
+            <DropdownMenuItem class="cursor-pointer">
+                <Share2 class="size-4 opacity-60" aria-hidden="true" />
+                Share
+            </DropdownMenuItem>
+            <DropdownMenuItem class="cursor-pointer" title="Move this checklist to another folder" @click="moveChecklistDialog.show()">
+                <MoveLeft class="size-4 opacity-60" aria-hidden="true" />
+                Move
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+                v-if="!checklist.pin_protected_at"
+                class="cursor-pointer" 
+                title="Locking this item will prevent people from updating it"
+                @click="pinSetupDialog.show()" 
+            >
+                <EyeOff class="size-4 opacity-60" aria-hidden="true" />
+                Set PIN
+            </DropdownMenuItem>
+            <DropdownMenuItem class="cursor-pointer" @click="pinRemoveDialog.show()" v-else>
+                <Eye class="size-4" aria-hidden="true" />
+                Remove PIN
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem class="cursor-pointer">
+                <ListX class="size-4 opacity-60" aria-hidden="true" />
+                Deleted Items
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+        </template>
         <DropdownMenuItem class="cursor-pointer text-red-600" @click="confirmDialog.show()" v-if="!checklist.deleted_at">
             <Trash class="size-4" aria-hidden="true" />
             Delete
@@ -61,7 +63,7 @@
                 @click="hardDeleteConfirmDialog.show()"
             >
                 <Trash class="size-4" aria-hidden="true" />
-                Delete permanently
+                Delete Permanently
             </DropdownMenuItem>
         </template>
     </DropdownMenuContent>
@@ -109,6 +111,7 @@ const props = defineProps<{
     checklist: DataObjectRecord;
     checklistData: DataObject;
     label?: string;
+    redirectOnDelete?: boolean;
 }>();
 
 const checklistDetailsDialog = ref();
@@ -159,17 +162,34 @@ async function handleChecklistDelete() {
             title: 'Checklist deleted.',
             description: 'Deleted items are recoverable for 30 days.',
         });
+        dataSources.deletedChecklists?.refresh();
+        if (props.redirectOnDelete) {
+            redirect();
+        }
     }
 }
 
-function hardDeleteItem() {
-    props.checklistData.delete(props.checklist.id);
+function redirect() {
+    if (props.checklist.folder_id) {
+        router.push(`/folder/${props.checklist.folder_id}`);
+    } else {
+        router.push('/home');
+    }
 }
 
-function recoverItem() {
-    props.checklistData.update(props.checklist.id, {
+async function hardDeleteItem() {
+    await props.checklistData.delete(props.checklist.id);
+    if (props.redirectOnDelete) {
+        redirect();
+    }
+    toast({title: 'Checklist permanently deleted.'});
+}
+
+async function recoverItem() {
+    await props.checklistData.update(props.checklist.id, {
         deleted_at: null
     });
+    toast({title: 'Checklist recovered.'});
 }
 
 function handleChecklistCopied() {

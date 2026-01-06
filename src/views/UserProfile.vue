@@ -194,6 +194,7 @@ import ProfileDropdown from '@/components/custom/ProfileDropdown.vue';
 import { userStore } from '@/store/userStore';
 import { useToast } from "@/components/ui/toast/use-toast";
 import ColoursDropdown from '@/components/custom/UI/ColoursDropdown.vue';
+import { useThemes } from '@/composables/useThemes';
 
 const isSaving = ref<boolean>(false);
 const fileInputRef = ref<HTMLInputElement | null>(null);
@@ -204,6 +205,16 @@ const selectedFile = ref<File | null>(null);
 const user = computed(() => dataSources.user?.currentRecord);
 
 const { toast } = useToast(); 
+
+const { resolveTheme, themeToCssVars } = useThemes()
+
+const resolvedTheme = computed(() =>
+    resolveTheme(null)
+)
+
+const themeStyle = computed(() =>
+    themeToCssVars(resolvedTheme.value)
+)
 
 const handleFileChange = async (event: Event) => {
     hasRemovedProfilePicture.value = false;
@@ -282,3 +293,9 @@ function setStartPageSpecific() {
   user.value.default_view_type = 'last_opened';
 }
 </script>
+
+<style scoped>
+.checklist-root {
+    background-color: var(--bg-main);
+}
+</style>

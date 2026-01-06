@@ -4,6 +4,7 @@ import HomePage from '../views/HomePage.vue';
 import Checklist from '@/views/Checklist.vue';
 import Folder from '@/views/Folder.vue';
 import UserProfile from '@/views/UserProfile.vue';
+import DeletedItems from '@/views/DeletedItems.vue';
 
 import { userStore } from '@/store/userStore';
 import { hasAuthState } from '@/utils/authPersistence';
@@ -67,6 +68,15 @@ const routes: Array<RouteRecordRaw> = [
       title: 'Folder',
       // requiresAuth: true
     }
+  },
+  {
+    path: '/deleted-items',
+    name: 'DeletedItems',
+    component: DeletedItems,
+    meta: {
+        title: 'Deleted Items',
+        requiresAuth: true
+      }
   },
 ]
 
