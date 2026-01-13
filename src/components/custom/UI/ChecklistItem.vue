@@ -1,7 +1,17 @@
 <template>
-    <div 
-        class="checklist-item bg-white rounded-2xl shadow-sm px-4 py-3 pl-5 transition hover:shadow-md relative"
+    <div
+        class="bg-white checklist-item rounded-2xl shadow-sm border-gray-200 px-4 py-3 pl-5 relative
+            transition-colors duration-150 border focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            :class="{ 'ring-2 ring-indigo-400' :  isHovered || menuOpen || isCurrent,
+                'opacity-50' : itemIsDisabled,
+                'cursor-pointer' : isDraggable
+            }"
         :style="{ '--item-colour': item.bg_colour }"
+        @mouseenter="isHovered = true"
+        @mouseleave="isHovered = false"
+        @focusin="isHovered = true"
+        @focusout="!menuOpen && (isHovered = false)"
+        @click="setCurrent"
     >
         <div class="flex justify-between items-center">
             <template v-if="itemIsDisabled">
@@ -16,17 +26,13 @@
                     :title="`Locked by ${item.locked_by_username} ${DateUtils.toDateTime(item.locked_at)}`"
                 />
             </template>
-            <button
+            <Checkbox
                 v-else
-                class="mr-2 hover:text-indigo-500 transition"
-                :class="{ 
-                    'text-green-600' : item.is_checked, 
-                    'text-gray-400' : !item.is_checked
-                }"
-                @click="toggleCheck()"
-            >
-                <component :is="item.is_checked ? CheckCircle2Icon : CircleIcon" class="w-6 h-6" />
-            </button>
+                :style="{ 'background-color': item.is_checked ? '#00bc7d' : 'transparent'}"
+                :class="{ 'border border-gray-400 !border-solid' : !item.is_checked }"
+                class="rounded-full mr-2"
+                v-model="item.is_checked"
+            />
             <div class="w-full">
                 <input
                     v-model="item.name"
@@ -37,56 +43,62 @@
                     :class="{ 'text-gray-800' : item.deleted_at || item.is_checked }"
                 />
             </div>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button
-                        size="icon"
-                        variant="ghost"
-                        class="rounded-full shadow-none ml-3"
-                        aria-label="Open edit menu"
-                    >
-                        <Ellipsis :size="16" aria-hidden="true" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                    <DropdownMenuItem class="cursor-pointer" @click="openItemDetails()">
-                        <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
-                        Details
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem 
-                        v-if="!item.locked_at"
-                        class="cursor-pointer" 
-                        title="Locking this item will prevent people from updating it"
-                        @click="lockItem()" 
-                    >
-                        <Lock class="size-4 opacity-60" aria-hidden="true" />
-                        Lock
-                    </DropdownMenuItem>
-                    <DropdownMenuItem class="cursor-pointer" @click="unlockItem()" v-else>
-                        <LockOpen class="size-4" aria-hidden="true" />
-                        Unlock
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem class="cursor-pointer text-red-600" @click="setDeleted()" v-if="!item.deleted_at">
-                        <Trash class="size-4" aria-hidden="true" />
-                        Delete
-                    </DropdownMenuItem>
-                    <template v-else>
-                        <DropdownMenuItem class="cursor-pointer" @click="recoverItem()">
-                            <RotateCcw class="size-4 opacity-60" aria-hidden="true" />
-                            Recover
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            class="cursor-pointer text-red-600"
-                            @click="tryHardDeleteItem()"
+            <div
+                class="ml-3 w-8 flex justify-center transition-opacity duration-150"
+                :class="(isHovered || menuOpen || isMobile) ? 'opacity-100' : 'opacity-0'"
+            >
+                <DropdownMenu :open="menuOpen" @update:open="menuOpen = $event">
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            size="icon"
+                            variant="ghost"
+                            
+                            class="opacity-60 active:opacity-100 rounded-full"
+                            aria-label="Open edit menu"
                         >
-                            <Trash class="size-4" aria-hidden="true" />
-                            Delete permanently
+                            <Ellipsis :size="16" aria-hidden="true" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem class="cursor-pointer" @click="openItemDetails()">
+                            <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
+                            Details
                         </DropdownMenuItem>
-                    </template>
-                </DropdownMenuContent>
-            </DropdownMenu>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem 
+                            v-if="!item.locked_at"
+                            class="cursor-pointer" 
+                            title="Locking this item will prevent people from updating it"
+                            @click="lockItem()" 
+                        >
+                            <Lock class="size-4 opacity-60" aria-hidden="true" />
+                            Lock
+                        </DropdownMenuItem>
+                        <DropdownMenuItem class="cursor-pointer" @click="unlockItem()" v-else>
+                            <LockOpen class="size-4" aria-hidden="true" />
+                            Unlock
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem class="cursor-pointer text-red-600" @click="setDeleted()" v-if="!item.deleted_at">
+                            <Trash class="size-4" aria-hidden="true" />
+                            Delete
+                        </DropdownMenuItem>
+                        <template v-else>
+                            <DropdownMenuItem class="cursor-pointer" @click="recoverItem()">
+                                <RotateCcw class="size-4 opacity-60" aria-hidden="true" />
+                                Recover
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                class="cursor-pointer text-red-600"
+                                @click="tryHardDeleteItem()"
+                            >
+                                <Trash class="size-4" aria-hidden="true" />
+                                Delete permanently
+                            </DropdownMenuItem>
+                        </template>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
         </div>
         <!-- <span v-if="item.deleted_at" class="text-red-600 italic text-sm">
             Deleted {{ DateUtils.toDateTime(item.deleted_at) }} by {{ item.deleted_by_username }}
@@ -146,12 +158,13 @@ import ChecklistItemDetails from '@/components/dialogs/ChecklistItemDetails.vue'
 import { ref, computed } from 'vue';
 import { Button } from "@/components/ui/button";
 import Confirm from '@/components/dialogs/Confirm.vue';
+import { useWindowSize } from "@vueuse/core";
+import { Checkbox } from "@/components/ui/checkbox"
 
 const props = defineProps<{
     item: DataObjectRecord;
     checklistData: DataObject;
     disabled?: boolean;
-
 }>();
 
 const emit = defineEmits<{
@@ -161,11 +174,28 @@ const emit = defineEmits<{
 const itemDetailsDialog = ref();
 const confirmDialog = ref();
 
+const isHovered = ref(false);
+const menuOpen = ref(false);
+const isDraggable = computed(() => {
+    return !itemIsDisabled.value;
+});
+
+const { width } = useWindowSize();
+const isMobile = computed(() => width.value < 768);
+
 const { toast } = useToast();
+
+const isCurrent = computed(() => {
+    return props.checklistData.currentRecord?.id === props.item.id;
+});
 
 const itemIsDisabled = computed((): boolean => {
     return props.item.deleted_at || props.item.locked_at || props.item.checklist_is_deleted ? true : false;
 });
+
+function setCurrent() {
+    props.checklistData.currentRecord = props.item;
+}
 
 function toggleCheck() {
     props.checklistData.update(props.item.id, {
@@ -232,16 +262,13 @@ function recoverItem() {
     border-top-left-radius: 1rem;
     border-bottom-left-radius: 1rem;
 }
-</style>
-<style>
-    .prose ul {
-      list-style: disc;
-      padding-left: 1.5rem;
-    }
-    
-    .prose ol {
-      list-style: decimal;
-      padding-left: 1.5rem;
-    }
+.prose ul {
+    list-style: disc;
+    padding-left: 1.5rem;
+}
 
+.prose ol {
+    list-style: decimal;
+    padding-left: 1.5rem;
+}
 </style>

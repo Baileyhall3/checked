@@ -7,26 +7,21 @@
                     :style="{ '--item-colour': props.checklistItem.bg_colour }"
                 >
                     <div class="flex justify-between items-start">
-                    <button
-                        v-if="!props.checklistItem.deleted_at"
-                        class="mr-2 hover:text-indigo-500 transition"
-                        :class="{ 
-                        'text-green-600': props.checklistItem.is_checked, 
-                        'text-gray-400': !props.checklistItem.is_checked
-                        }"
-                        @click="toggleCheck(props.checklistItem)"
-                    >
-                        <component :is="props.checklistItem.is_checked ? CheckCircle2Icon : CircleIcon" class="w-6 h-6" />
-                    </button>
-
-                    <div class="w-full pe-4 font-semibold tracking-tight">
-                        <textarea
-                            ref="nameInput"
-                            v-model="props.checklistItem.name"
-                            class="block w-full bg-transparent border-none focus:outline-none text-gray-800 resize-none overflow-hidden leading-relaxed"
-                            @input="autoResize"
-                        ></textarea>
-                    </div>
+                        <Checkbox
+                            v-if="!props.checklistItem.deleted_at"
+                            :style="{ 'background-color': props.checklistItem.is_checked ? '#00bc7d' : 'transparent'}"
+                            :class="{ 'border border-gray-400 !border-solid' : !props.checklistItem.is_checked }"
+                            class="rounded-full mr-2 mt-1"
+                            v-model="props.checklistItem.is_checked"
+                        />
+                        <div class="w-full pe-4 font-semibold tracking-tight">
+                            <textarea
+                                ref="nameInput"
+                                v-model="props.checklistItem.name"
+                                class="block w-full bg-transparent border-none focus:outline-none text-gray-800 resize-none overflow-hidden leading-relaxed"
+                                @input="autoResize"
+                            ></textarea>
+                        </div>
                     </div>
                 </div>
             </DialogHeader>
@@ -156,6 +151,7 @@ import { CheckCircle2Icon, CircleIcon, Calendar, Palette } from 'lucide-vue-next
 import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import ColoursDropdown from '../custom/UI/ColoursDropdown.vue';
 import TextEditor from '../custom/UI/input/TextEditor.vue';
+import { Checkbox } from '../ui/checkbox';
 
 const props = defineProps<{
     checklistItem: DataObjectRecord;

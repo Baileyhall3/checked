@@ -82,7 +82,6 @@ export async function initDataObjects(url: string, key: string, currentUserId: n
         },
         sort: { field: "created_at", direction: 'desc' },
         whereClauses: [
-            { field: 'folder_id', operator: 'isnull' },
             { field: 'deleted_at', operator: 'isnull' }
         ],
         fields: checklistFields

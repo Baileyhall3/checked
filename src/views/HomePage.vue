@@ -116,7 +116,7 @@
               </RoundedContainer>
             </div>
 
-            <div class="mb-8" v-if="dataSources.myChecklists?.data.length">
+            <!-- <div class="mb-8" v-if="dataSources.myChecklists?.data.length">
               <div class="text-xl font-medium flex items-center">
                 <ListTodo class="me-2" aria-hidden="true" />
                 Checklists
@@ -129,7 +129,7 @@
                         />
                     </template>
                 </RoundedContainer>
-            </div>
+            </div> -->
 
             <div v-if="dataSources.deletedChecklists?.data && dataSources.deletedChecklists?.data.length > 0">
               <RouterLink to="/deleted-items" class="cursor-pointer hover:underline text-xl font-medium flex items-center">

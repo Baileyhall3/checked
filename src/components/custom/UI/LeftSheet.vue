@@ -4,7 +4,7 @@
             <Button
                 size="icon"
                 variant="ghost"
-                class="rounded-full shadow-none gap-0 block me-3"
+                class="rounded-full"
                 aria-label="Open edit menu"
             >
                 <Menu :size="16" aria-hidden="true" />
@@ -13,13 +13,9 @@
         <SheetContent side="left" class="p-0 pt-3 px-6">
             <SheetHeader class="text-left">
                 <SheetTitle>Checked</SheetTitle>
-                <SheetDescription>
-                    Make changes to your profile here. Click save when you're done.
-                </SheetDescription>
+                
             </SheetHeader>
-            <div class="grid gap-4 py-4">
-                oioiiii
-            </div>
+            <ChecklistTree />
         </SheetContent>
     </Sheet>
 </template>
@@ -36,4 +32,5 @@ import {
 } from '@/components/ui/sheet';
 import Button from '@/components/ui/button/Button.vue';
 import { Menu } from 'lucide-vue-next';
+import ChecklistTree from './ChecklistTree.vue';
 </script>

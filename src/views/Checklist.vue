@@ -7,10 +7,20 @@
                     <BlurredHeader :background="resolvedTheme?.config.header.background + '80'"
                         :text-color="resolvedTheme?.config.header.text"
                     >
-                        <div class="flex justify-between items-center">
-                            <Breadcrumbs :items="breadcrumbs" :text-color="resolvedTheme?.config.header.text" :muted-color="resolvedTheme?.config.text.muted" />
-                            <ProfileDropdown />
+                        <div class="grid grid-cols-3 items-center">
+                            <div class="justify-self-start">
+                                <LeftSheet />
+                            </div>
+                            <div class="justify-self-center">
+                                <span class="text-lg font-semibold truncate">
+                                    {{ checklistDs.checklist.currentRecord?.name }}
+                                </span>
+                            </div>
+                            <div class="justify-self-end">
+                                <ProfileDropdown />
+                            </div>
                         </div>
+                        <!-- <Breadcrumbs :items="breadcrumbs" :text-color="resolvedTheme?.config.header.text" :muted-color="resolvedTheme?.config.text.muted" /> -->
                     </BlurredHeader>
                     <MainContent>
                         <div class="w-full flex mb-4">
@@ -235,6 +245,7 @@ import ChecklistLayout from '@/layouts/ChecklistLayoutManager';
 import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 import { useThemes } from '@/composables/useThemes';
 import MainContent from '@/components/custom/UI/MainContent.vue';
+import LeftSheet from '@/components/custom/UI/LeftSheet.vue';
 
 const route = useRoute();
 const router = useRouter();
