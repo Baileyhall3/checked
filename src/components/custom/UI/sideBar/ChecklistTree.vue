@@ -9,29 +9,22 @@
       v-for="item in flattenItems"
       :key="item._id"
       v-bind="item.bind"
-      v-slot="{ isExpanded }"
+      v-slot="{ isExpanded, handleSelect }"
       :style="{ paddingLeft: `${item.level - 0.5}rem` }"
       class="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-gray-100 cursor-pointer"
-    >
-      <!-- Folder -->
-      <template v-if="item.hasChildren">
-        <component
-          :is="isExpanded ? FolderOpen : Folder"
-          class="h-4 w-4 text-gray-500"
-        />
-      </template>
-
-      <!-- Checklist -->
-      <template v-else>
-        <Icon
-          icon="lucide:list-check"
-          class="h-4 w-4 text-gray-400"
-        />
-      </template>
-
-      <span class="truncate">
-        {{ item.value.title }}
-      </span>
+      >
+      <FolderTreeItem 
+        v-if="item.hasChildren" 
+        :id="item.value.folderId"
+        :is-expanded="isExpanded"
+        :title="item.value.title"
+      />
+      <ChecklistTreeItem 
+        v-else
+        @click="onItemClick(handleSelect, item)"
+        :title="item.value.title"
+        :id="item.value.checklistId"
+      />
     </TreeItem>
   </TreeRoot>
 </template>
@@ -41,8 +34,9 @@
 import { computed } from 'vue'
 import { TreeRoot, TreeItem, } from 'reka-ui'
 import { dataSources } from '@/api/dataObjects';
-import { FolderOpen, Folder } from 'lucide-vue-next';
-
+import ChecklistTreeItem from './ChecklistTreeItem.vue';
+import FolderTreeItem from './FolderTreeItem.vue';
+import { sideBarState } from './sideBarState';
 
 const items = computed(() => {
   if (
@@ -72,5 +66,18 @@ const items = computed(() => {
       checklistId: cl.id
     }))
   }))
-})
+});
+
+const onItemClick = (
+  handleSelect: () => void,
+  item: any
+) => {
+  // Let Reka handle selection
+  handleSelect()
+
+  // Only close on mobile AND only for leaf items
+  if (sideBarState.isMobile && !item.hasChildren) {
+    sideBarState.isSidebarOpen = false
+  }
+}
 </script>

@@ -9,7 +9,7 @@
                     >
                         <div class="grid grid-cols-3 items-center">
                             <div class="justify-self-start">
-                                <LeftSheet />
+                                <SideBarTrigger />
                             </div>
                             <div class="justify-self-center">
                                 <span class="text-lg font-semibold truncate">
@@ -245,7 +245,7 @@ import ChecklistLayout from '@/layouts/ChecklistLayoutManager';
 import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 import { useThemes } from '@/composables/useThemes';
 import MainContent from '@/components/custom/UI/MainContent.vue';
-import LeftSheet from '@/components/custom/UI/LeftSheet.vue';
+import SideBarTrigger from '@/components/custom/UI/sideBar/SideBarTrigger.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -326,6 +326,7 @@ const breadcrumbs = computed((): IBreadcrumbItem[] => {
 onIonViewDidEnter(() => {
     const idParam = route.params.id
     const id = Number(idParam)
+    debugger
 
     if (isNaN(id)) {
         console.error('Invalid checklist ID:', idParam)
@@ -361,6 +362,8 @@ onIonViewDidEnter(() => {
 async function createDataObjects(id: number) {
     try {
         isLoading.value = true;
+
+        debugger
 
         const checklistData = await createDataObject('checklist', {
             viewName: 'checklists_view',

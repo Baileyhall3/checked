@@ -6,6 +6,8 @@ import Folder from '@/views/Folder.vue';
 import UserProfile from '@/views/UserProfile.vue';
 import DeletedItems from '@/views/DeletedItems.vue';
 
+import MainLayout from '@/layouts/MainLayout.vue';
+
 import NotFound from '@/views/errors/NotFound.vue';
 import Forbidden from '@/views/errors/Forbidden.vue';
 import ServerError from '@/views/errors/ServerError.vue';
@@ -18,71 +20,93 @@ import Register from '@/views/auth/Register.vue';
 import Login from '@/views/auth/Login.vue';
 
 const routes: Array<RouteRecordRaw> = [
-  {
-    path: '/',
-    name: 'Root',
-    component: HomePage 
-  },
-  {
-    path: '/home',
-    name: 'Home',
-    component: HomePage
-  },
+  // -------------------------
+  // Auth / standalone routes
+  // -------------------------
   {
     path: '/register',
     name: 'Register',
     component: Register,
     meta: {
-        title: 'Register',
-        requiresAuth: false
-      }
+      title: 'Register',
+      requiresAuth: false,
+    },
   },
   {
     path: '/login',
     name: 'Login',
     component: Login,
     meta: {
-        title: 'Login',
-        requiresAuth: false
-      }
+      title: 'Login',
+      requiresAuth: false,
+    },
   },
+
+  // -------------------------
+  // App routes (WITH sidebar)
+  // -------------------------
   {
-    path: '/profile',
-    name: 'Profile',
-    component: UserProfile,
+    path: '/',
+    component: MainLayout,
     meta: {
-        title: 'Profile',
-        requiresAuth: true
-      }
+      requiresAuth: true,
+    },
+    children: [
+      {
+        path: '',
+        name: 'Root',
+        component: HomePage,
+        meta: {
+          title: 'Checked',
+        },
+      },
+      {
+        path: 'home',
+        name: 'Home',
+        component: HomePage,
+        meta: {
+          title: 'Home',
+        },
+      },
+      {
+        path: 'profile',
+        name: 'Profile',
+        component: UserProfile,
+        meta: {
+          title: 'Profile',
+        },
+      },
+      {
+        path: 'checklist/:id',
+        name: 'Checklist',
+        component: Checklist,
+        meta: {
+          title: 'Checklist',
+        },
+      },
+      {
+        path: 'folder/:id',
+        name: 'Folder',
+        component: Folder,
+        meta: {
+          title: 'Folder',
+        },
+      },
+      {
+        path: 'deleted-items',
+        name: 'DeletedItems',
+        component: DeletedItems,
+        meta: {
+          title: 'Deleted Items',
+          // requiresPremium: true
+        },
+      },
+    ],
   },
-  {
-    path: '/checklist/:id',
-    name: 'Checklist',
-    component: Checklist,
-    meta: {
-      title: 'Checklist',
-      requiresAuth: true
-    }
-  },
-  {
-    path: '/folder/:id',
-    name: 'Folder',
-    component: Folder,
-    meta: {
-      title: 'Folder',
-      requiresAuth: true
-    }
-  },
-  {
-    path: '/deleted-items',
-    name: 'DeletedItems',
-    component: DeletedItems,
-    meta: {
-        title: 'Deleted Items',
-        requiresAuth: true,
-        // requiresPremium: true
-      }
-  },
+
+  // -------------------------
+  // Error routes
+  // -------------------------
   {
     path: '/403',
     component: Forbidden,
@@ -96,7 +120,8 @@ const routes: Array<RouteRecordRaw> = [
     name: 'NotFound',
     component: NotFound,
   },
-]
+];
+
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -156,7 +181,7 @@ router.beforeEach(async (to, from, next) => {
   }
 
   if ((to.path === '/login' || to.path === '/register') && isAuthenticated) {
-    return next('/home');
+    return next('/');
   }
 
   next();
