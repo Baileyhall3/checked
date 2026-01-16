@@ -1,6 +1,6 @@
 <template>
     <Sheet v-if="sideBarState.isMobile" v-model:open="sideBarState.isSidebarOpen">
-        <SheetContent side="left" class="p-0 pt-3 px-6">
+        <SheetContent side="left" class="p-0">
             <SideBarContent />
         </SheetContent>
     </Sheet>

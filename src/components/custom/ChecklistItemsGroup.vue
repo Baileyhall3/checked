@@ -25,7 +25,7 @@
 import { ref } from 'vue';
 import ChecklistItem from './UI/ChecklistItem.vue';
 import type { DataObject, DataObjectRecord } from 'supabase-dataobject-core';
-import { ChevronDown, ChevronRight } from 'lucide-vue-next';
+import { ChevronRight } from 'lucide-vue-next';
 import { Button } from "@/components/ui/button";
 
 const props = defineProps<{

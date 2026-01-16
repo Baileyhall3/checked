@@ -1,6 +1,8 @@
 <template>
     <DropdownMenuContent>
-        <!-- <DropdownMenuLabel v-if="props.label">{{ props.label }}</DropdownMenuLabel> -->
+
+        <slot name="contentTop"></slot>
+
         <DropdownMenuItem class="cursor-pointer" @click="folderDetailsDialog.show()">
             <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
             Details

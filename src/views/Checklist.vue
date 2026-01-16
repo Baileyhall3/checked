@@ -7,19 +7,32 @@
                     <BlurredHeader :background="resolvedTheme?.config.header.background + '80'"
                         :text-color="resolvedTheme?.config.header.text"
                     >
-                        <div class="grid grid-cols-3 items-center">
-                            <div class="justify-self-start">
-                                <SideBarTrigger />
-                            </div>
-                            <div class="justify-self-center">
-                                <span class="text-lg font-semibold truncate">
-                                    {{ checklistDs.checklist.currentRecord?.name }}
-                                </span>
-                            </div>
-                            <div class="justify-self-end">
-                                <ProfileDropdown />
-                            </div>
-                        </div>
+                        <template #center>
+                            <span class="text-lg font-semibold truncate flex items-center gap-2">
+                                <DefaultStar type="checklist" :id="checklistDs.checklist.currentRecord?.id" />
+                                {{ checklistDs.checklist.currentRecord?.name }}
+                            </span>
+                        </template>
+                        <template #rightSide>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        class="rounded-full"
+                                        aria-label="Open settings"
+                                    >
+                                        <Ellipsis :size="16" aria-hidden="true" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <ChecklistDropdownContent 
+                                    label="Checklist Details"
+                                    :checklist="checklistDs.checklist.currentRecord"
+                                    :checklist-data="checklistDs.checklist"
+                                    redirectOnDelete
+                                />
+                            </DropdownMenu>
+                        </template>
                         <!-- <Breadcrumbs :items="breadcrumbs" :text-color="resolvedTheme?.config.header.text" :muted-color="resolvedTheme?.config.text.muted" /> -->
                     </BlurredHeader>
                     <MainContent>
@@ -209,7 +222,7 @@ import { reactive, ref, computed } from 'vue';
 import { dataSources, checklistFields, checklistItemsFields } from '@/api/dataObjects';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast/use-toast";
-import { Folder, Home, X, ArrowUpDown, Check, Settings, Key } from "lucide-vue-next";
+import { Folder, Home, X, ArrowUpDown, Check, Settings, Ellipsis } from "lucide-vue-next";
 import {
 DropdownMenu,
   DropdownMenuContent,
@@ -246,6 +259,7 @@ import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 import { useThemes } from '@/composables/useThemes';
 import MainContent from '@/components/custom/UI/MainContent.vue';
 import SideBarTrigger from '@/components/custom/UI/sideBar/SideBarTrigger.vue';
+import DefaultStar from '@/components/custom/UI/DefaultStar.vue';
 
 const route = useRoute();
 const router = useRouter();

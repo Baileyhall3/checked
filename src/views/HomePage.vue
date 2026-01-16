@@ -46,8 +46,18 @@
       </div>
     </div>
     <template v-else>
-      <UnauthenticatedHeader />
       <IonContent :fullscreen="true">
+        <Blurred>
+          <template #center>
+              <span class="text-lg font-semibold text-foreground flex items-center">
+                  <img src="/public/assets/images/check-icon-no-bg.png"
+                      alt="Checked Logo"
+                      class="h-6 w-6 mr-1" 
+                  />
+                  Checked-it
+              </span>
+          </template>
+        </Blurred>
         <MainContent>
           <!-- <div class="text-lg font-medium">Hey, {{ userStore.userProfile?.username }}!</div> -->
           <Empty class="bg-white shadow-lg rounded-xl p-6 mb-8" v-if="dataSources.myChecklists?.data.length === 0 && dataSources.myFolders?.data.length === 0">
@@ -74,7 +84,7 @@
           </Empty>
           
           <template v-else>
-            <div class="flex items-center space-x-2 mb-8">
+            <div class="flex items-center space-x-2 mb-4">
                 <div class="w-full">
                   <SearchBar @search-entered="handleSearchQuery" />
                 </div>
@@ -101,7 +111,7 @@
               </DropdownMenu>
             </div>
             
-            <div class="mb-8" v-if="dataSources.myFolders && dataSources.myFolders.data.length > 0">
+            <div class="mb-4" v-if="dataSources.myFolders && dataSources.myFolders.data.length > 0">
               <div class="text-xl font-medium flex items-center">
                 <FolderIcon class="me-2" aria-hidden="true" />
                 Folders
@@ -193,6 +203,7 @@ import Checklist from '@/components/custom/UI/Checklist.vue';
 import Folder from '@/components/custom/UI/Folder.vue';
 import AddNewBtn from '@/components/custom/UI/buttons/AddNewBtn.vue';
 import MainContent from '@/components/custom/UI/MainContent.vue';
+import Blurred from '@/components/header/Blurred.vue';
 
 const createChecklistDialog = ref();
 const createFolderDialog = ref();

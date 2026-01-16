@@ -1,33 +1,24 @@
 <template>
     <div 
-        class="flex items-center"
-        @mouseenter="isHovered = true"
-        @mouseleave="isHovered = false"
+        class="flex items-center w-full min-w-0 justify-between"
     >
-        <div class="flex items-center">
-            <div class="flex items-center">
-                <component
-                    :is="isExpanded ? FolderOpen : Folder"
-                    class="h-4 w-4 text-gray-500 mr-2"
-                />
-                <span class="truncate">
-                    {{ props.title }}
-                </span>
-            </div>
+        <div class="flex items-center gap-2 flex-1 min-w-0">
+            <component
+                :is="isExpanded ? FolderOpen : Folder"
+                class="h-4 w-4 text-gray-500 flex-shrink-0"
+            />
+            <span class="truncate block">
+                {{ props.title }}
+            </span>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import { FolderOpen, Folder } from 'lucide-vue-next';
 
 const props = defineProps<{
     isExpanded: boolean;
     title: string;
-    id: number;
-    isActive?: boolean;
 }>();
-
-const isHovered = ref<boolean>(false);
 </script>

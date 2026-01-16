@@ -1,32 +1,32 @@
 <template>
-    <!-- <header class="sticky top-0 z-50">
-        <div
-            class="backdrop-blur-lg shadow-sm"
-            :style="headerStyle"
-        >
-            <div class="container mx-auto px-6 py-3 flex justify-between items-center">
-                <div class="flex flex-col gap-2 w-full">
-                    <slot />
-                </div>
-                <slot name="rightSide" />
-            </div>
-        </div>
-    </header> -->
-
     <header class="sticky top-0 z-50">
         <div class="backdrop-blur-lg bg-white/30 border-b border-white/20 shadow-sm">
-            <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="container mx-auto px-2 py-2 flex justify-between items-center">
                 <div class="flex flex-col gap-2 w-full">
+                    
+                    <div class="grid grid-cols-3 items-center">
+                        <div class="justify-self-start">
+                            <SideBarTrigger />
+                        </div>
+                        <div class="justify-self-center">
+                            <slot name="center"></slot>
+                        </div>
+                        <div class="justify-self-end">
+                            <slot name="rightSide"></slot>
+                        </div>
+                    </div>
+
                     <slot></slot>
+                    
                 </div>
-                <slot name="rightSide"></slot>
             </div>
         </div>
     </header>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from 'vue';
+import SideBarTrigger from '../custom/UI/sideBar/SideBarTrigger.vue';
 
 const props = defineProps<{
     background?: string

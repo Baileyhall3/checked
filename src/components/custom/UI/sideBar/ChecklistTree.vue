@@ -11,24 +11,39 @@
       v-bind="item.bind"
       v-slot="{ isExpanded, handleSelect }"
       :style="{ paddingLeft: `${item.level - 0.5}rem` }"
-      class="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-gray-100 cursor-pointer"
+      class="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-gray-100 cursor-pointer min-w-0 w-full"
+      @mouseenter="sideBarState.hoveredItemKey = item._id"
+      @mouseleave="sideBarState.hoveredItemKey = null"
+    >
+      <div
+        v-bind="item.bind"
+        class="flex items-center gap-2 flex-1 min-w-0 cursor-pointer"
       >
-      <FolderTreeItem 
-        v-if="item.hasChildren" 
-        :id="item.value.folderId"
-        :is-expanded="isExpanded"
-        :title="item.value.title"
-      />
-      <ChecklistTreeItem 
-        v-else
-        @click="onItemClick(handleSelect, item)"
-        :title="item.value.title"
-        :id="item.value.checklistId"
-      />
+        <FolderTreeItem 
+          v-if="item.hasChildren" 
+          :id="item.value.folderId"
+          :is-expanded="isExpanded"
+          :title="item.value.title"
+          :is-hovered="sideBarState.hoveredItemKey === item._id || sideBarState.isMobile"
+          :folder="item.value.folder"
+        />
+        <ChecklistTreeItem 
+          v-else
+          @click="onItemClick(handleSelect, item)"
+          :title="item.value.title"
+          :id="item.value.checklistId"
+        />
+      </div>
+
+        <FolderActions
+          v-if="item.hasChildren"
+          :folder="item.value.folder"
+          :is-hovered="sideBarState.hoveredItemKey === item._id"
+        />
+      
     </TreeItem>
   </TreeRoot>
 </template>
-
 
 <script setup lang="ts">
 import { computed } from 'vue'
@@ -37,6 +52,8 @@ import { dataSources } from '@/api/dataObjects';
 import ChecklistTreeItem from './ChecklistTreeItem.vue';
 import FolderTreeItem from './FolderTreeItem.vue';
 import { sideBarState } from './sideBarState';
+import { DataObjectRecord } from 'supabase-dataobject-core';
+import FolderActions from './FolderActions.vue';
 
 const items = computed(() => {
   if (
@@ -54,16 +71,20 @@ const items = computed(() => {
     checklistsByFolder[folderId].push(checklist)
   }
 
-  return dataSources.myFolders.data.map(folder => ({
+  return dataSources.myFolders.data.map((folder: DataObjectRecord) => ({
     title: folder.name,
     icon: 'lucide:folder',
     type: 'folder',
     folderId: folder.id,
-    children: (checklistsByFolder[folder.id] || []).map(cl => ({
+    id: `folder-${folder.id}`,
+    folder: folder,
+    children: (checklistsByFolder[folder.id] || []).map((cl: DataObjectRecord) => ({
       title: cl.name,
       icon: 'lucide:list-check',
       type: 'checklist',
-      checklistId: cl.id
+      checklistId: cl.id,
+      id: `checklist-${cl.id}`,
+      checklist: cl
     }))
   }))
 });
