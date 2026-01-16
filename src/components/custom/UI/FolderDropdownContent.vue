@@ -1,7 +1,7 @@
 <template>
     <DropdownMenuContent>
 
-        <slot name="contentTop"></slot>
+        <slot name="contentTop" v-bind="{folder}"></slot>
 
         <DropdownMenuItem class="cursor-pointer" @click="folderDetailsDialog.show()">
             <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
@@ -9,6 +9,9 @@
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
+
+        <slot name="actions" v-bind="{folder}"></slot>
+
         <DropdownMenuItem class="cursor-pointer" @click="setFolderDefault()">
             <Star 
                 class="size-4 opacity-60" 

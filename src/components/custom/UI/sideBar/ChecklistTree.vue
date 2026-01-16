@@ -12,6 +12,7 @@
       v-slot="{ isExpanded, handleSelect }"
       :style="{ paddingLeft: `${item.level - 0.5}rem` }"
       class="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-gray-100 cursor-pointer min-w-0 w-full"
+      :class="{ 'bg-gray-100' : isSelected(item)}"
       @mouseenter="sideBarState.hoveredItemKey = item._id"
       @mouseleave="sideBarState.hoveredItemKey = null"
     >
@@ -54,6 +55,8 @@ import FolderTreeItem from './FolderTreeItem.vue';
 import { sideBarState } from './sideBarState';
 import { DataObjectRecord } from 'supabase-dataobject-core';
 import FolderActions from './FolderActions.vue';
+import { useRouter } from "vue-router";
+
 
 const items = computed(() => {
   if (
@@ -100,5 +103,31 @@ const onItemClick = (
   if (sideBarState.isMobile && !item.hasChildren) {
     sideBarState.isSidebarOpen = false
   }
+}
+
+const router = useRouter();
+
+function isSelected(item: any) {
+  const route = router.currentRoute.value
+  const value = item.value   // ← critical
+
+  console.log('item ', item)
+  console.log('route ', route)
+
+  if (value.type === 'folder') {
+    return (
+      route.name === 'Folder' &&
+      Number(route.params.id) === value.folderId
+    )
+  }
+
+  if (value.type === 'checklist') {
+    return (
+      route.name === 'Checklist' &&
+      Number(route.params.id) === value.checklistId
+    )
+  }
+
+  return false
 }
 </script>

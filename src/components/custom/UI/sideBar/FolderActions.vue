@@ -22,7 +22,13 @@
                 :folder-data="dataSources.myFolders" 
                 :folder="folder"
             >
-                <template #contentTop>
+                <template #contentTop="{ folder }">
+                    <DropdownMenuItem class="cursor-pointer" @click="openFolder(folder)">
+                        <SquareArrowUpRight class="size-4 opacity-60" aria-hidden="true" />
+                        Open Folder
+                    </DropdownMenuItem>
+                </template>
+                <template #actions>
                     <DropdownMenuItem class="cursor-pointer" @click="addChecklist()">
                         <ListPlus class="size-4 opacity-60" aria-hidden="true" />
                         Add Checklist
@@ -31,18 +37,20 @@
             </FolderDropdownContent>
         </DropdownMenuPortal>
     </DropdownMenu>
+    
     <CreateChecklist ref="createChecklistDialog" :folder="props.folder" @checklist-created="refreshChecklists" />
 </template>
 
 <script setup lang="ts">
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuPortal, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { Ellipsis, ListPlus } from 'lucide-vue-next';
+import { Ellipsis, ListPlus, SquareArrowUpRight } from 'lucide-vue-next';
 import { Button } from "@/components/ui/button";
 import FolderDropdownContent from '../FolderDropdownContent.vue';
 import { dataSources } from '@/api/dataObjects';
 import { DataObjectRecord } from 'supabase-dataobject-core';
 import CreateChecklist from "@/components/dialogs/CreateChecklist.vue";
 import { ref } from 'vue';
+import { useRouter } from "vue-router";
 
 const props = defineProps<{
     isHovered: boolean;
@@ -50,6 +58,12 @@ const props = defineProps<{
 }>();
 
 const createChecklistDialog = ref();
+
+const router = useRouter();
+
+function openFolder(folder: DataObjectRecord) {
+    router.push(`/folder/${folder.id}`);
+}
 
 function addChecklist() {
     createChecklistDialog.value.show();
