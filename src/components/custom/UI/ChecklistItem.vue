@@ -39,8 +39,11 @@
                     type="text"
                     :disabled="item.deleted_at"
                     :title="item.name"
-                    class="flex-1 bg-transparent border-none focus:outline-none text-gray-800 w-full truncate"
-                    :class="{ 'text-gray-800' : item.deleted_at || item.is_checked }"
+                    class="flex-1 bg-transparent border-none focus:outline-none  w-full truncate"
+                    :class="{ 
+                        'text-gray-700' : item.deleted_at || item.is_checked, 
+                        'text-gray-900' : !item.deleted_at && !item.is_checked 
+                    }"
                 />
             </div>
             <div
@@ -52,7 +55,6 @@
                         <Button
                             size="icon"
                             variant="ghost"
-                            
                             class="opacity-60 active:opacity-100 rounded-full"
                             aria-label="Open edit menu"
                         >

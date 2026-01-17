@@ -1,24 +1,20 @@
 <template>
     <router-link 
-        :to="`/checklist/${props.id}`"
-        class="flex items-center w-full"
+        :to="`/checklist/${props.id}`" 
+        class="flex items-center w-full min-w-0"
         @mouseenter="isHovered = true"
         @mouseleave="isHovered = false"
     >
-        <div class="flex items-center">
-            <div class="flex items-center">
-                <ListTodo 
-                    class="h-4 w-4 mr-2" 
-                    :class="{ 
-                        'text-gray-500' : !props.isActive,
-                        'text-black' : props.isActive
-                     }"
-                />
-                <span class="truncate">
-                    {{ props.title }}
-                </span>
-            </div>
-        </div>
+        <ListTodo 
+            class="h-4 w-4 mr-2 flex-shrink-0" 
+            :class="{ 
+                'text-gray-500' : !props.isActive,
+                'text-black' : props.isActive
+                }"
+        />
+        <span class="truncate min-w-0 block">
+            {{ props.title }}
+        </span>
     </router-link>
 </template>
 
