@@ -2,7 +2,7 @@
     <Button
         size="icon"
         variant="ghost"
-        class="rounded-full"
+        class="rounded-full mr-3"
         aria-label="Open edit menu"
         @click="toggleOpen"
     >

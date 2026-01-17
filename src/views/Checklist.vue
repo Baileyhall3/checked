@@ -7,18 +7,12 @@
                     <BlurredHeader :background="resolvedTheme?.config.header.background + '80'"
                         :text-color="resolvedTheme?.config.header.text"
                     >
-                        <div class="grid grid-cols-3 items-center">
-                            <div class="justify-self-start">
-                                <SideBarTrigger />
-                            </div>
-                            <div class="justify-self-center">
-                                <span class="text-lg font-semibold truncate">
-                                    {{ checklistDs.checklist.currentRecord?.name }}
-                                </span>
-                            </div>
-                            <div class="justify-self-end">
-                                <ProfileDropdown />
-                            </div>
+                        <div class="flex items-center">
+                            <SideBarTrigger />
+                            <span class="mx-auto max-w-full truncate text-lg font-semibold">
+                                {{ checklistDs.checklist.currentRecord?.name }}
+                            </span>
+                            <ProfileDropdown />
                         </div>
                         <!-- <Breadcrumbs :items="breadcrumbs" :text-color="resolvedTheme?.config.header.text" :muted-color="resolvedTheme?.config.text.muted" /> -->
                     </BlurredHeader>
@@ -326,7 +320,6 @@ const breadcrumbs = computed((): IBreadcrumbItem[] => {
 onIonViewDidEnter(() => {
     const idParam = route.params.id
     const id = Number(idParam)
-    debugger
 
     if (isNaN(id)) {
         console.error('Invalid checklist ID:', idParam)
@@ -362,8 +355,6 @@ onIonViewDidEnter(() => {
 async function createDataObjects(id: number) {
     try {
         isLoading.value = true;
-
-        debugger
 
         const checklistData = await createDataObject('checklist', {
             viewName: 'checklists_view',

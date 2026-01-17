@@ -4,12 +4,13 @@
             <Loading v-if="isLoading" />
             <template v-else>
                 <BlurredHeader>
-                    <Breadcrumbs :items="breadcrumbs" />
-                    <template #rightSide>
-                        <div class="flex items-center gap-2">
-                            <ProfileDropdown />
-                        </div>
-                    </template>
+                    <div class="flex items-center">
+                        <SideBarTrigger />
+                        <span class="mx-auto max-w-full truncate text-lg font-semibold">
+                            {{ folderDs.folder?.currentRecord?.name }}
+                        </span>
+                        <ProfileDropdown />
+                    </div>
                 </BlurredHeader>   
                 <MainContent>
                     <Empty 
@@ -201,6 +202,7 @@ import ChecklistItemsGroup from '@/components/custom/ChecklistItemsGroup.vue';
 import FolderLayout from '@/layouts/FolderLayoutManager';
 import type { FolderSort, FolderListView, ChecklistsView } from '@/layouts/FolderLayoutManager';
 import MainContent from '@/components/custom/UI/MainContent.vue';
+import SideBarTrigger from '@/components/custom/UI/sideBar/SideBarTrigger.vue';
 
 const enterPinDialog = ref();
 const createChecklistDialog = ref();

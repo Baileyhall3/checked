@@ -1,20 +1,16 @@
 <template>
     <div 
-        class="flex items-center"
+        class="flex items-center w-full"
         @mouseenter="isHovered = true"
         @mouseleave="isHovered = false"
     >
-        <div class="flex items-center">
-            <div class="flex items-center">
-                <component
-                    :is="isExpanded ? FolderOpen : Folder"
-                    class="h-4 w-4 text-gray-500 mr-2"
-                />
-                <span class="truncate">
-                    {{ props.title }}
-                </span>
-            </div>
-        </div>
+        <component
+            :is="isExpanded ? FolderOpen : Folder"
+            class="h-4 w-4 text-gray-500 mr-2"
+        />
+        <span class="truncate">
+            {{ props.title }}
+        </span>
     </div>
 </template>
 
