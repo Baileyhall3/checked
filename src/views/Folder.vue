@@ -4,13 +4,14 @@
             <Loading v-if="isLoading" />
             <template v-else>
                 <BlurredHeader>
-                    <div class="flex items-center">
-                        <SideBarTrigger />
+                    <template #center>
                         <span class="mx-auto max-w-full truncate text-lg font-semibold">
                             {{ folderDs.folder?.currentRecord?.name }}
                         </span>
+                    </template>
+                    <template #rightSide>
                         <ProfileDropdown />
-                    </div>
+                    </template>
                 </BlurredHeader>   
                 <MainContent>
                     <Empty 

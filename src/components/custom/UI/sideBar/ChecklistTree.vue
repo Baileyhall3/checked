@@ -9,39 +9,57 @@
       v-for="item in flattenItems"
       :key="item._id"
       v-bind="item.bind"
-      v-slot="{ isExpanded, handleSelect }"
+      v-slot="{ isExpanded, handleSelect, handleToggle }"
       :style="{ paddingLeft: `${item.level - 0.5}rem` }"
       class="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-gray-100 cursor-pointer min-w-0 w-full"
-      :class="{ 'bg-gray-100' : isSelected(item)}"
+      :class="{ 'bg-gray-100 font-semibold' : isSelected(item)}"
       @mouseenter="sideBarState.hoveredItemKey = item._id"
       @mouseleave="sideBarState.hoveredItemKey = null"
+      @toggle.prevent
     >
+      <button
+        v-if="item.hasChildren"
+        class="flex-shrink-0"
+        @click.stop="handleToggle()"
+        aria-label="Toggle folder"
+      >
+        <component
+          :is="isExpanded ? FolderOpen : Folder"
+          class="h-4 w-4 text-gray-500"
+        />
+      </button>
+      
       <div
         v-bind="item.bind"
         class="flex items-center gap-2 flex-1 min-w-0 cursor-pointer"
       >
-        <FolderTreeItem 
-          v-if="item.hasChildren" 
-          :id="item.value.folderId"
-          :is-expanded="isExpanded"
-          :title="item.value.title"
-          :is-hovered="sideBarState.hoveredItemKey === item._id || sideBarState.isMobile"
-          :folder="item.value.folder"
-        />
-        <ChecklistTreeItem 
-          v-else
-          @click="onItemClick(handleSelect, item)"
-          :title="item.value.title"
-          :id="item.value.checklistId"
-        />
+        <RouterLink
+            v-if="item.hasChildren"
+            :to="`/folder/${item.value.folderId}`" 
+            class="flex items-center flex-1 min-w-0 truncate"
+            @click.stop="handleSelect()"
+          >
+            {{ item.value.title }}
+        </RouterLink>
+        <router-link 
+            v-else
+            :to="`/checklist/${item.value.checklistId}`" 
+            class="flex items-center w-full min-w-0"
+        >
+            <ListTodo 
+                class="h-4 w-4 mr-2 flex-shrink-0 'text-gray-500'" 
+            />
+            <span class="truncate min-w-0 block">
+                {{ item.value.title }}
+            </span>
+        </router-link>
       </div>
 
-        <FolderActions
-          v-if="item.hasChildren"
-          :folder="item.value.folder"
-          :is-hovered="sideBarState.hoveredItemKey === item._id"
-        />
-      
+      <FolderActions
+        v-if="item.hasChildren"
+        :folder="item.value.folder"
+        :is-hovered="sideBarState.hoveredItemKey === item._id || sideBarState.isMobile"
+      />
     </TreeItem>
   </TreeRoot>
 </template>
@@ -56,7 +74,7 @@ import { sideBarState } from './sideBarState';
 import { DataObjectRecord } from 'supabase-dataobject-core';
 import FolderActions from './FolderActions.vue';
 import { useRouter } from "vue-router";
-
+import { FolderOpen, Folder, ListTodo } from 'lucide-vue-next';
 
 const items = computed(() => {
   if (
@@ -98,21 +116,14 @@ const onItemClick = (
 ) => {
   // Let Reka handle selection
   handleSelect()
-
-  // Only close on mobile AND only for leaf items
-  if (sideBarState.isMobile && !item.hasChildren) {
-    sideBarState.isSidebarOpen = false
-  }
+  sideBarState.onTreeItemClick();
 }
 
 const router = useRouter();
 
 function isSelected(item: any) {
-  const route = router.currentRoute.value
-  const value = item.value   // ← critical
-
-  console.log('item ', item)
-  console.log('route ', route)
+  const route = router.currentRoute.value;
+  const value = item.value;
 
   if (value.type === 'folder') {
     return (
