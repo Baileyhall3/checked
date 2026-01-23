@@ -11,6 +11,11 @@
         <InputGroupAddon>
             <Search :size="16" aria-hidden="true" />
         </InputGroupAddon>
+        <InputGroupAddon align="inline-end" v-if="searchQuery" @click="clearSearch">
+            <InputGroupButton size="icon-sm" aria-label="Subscribe">
+                <X :size="16" aria-hidden="true" />
+            </InputGroupButton>
+        </InputGroupAddon>
     </InputGroup>
 </template>
 
@@ -19,8 +24,9 @@ import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
+  InputGroupButton
 } from "@/components/ui/input-group";
-import { Search } from "lucide-vue-next";
+import { Search, X } from "lucide-vue-next";
 import { ref } from 'vue';
 
 export interface IProps {
@@ -29,9 +35,14 @@ export interface IProps {
 const props = withDefaults(defineProps<IProps>(), { placeHolder: 'Search... '});
 
 const emit = defineEmits(["search-entered"])
-const searchQuery = ref("");
+const searchQuery = ref<string | null>("");
 
 function enterSearch() {
+    emit("search-entered", searchQuery.value);
+}
+
+function clearSearch() {
+    searchQuery.value = null;
     emit("search-entered", searchQuery.value);
 }
 </script>

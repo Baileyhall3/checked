@@ -19,4 +19,10 @@
 import { IonRouterOutlet } from '@ionic/vue';
 import DesktopSidebar from '@/components/custom/UI/sideBar/DesktopSidebar.vue';
 import LeftSheet from '@/components/custom/UI/sideBar/LeftSheet.vue';
+import { useRouter } from 'vue-router'
+import { sideBarState } from '@/components/custom/UI/sideBar/sideBarState';
+
+const router = useRouter()
+
+sideBarState.installRouterWatcher(router);
 </script>

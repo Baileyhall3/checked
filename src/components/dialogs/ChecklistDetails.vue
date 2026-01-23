@@ -64,7 +64,7 @@
                     <p class="text-sm text-muted-foreground">{{ props.checklist.owner_username }}</p>
                     <!-- <p class="text-sm text-muted-foreground">{{ props.checklist.owner_email }}</p> -->
                 </div>
-                <div class="flex flex-col pb-4">
+                <div class="flex flex-col pb-4" v-if="props.checklist.items_updated_at">
                     <span class="font-medium">Last Updated</span>
                     <p class="text-sm text-muted-foreground">
                         {{ DateUtils.toDateTime(props.checklist.items_updated_at) }} {{ props.checklist.items_updated_by_username ? ` by ${props.checklist.items_updated_by_username}` : '' }}

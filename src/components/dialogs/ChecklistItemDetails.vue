@@ -13,13 +13,19 @@
                             :class="{ 'border border-gray-400 !border-solid' : !props.checklistItem.is_checked }"
                             class="rounded-full mr-2 mt-1"
                             v-model="props.checklistItem.is_checked"
+                            @update:model-value="handleChecked"
                         />
                         <div class="w-full pe-4 font-semibold tracking-tight">
                             <textarea
                                 ref="nameInput"
                                 v-model="props.checklistItem.name"
-                                class="block w-full bg-transparent border-none focus:outline-none text-gray-800 resize-none overflow-hidden leading-relaxed"
+                                class="block w-full bg-transparent border-none focus:outline-none resize-none overflow-hidden leading-relaxed"
+                                :class="{ 
+                                    'text-gray-700' : props.checklistItem.deleted_at || props.checklistItem.is_checked, 
+                                    'text-gray-900' : !props.checklistItem.deleted_at && !props.checklistItem.is_checked 
+                                }"
                                 @input="autoResize"
+                                @blur="props.dataObject.saveChanges()"
                             ></textarea>
                         </div>
                     </div>
@@ -27,10 +33,33 @@
             </DialogHeader>
 
             <div class="px-6 pt-4 pb-6">
-                <form class="space-y-4 pb-4">
+                <form class="space-y-4 pb-4" @submit.prevent>
                     <div class="flex flex-col">
-                        <span class="font-medium">Description</span>
-                        <TextEditor v-model="props.checklistItem.description" />
+                        <div class="flex justify-between items-center">
+                            <span class="font-medium">Description</span>
+                            <Button v-if="!isEditingDesc" variant="secondary" @click="isEditingDesc = !isEditingDesc">
+                                Edit
+                            </Button>
+                        </div>
+                        <template v-if="isEditingDesc">
+                            <TextEditor v-model="props.checklistItem.description" />
+                            <div class="flex gap-2 mt-2 justify-self-end">
+                                <Button variant="secondary" @click="cancelChanges">
+                                    Cancel
+                                </Button>
+                                <Button @click="saveChanges">
+                                    Save
+                                </Button>
+                            </div>
+                        </template>
+                        <div class="text-sm text-gray-600" v-else>
+                            <div
+                                class="prose prose-sm
+                                    prose-ul:list-disc prose-ul:list-inside prose-ul:pl-0
+                                    prose-ol:list-decimal prose-ol:list-inside prose-ol:pl-0"
+                                v-html="props.checklistItem.description"
+                            ></div>
+                        </div>
                     </div>
 
                     <div>
@@ -115,7 +144,7 @@
                         </p>
                     </div>
                 </div>
-                <DialogFooter class="pt-4 gap-2">
+                <!-- <DialogFooter class="pt-4 gap-2">
                     <DialogClose asChild>
                         <Button type="button" variant="secondary" class="border">Close</Button>
                     </DialogClose>
@@ -123,7 +152,7 @@
                         <Spinner v-if="isSaving" />
                         Save
                     </Button>
-                </DialogFooter>
+                </DialogFooter> -->
             </div>
 
         </DialogContent>
@@ -161,6 +190,7 @@ const props = defineProps<{
 const isDialogOpen = ref<boolean>(false);
 const isSaving = ref<boolean>(false);
 const nameInput = ref(null);
+const isEditingDesc = ref<boolean>(false);
 
 const autoResize = (ev) => {
     const el = ev?.target ?? nameInput.value;
@@ -175,15 +205,23 @@ const autoResize = (ev) => {
 // const maxLength = 180;
 // const characterCount = computed(() => props.checklistItem.description?.length ?? maxLength);
 
-function toggleCheck(item: any) {
-    item.is_checked = !item.is_checked;
+function handleChecked(isChecked: boolean) {
+    props.dataObject.update(props.checklistItem.id, {
+        is_checked: isChecked
+    }, true);
+}
+
+function cancelChanges() {
+    props.dataObject.cancelChanges();
+    isEditingDesc.value = false;
 }
 
 async function saveChanges() {
     try {
         isSaving.value = true;
         await props.dataObject.saveChanges();
-        close();
+        isEditingDesc.value = false;
+        // close();
     } catch (err) {
         console.error(err);
     } finally {
@@ -201,6 +239,7 @@ function setNewColour(colour: string) {
 
 const show = () => {
     isDialogOpen.value = true;
+    isEditingDesc.value = false;
 }
 
 const close = () => {

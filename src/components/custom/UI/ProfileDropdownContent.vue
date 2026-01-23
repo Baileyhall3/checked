@@ -42,7 +42,7 @@ import {
   DropdownMenuGroup
 } from "@/components/ui/dropdown-menu";
 import { userStore } from "@/store/userStore";
-import { CircleUserRound, Settings2, Users, LogOut } from "lucide-vue-next";
+import { Settings2, Users, LogOut } from "lucide-vue-next";
 import { dataSources } from "@/api/dataObjects";
 import { useRouter } from "vue-router";
 import UserDisplayAvatar from "./UserDisplayAvatar.vue";

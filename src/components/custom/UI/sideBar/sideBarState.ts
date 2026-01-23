@@ -1,5 +1,6 @@
-import { reactive, computed } from 'vue';
+import { reactive, computed, watch } from 'vue';
 import { useWindowSize } from '@vueuse/core';
+import type { Router } from 'vue-router';
 
 const { width } = useWindowSize();
 
@@ -15,5 +16,15 @@ export const sideBarState = reactive({
         if (sideBarState.isMobile) {
             sideBarState.isSidebarOpen = false;
         }
+    },
+    installRouterWatcher(router: Router) {
+        watch(
+            () => router.currentRoute.value.fullPath,
+            () => {
+                if (this.isMobile) {
+                this.isSidebarOpen = false
+                }
+            }
+        )
     }
 });

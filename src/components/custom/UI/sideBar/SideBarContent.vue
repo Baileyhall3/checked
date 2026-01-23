@@ -19,6 +19,10 @@
                     <FolderPlus class="size-4 text-gray-500" />
                     New Folder
                 </div>
+                <RouterLink to="/deleted-items" class="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-gray-100 cursor-pointer">
+                    <Trash class="h-4 w-4 text-red-600" aria-hidden="true" />
+                    Deleted Checklists ({{ dataSources.deletedChecklists?.data.length }})
+                </RouterLink>
                 <div class="mt-2">
                     <span class="px-2 text-gray-600 text-sm flex items-center gap-1 cursor-pointer"
                         style="user-select: none;"
@@ -48,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { Home, FolderPlus } from 'lucide-vue-next';
+import { Home, FolderPlus, Trash } from 'lucide-vue-next';
 import ChecklistTree from './ChecklistTree.vue';
 import { dataSources } from '@/api/dataObjects';
 import {

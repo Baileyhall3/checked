@@ -32,6 +32,16 @@
                 :class="{ 'border border-gray-400 !border-solid' : !item.is_checked }"
                 class="rounded-full mr-2"
                 v-model="item.is_checked"
+                @update:model-value="handleChecked"
+            />
+            <span
+                v-if="item.priority"
+                class="w-2 h-2 rounded-full mr-2 flex-shrink-0"
+                :class="{
+                    'bg-red-500': item.priority === 1,
+                    'bg-yellow-400': item.priority === 2,
+                    'bg-blue-400': item.priority === 3
+                }"
             />
             <div class="w-full">
                 <input
@@ -44,6 +54,7 @@
                         'text-gray-700' : item.deleted_at || item.is_checked, 
                         'text-gray-900' : !item.deleted_at && !item.is_checked 
                     }"
+                    @blur="props.checklistData.saveChanges()"
                 />
             </div>
             <div
@@ -169,10 +180,6 @@ const props = defineProps<{
     disabled?: boolean;
 }>();
 
-const emit = defineEmits<{
-    (e: 'item-checked', item: DataObjectRecord): void;
-}>()
-
 const itemDetailsDialog = ref();
 const confirmDialog = ref();
 
@@ -199,11 +206,10 @@ function setCurrent() {
     props.checklistData.currentRecord = props.item;
 }
 
-function toggleCheck() {
+function handleChecked(isChecked: boolean) {
     props.checklistData.update(props.item.id, {
-        is_checked: !props.item.is_checked
-    });
-    emit('item-checked', props.item);
+        is_checked: isChecked
+    }, true);
 }
 
 function openItemDetails() {
@@ -248,7 +254,7 @@ function recoverItem() {
 }
 </script>
 
-<style scoped>
+<style>
 .checklist-item::before {
     content: "";
     position: absolute;

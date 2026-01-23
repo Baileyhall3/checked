@@ -4,20 +4,11 @@
             <Loading v-if="isLoading" />
             <template v-else>
                 <BlurredHeader>
-                    <Breadcrumb>
-                        <BreadcrumbList>
-                            <BreadcrumbItem>
-                                <BreadcrumbLink href="/home" class="inline-flex items-center gap-1.5">
-                                    <Home class="size-4" aria-hidden="true" />
-                                    Home
-                                </BreadcrumbLink>
-                            </BreadcrumbItem>
-                            <BreadcrumbSeparator />
-                            <BreadcrumbItem>
-                                <BreadcrumbPage>Deleted Items</BreadcrumbPage>
-                            </BreadcrumbItem>
-                        </BreadcrumbList>
-                    </Breadcrumb>
+                    <template #center>
+                        <span class="text-lg font-semibold truncate flex items-center gap-2">
+                            Deleted Checklists
+                        </span>
+                    </template>
                     <template #rightSide>
                         <ProfileDropdown />
                     </template>
