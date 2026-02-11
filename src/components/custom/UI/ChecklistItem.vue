@@ -223,9 +223,20 @@ const itemIsDisabled = computed((): boolean => {
     return props.item.deleted_at || props.item.locked_at || props.item.checklist_is_deleted ? true : false;
 });
 
-function setCurrent() {
+function setCurrent(event: MouseEvent) {
+  const target = event.target as HTMLElement
+
+  if (
+    target.closest('button') ||
+    target.closest('input') ||
+    target.closest('textarea') ||
+    target.closest('[role="menu"]')
+  ) {
+    props.checklistData.currentRecord = props.item;
+  } else {
     props.checklistData.currentRecord = props.item;
     openItemDetails();
+  }
 }
 
 function handleChecked(isChecked: boolean) {
