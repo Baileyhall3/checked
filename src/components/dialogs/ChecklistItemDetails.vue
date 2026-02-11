@@ -24,6 +24,7 @@
                                     'text-gray-700' : props.checklistItem.deleted_at || props.checklistItem.is_checked, 
                                     'text-gray-900' : !props.checklistItem.deleted_at && !props.checklistItem.is_checked 
                                 }"
+                                :rows="1"
                                 @input="autoResize"
                                 @blur="props.dataObject.saveChanges()"
                             ></textarea>
@@ -81,42 +82,48 @@
                         </DropdownMenu>
                     </div>
 
-                    <!-- <div class="*:not-first:mt-2">
-                        <Popover>
-                            <PopoverTrigger as-child>
-                                <FormControl>
-                                    <Button
-                                        variant="outline" :class="cn(
-                                        'w-[240px] ps-3 text-start font-normal',
-                                        !value && 'text-muted-foreground',
-                                        )"
-                                    >
-                                        <span>{{ value ? df.format(toDate(value)) : "Pick a date" }}</span>
-                                        <Calendar class="ms-auto h-4 w-4 opacity-50" />
-                                    </Button>
-                                <input hidden>
-                                </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent class="w-auto p-0">
-                                <Calendar
-                                v-model:placeholder="placeholder"
-                                :model-value="value"
-                                calendar-label="Date of birth"
-                                initial-focus
-                                :min-value="new CalendarDate(1900, 1, 1)"
-                                :max-value="today(getLocalTimeZone())"
-                                @update:model-value="(v) => {
-                                    if (v) {
-                                    setFieldValue('dob', v.toString())
-                                    }
-                                    else {
-                                    setFieldValue('dob', undefined)
-                                    }
-                                }"
-                                />
-                            </PopoverContent>
-                        </Popover>
-                    </div> -->
+                    <div class="*:not-first:mt-2">
+                        <span>Priority</span>
+                        <div class="select-input border rounded-md">
+                            <Select 
+                                class="select-input" 
+                                v-model="props.checklistItem.priority"
+                            >
+                                <SelectTrigger class="rounded-lg">
+                                    <SelectValue placeholder="Select priority">
+                                        <template v-if="props.checklistItem.priority">
+                                            <span class="flex items-center gap-2">
+                                                <ItemPriorityCircle :priority="props.checklistItem.priority" />
+                                                {{ priorityLabel(props.checklistItem.priority) }}
+                                            </span>
+                                        </template>
+                                    </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem :value="1">
+                                            <span class="flex items-center gap-2">
+                                                <ItemPriorityCircle :priority="1" />
+                                                High
+                                            </span>
+                                        </SelectItem>
+                                        <SelectItem :value="2">
+                                            <span class="flex items-center gap-2">
+                                                <ItemPriorityCircle :priority="2" />
+                                                Medium
+                                            </span>
+                                        </SelectItem>
+                                        <SelectItem :value="3">
+                                            <span class="flex items-center gap-2">
+                                                <ItemPriorityCircle :priority="3" />
+                                                Low
+                                            </span>
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
                 </form>
                 <div class="flex flex-col space-y-4">
                     <div class="flex flex-col text-red-600" v-if="props.checklistItem.deleted_at">
@@ -173,7 +180,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/ui/toast/use-toast";
-import { ref, computed } from 'vue';
+import { ref, nextTick } from 'vue';
 import Textarea from '../ui/textarea/Textarea.vue';
 import DateUtils from '@/utils/DateUtils';
 import { CheckCircle2Icon, CircleIcon, Calendar, Palette } from 'lucide-vue-next';
@@ -181,6 +188,15 @@ import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu
 import ColoursDropdown from '../custom/UI/ColoursDropdown.vue';
 import TextEditor from '../custom/UI/input/TextEditor.vue';
 import { Checkbox } from '../ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  SelectGroup
+} from "@/components/ui/select";
+import ItemPriorityCircle from '../custom/UI/ItemPriorityCircle.vue';
 
 const props = defineProps<{
     checklistItem: DataObjectRecord;
@@ -204,6 +220,19 @@ const autoResize = (ev) => {
 
 // const maxLength = 180;
 // const characterCount = computed(() => props.checklistItem.description?.length ?? maxLength);
+
+const priorityLabel = (priority: number) => {
+    switch(priority) {
+        case 1:
+            return 'High';
+        case 2:
+            return 'Medium';
+        case 3:
+            return 'Low';
+        default:
+            return '';
+    }
+}
 
 function handleChecked(isChecked: boolean) {
     props.dataObject.update(props.checklistItem.id, {
@@ -237,9 +266,13 @@ function setNewColour(colour: string) {
     }
 }
 
-const show = () => {
+const show = async() => {
     isDialogOpen.value = true;
     isEditingDesc.value = false;
+    await nextTick();
+    if (nameInput.value) {
+        autoResize(nameInput.value);
+    }
 }
 
 const close = () => {

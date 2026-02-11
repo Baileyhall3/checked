@@ -13,121 +13,123 @@
         @focusout="!menuOpen && (isHovered = false)"
         @click="setCurrent"
     >
-        <div class="flex justify-between items-center">
-            <template v-if="itemIsDisabled">
-                <Trash 
-                    v-if="item.deleted_at || item.checklist_is_deleted" 
-                    class="w-6 h-6 text-red-600 mr-2" 
-                    :title="`Deleted by ${item.deleted_by_username} ${DateUtils.toDateTime(item.deleted_at)}`"
+        <!-- <div class="flex justify-between items-center"> -->
+        <div class="grid grid-cols-[auto_1fr_auto] gap-4 w-full items-start">
+            <div class="mt-1 flex flex-col justify-center">
+                <template v-if="itemIsDisabled">
+                    <Trash 
+                        v-if="item.deleted_at || item.checklist_is_deleted" 
+                        class="w-6 h-6 text-red-600 mr-2" 
+                        :title="`Deleted by ${item.deleted_by_username} ${DateUtils.toDateTime(item.deleted_at)}`"
+                    />
+                    <Lock 
+                        v-if="item.locked_at" 
+                        class="w-6 h-6 text-gray-600 mr-2" 
+                        :title="`Locked by ${item.locked_by_username} ${DateUtils.toDateTime(item.locked_at)}`"
+                    />
+                </template>
+                <Checkbox
+                    v-else
+                    :style="{ 'background-color': item.is_checked ? '#00bc7d' : 'transparent'}"
+                    :class="{ 'border border-gray-400 !border-solid' : !item.is_checked }"
+                    class="rounded-full"
+                    v-model="item.is_checked"
+                    @update:model-value="handleChecked"
                 />
-                <Lock 
-                    v-if="item.locked_at" 
-                    class="w-6 h-6 text-gray-600 mr-2" 
-                    :title="`Locked by ${item.locked_by_username} ${DateUtils.toDateTime(item.locked_at)}`"
-                />
-            </template>
-            <Checkbox
-                v-else
-                :style="{ 'background-color': item.is_checked ? '#00bc7d' : 'transparent'}"
-                :class="{ 'border border-gray-400 !border-solid' : !item.is_checked }"
-                class="rounded-full mr-2"
-                v-model="item.is_checked"
-                @update:model-value="handleChecked"
-            />
-            <span
-                v-if="item.priority"
-                class="w-2 h-2 rounded-full mr-2 flex-shrink-0"
-                :class="{
-                    'bg-red-500': item.priority === 1,
-                    'bg-yellow-400': item.priority === 2,
-                    'bg-blue-400': item.priority === 3
-                }"
-            />
+                <ItemPriorityCircle v-if="item.priority" :priority="item.priority" class="mt-2" />
+            </div>
+            
             <div class="w-full">
-                <input
-                    v-model="item.name"
-                    type="text"
-                    :disabled="item.deleted_at"
-                    :title="item.name"
-                    class="flex-1 bg-transparent border-none focus:outline-none  w-full truncate"
-                    :class="{ 
+                 <div class="w-full tracking-tight" :class="{ 
                         'text-gray-700' : item.deleted_at || item.is_checked, 
                         'text-gray-900' : !item.deleted_at && !item.is_checked 
                     }"
-                    @blur="props.checklistData.saveChanges()"
-                />
+                >
+                    <textarea
+                        ref="nameInput"
+                        v-model="item.name"
+                        class="block w-full bg-transparent border-none focus:outline-none resize-none overflow-hidden leading-relaxed"
+                        :class="{ 
+                            'text-gray-700' : item.deleted_at || item.is_checked, 
+                            'text-gray-900' : !item.deleted_at && !item.is_checked 
+                        }"
+                        @blur="props.checklistData.saveChanges()"
+                        @input="autoResize"
+                        :rows="1"
+                    ></textarea>
+                </div>
+                 <!-- <span v-if="item.deleted_at" class="text-red-600 italic text-sm">
+                    Deleted {{ DateUtils.toDateTime(item.deleted_at) }} by {{ item.deleted_by_username }}
+                </span> -->
+                <div class="flex justify-between items-start">
+                    <div class="text-sm text-gray-600">
+                        <div
+                            class="prose prose-sm
+                                prose-ul:list-disc prose-ul:list-inside prose-ul:pl-0
+                                prose-ol:list-decimal prose-ol:list-inside prose-ol:pl-0"
+                            v-html="item.description"
+                        ></div>
+                    </div>
+                </div>
             </div>
-            <div
-                class="ml-3 w-8 flex justify-center transition-opacity duration-150"
-                :class="(isHovered || menuOpen || isMobile) ? 'opacity-100' : 'opacity-0'"
-            >
-                <DropdownMenu :open="menuOpen" @update:open="menuOpen = $event">
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                            size="icon"
-                            variant="ghost"
-                            class="opacity-60 active:opacity-100 rounded-full"
-                            aria-label="Open edit menu"
-                        >
-                            <Ellipsis :size="16" aria-hidden="true" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                        <DropdownMenuItem class="cursor-pointer" @click="openItemDetails()">
-                            <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
-                            Details
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                            v-if="!item.locked_at"
-                            class="cursor-pointer" 
-                            title="Locking this item will prevent people from updating it"
-                            @click="lockItem()" 
-                        >
-                            <Lock class="size-4 opacity-60" aria-hidden="true" />
-                            Lock
-                        </DropdownMenuItem>
-                        <DropdownMenuItem class="cursor-pointer" @click="unlockItem()" v-else>
-                            <LockOpen class="size-4" aria-hidden="true" />
-                            Unlock
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem class="cursor-pointer text-red-600" @click="setDeleted()" v-if="!item.deleted_at">
-                            <Trash class="size-4" aria-hidden="true" />
-                            Delete
-                        </DropdownMenuItem>
-                        <template v-else>
-                            <DropdownMenuItem class="cursor-pointer" @click="recoverItem()">
-                                <RotateCcw class="size-4 opacity-60" aria-hidden="true" />
-                                Recover
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                class="cursor-pointer text-red-600"
-                                @click="tryHardDeleteItem()"
-                            >
-                                <Trash class="size-4" aria-hidden="true" />
-                                Delete permanently
-                            </DropdownMenuItem>
-                        </template>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-        </div>
-        <!-- <span v-if="item.deleted_at" class="text-red-600 italic text-sm">
-            Deleted {{ DateUtils.toDateTime(item.deleted_at) }} by {{ item.deleted_by_username }}
-        </span> -->
-        <div class="flex justify-between items-start">
-            <div class="text-sm text-gray-600">
+            
+            <div>
                 <div
-                    class="prose prose-sm
-                        prose-ul:list-disc prose-ul:list-inside prose-ul:pl-0
-                        prose-ol:list-decimal prose-ol:list-inside prose-ol:pl-0"
-                    v-html="item.description"
-                ></div>
+                    class="flex justify-center transition-opacity duration-150"
+                    :class="(isHovered || menuOpen || isMobile) ? 'opacity-100' : 'opacity-0'"
+                >
+                    <DropdownMenu :open="menuOpen" @update:open="menuOpen = $event">
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                class="opacity-60 active:opacity-100 rounded-full size-6"
+                                aria-label="Open edit menu"
+                            >
+                                <Ellipsis  aria-hidden="true" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem class="cursor-pointer" @click="openItemDetails()">
+                                <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
+                                Details
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                                v-if="!item.locked_at"
+                                class="cursor-pointer" 
+                                title="Locking this item will prevent people from updating it"
+                                @click="lockItem()" 
+                            >
+                                <Lock class="size-4 opacity-60" aria-hidden="true" />
+                                Lock
+                            </DropdownMenuItem>
+                            <DropdownMenuItem class="cursor-pointer" @click="unlockItem()" v-else>
+                                <LockOpen class="size-4" aria-hidden="true" />
+                                Unlock
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem class="cursor-pointer text-red-600" @click="setDeleted()" v-if="!item.deleted_at">
+                                <Trash class="size-4" aria-hidden="true" />
+                                Delete
+                            </DropdownMenuItem>
+                            <template v-else>
+                                <DropdownMenuItem class="cursor-pointer" @click="recoverItem()">
+                                    <RotateCcw class="size-4 opacity-60" aria-hidden="true" />
+                                    Recover
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    class="cursor-pointer text-red-600"
+                                    @click="tryHardDeleteItem()"
+                                >
+                                    <Trash class="size-4" aria-hidden="true" />
+                                    Delete permanently
+                                </DropdownMenuItem>
+                            </template>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
             </div>
-            <!-- <div>
-                <Text class="text-gray-600 mr-2" :size="16" />
-            </div> -->
         </div>
     </div>
 
@@ -168,11 +170,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from '@/components/ui/toast';
 import ChecklistItemDetails from '@/components/dialogs/ChecklistItemDetails.vue';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { Button } from "@/components/ui/button";
 import Confirm from '@/components/dialogs/Confirm.vue';
 import { useWindowSize } from "@vueuse/core";
-import { Checkbox } from "@/components/ui/checkbox"
+import { Checkbox } from "@/components/ui/checkbox";
+import ItemPriorityCircle from './ItemPriorityCircle.vue';
 
 const props = defineProps<{
     item: DataObjectRecord;
@@ -180,8 +183,26 @@ const props = defineProps<{
     disabled?: boolean;
 }>();
 
+
 const itemDetailsDialog = ref();
 const confirmDialog = ref();
+const nameInput = ref(null);
+
+const autoResize = (ev) => {
+    const el = ev?.target ?? nameInput.value;
+    if (!el) return;
+    // make sure box-sizing is predictable
+    el.style.boxSizing = 'border-box';
+    el.style.height = 'auto';
+    // use scrollHeight for natural height; add 1px to avoid clipping in some browsers
+    el.style.height = `${el.scrollHeight + 1}px`;
+};
+
+onMounted(() => {
+    if (nameInput.value) {
+        autoResize(nameInput.value);
+    }
+});
 
 const isHovered = ref(false);
 const menuOpen = ref(false);
@@ -204,6 +225,7 @@ const itemIsDisabled = computed((): boolean => {
 
 function setCurrent() {
     props.checklistData.currentRecord = props.item;
+    openItemDetails();
 }
 
 function handleChecked(isChecked: boolean) {
