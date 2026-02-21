@@ -1,7 +1,7 @@
 import { DataObject } from "supabase-dataobject-core";
 import { reactive } from "vue";
 
-export type ChecklistSort = 'recent' | 'name'
+export type ChecklistSort = 'recent' | 'name' | 'priority';
 export interface ChecklistItemsView {
     progressBar: boolean;
     createNew: boolean;

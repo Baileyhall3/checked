@@ -61,6 +61,10 @@
                                                 Name
                                                 <Check class="size-4" aria-hidden="true" v-if="preferences.currentSort === 'name'" />
                                             </DropdownMenuItem>
+                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="layout.updateSort('priority')">
+                                                Priority
+                                                <Check class="size-4" aria-hidden="true" v-if="preferences.currentSort === 'priority'" />
+                                            </DropdownMenuItem>
                                             <DropdownMenuSeparator />
 
                                             <DropdownMenuLabel>Show</DropdownMenuLabel>
@@ -356,7 +360,21 @@ onIonViewDidEnter(() => {
         key: `checklist-${id}-layout`, 
         onPreferenceUpdated: (preference, value) => {
             if (preference == 'currentSort') {
-                const sortConfig: SortConfig = value === 'recent' ? { field: "created_at", direction: 'desc' } : { field: "name", direction: 'asc' };
+                const sortConfig: SortConfig = { field: 'created_at', direction: 'desc' };
+                switch(value) {
+                    case 'priority':
+                        sortConfig.field = 'priority';
+                        sortConfig.direction = 'asc';
+                        break;
+                    case 'name':
+                        sortConfig.field = 'name';
+                        sortConfig.direction = 'asc';
+                        break;
+                    case 'recent':
+                        sortConfig.field = 'created_at';
+                        sortConfig.direction = 'desc';
+                        break;
+                }
                 checklistDs.checklistItems?.updateSort(sortConfig);
             } else if (['progressBar', 'createNew', 'checked', 'deleted'].includes(preference)) {
                 if (preference === 'checked' || preference === 'deleted') {
@@ -493,19 +511,6 @@ function updateWhereClauses() {
     }
 
     checklistDs.checklistItems.whereClauses = whereClauses
-}
-
-async function handleChecklistDelete() {
-    const current = checklistDs.checklist?.currentRecord;
-    if (!current) { return; }
-    const hasUpdated = checklistDs.checklist?.update(current?.id, { deleted_at: new Date() });
-    if (hasUpdated) {
-        toast({
-            title: 'Checklist deleted.',
-            description: 'Deleted items are recoverable for 30 days.',
-        });
-    }
-    redirect();
 }
 
 function redirect() {

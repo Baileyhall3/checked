@@ -2,39 +2,60 @@
     <Dialog v-model:open="isDialogOpen">
         <DialogContent class="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
             <DialogHeader class="contents space-y-0 text-left">
-                <div 
-                    class=" px-6 py-2 text-base border-b relative"
-                    :style="{ '--item-colour': props.checklistItem.bg_colour }"
-                >
-                    <div class="flex justify-between items-start">
-                        <Checkbox
-                            v-if="!props.checklistItem.deleted_at"
-                            :style="{ 'background-color': props.checklistItem.is_checked ? '#00bc7d' : 'transparent'}"
-                            :class="{ 'border border-gray-400 !border-solid' : !props.checklistItem.is_checked }"
-                            class="rounded-full mr-2 mt-1"
-                            v-model="props.checklistItem.is_checked"
-                            @update:model-value="handleChecked"
-                        />
-                        <div class="w-full pe-4 font-semibold tracking-tight">
-                            <textarea
-                                ref="nameInput"
-                                v-model="props.checklistItem.name"
-                                class="block w-full bg-transparent border-none focus:outline-none resize-none overflow-hidden leading-relaxed"
-                                :class="{ 
-                                    'text-gray-700' : props.checklistItem.deleted_at || props.checklistItem.is_checked, 
-                                    'text-gray-900' : !props.checklistItem.deleted_at && !props.checklistItem.is_checked 
-                                }"
-                                :rows="1"
-                                @input="autoResize"
-                                @blur="props.dataObject.saveChanges()"
-                            ></textarea>
-                        </div>
+            </DialogHeader>
+            <div 
+                class=" px-6 py-2 text-base border-b relative"
+                :style="{ '--item-colour': props.checklistItem.bg_colour }"
+            >
+                <div class="flex justify-between items-start">
+                    <Checkbox
+                        v-if="!props.checklistItem.deleted_at"
+                        :style="{ 'background-color': props.checklistItem.is_checked ? '#00bc7d' : 'transparent'}"
+                        :class="{ 'border border-gray-400 !border-solid' : !props.checklistItem.is_checked }"
+                        class="rounded-full mr-2 mt-1"
+                        v-model="props.checklistItem.is_checked"
+                        @update:model-value="handleChecked"
+                    />
+                    <div class="w-full pe-4 font-semibold tracking-tight">
+                        <textarea
+                            ref="nameInput"
+                            v-model="props.checklistItem.name"
+                            class="block w-full bg-transparent border-none focus:outline-none resize-none overflow-hidden leading-relaxed"
+                            :class="{ 
+                                'text-gray-700' : props.checklistItem.deleted_at || props.checklistItem.is_checked, 
+                                'text-gray-900' : !props.checklistItem.deleted_at && !props.checklistItem.is_checked 
+                            }"
+                            :rows="1"
+                            @input="autoResize"
+                            @blur="props.dataObject.saveChanges()"
+                        ></textarea>
                     </div>
                 </div>
-            </DialogHeader>
+            </div>
 
             <div class="px-6 pt-4 pb-6">
                 <form class="space-y-4 pb-4" @submit.prevent>
+                    <div class="flex">
+                        <PriorityLabel :priority="checklistItem.priority" />
+                    </div>
+    
+                    <div class="*:not-first:mt-2">
+                        <span>Due Date</span>
+                        <div>
+                            <DatePicker 
+                                id="due-date-input" 
+                                v-model="props.checklistItem.due_date" 
+                                showTime 
+                                hourFormat="24" 
+                                appendTo="self" 
+                                showIcon 
+                                showClear 
+                                inputClass="text-sm"
+                                class="w-full"
+                            />
+                        </div>
+                    </div>
+
                     <div class="flex flex-col">
                         <div class="flex justify-between items-center">
                             <span class="font-medium">Description</span>
@@ -81,59 +102,22 @@
                             <ColoursDropdown :current-colour="props.checklistItem.bg_colour" @colour-selected="setNewColour" />
                         </DropdownMenu>
                     </div>
-
-                    <div class="*:not-first:mt-2">
-                        <span>Priority</span>
-                        <div class="select-input border rounded-md">
-                            <Select 
-                                class="select-input" 
-                                v-model="props.checklistItem.priority"
-                            >
-                                <SelectTrigger class="rounded-lg">
-                                    <SelectValue placeholder="Select priority">
-                                        <template v-if="props.checklistItem.priority">
-                                            <span class="flex items-center gap-2">
-                                                <ItemPriorityCircle :priority="props.checklistItem.priority" />
-                                                {{ priorityLabel(props.checklistItem.priority) }}
-                                            </span>
-                                        </template>
-                                    </SelectValue>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectItem :value="1">
-                                            <span class="flex items-center gap-2">
-                                                <ItemPriorityCircle :priority="1" />
-                                                High
-                                            </span>
-                                        </SelectItem>
-                                        <SelectItem :value="2">
-                                            <span class="flex items-center gap-2">
-                                                <ItemPriorityCircle :priority="2" />
-                                                Medium
-                                            </span>
-                                        </SelectItem>
-                                        <SelectItem :value="3">
-                                            <span class="flex items-center gap-2">
-                                                <ItemPriorityCircle :priority="3" />
-                                                Low
-                                            </span>
-                                        </SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
                 </form>
                 <div class="flex flex-col space-y-4">
                     <div class="flex flex-col text-red-600" v-if="props.checklistItem.deleted_at">
-                        <span class="font-medium">Deleted</span>
+                        <span class="font-medium items-center flex">
+                            <Trash class="w-4 h-4 inline-block mr-2" />
+                            Deleted
+                        </span>
                         <p class="text-sm text-muted-foreground">
                             {{ DateUtils.toDateTime(props.checklistItem.deleted_at) }} by {{ props.checklistItem.deleted_by_username }}
                         </p>
                     </div>
                     <div class="flex flex-col" v-if="props.checklistItem.locked_at">
-                        <span class="font-medium">Locked</span>
+                        <span class="font-medium items-center flex">
+                            <Lock class="w-4 h-4 inline-block mr-2" />
+                            Locked
+                        </span>
                         <p class="text-sm text-muted-foreground">
                             {{ DateUtils.toDateTime(props.checklistItem.locked_at) }} by {{ props.checklistItem.locked_by_username }}
                         </p>
@@ -183,7 +167,7 @@ import { useToast } from "@/components/ui/toast/use-toast";
 import { ref, nextTick } from 'vue';
 import Textarea from '../ui/textarea/Textarea.vue';
 import DateUtils from '@/utils/DateUtils';
-import { CheckCircle2Icon, CircleIcon, Calendar, Palette } from 'lucide-vue-next';
+import { CheckCircle2Icon, CircleIcon, Calendar, Palette, Lock, Trash, X } from 'lucide-vue-next';
 import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import ColoursDropdown from '../custom/UI/ColoursDropdown.vue';
 import TextEditor from '../custom/UI/input/TextEditor.vue';
@@ -194,9 +178,12 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  SelectGroup
+  SelectGroup,
+  SelectSeparator
 } from "@/components/ui/select";
 import ItemPriorityCircle from '../custom/UI/ItemPriorityCircle.vue';
+import DatePicker from 'primevue/datepicker';
+import PriorityLabel from '../custom/UI/checklist/PriorityLabel.vue';
 
 const props = defineProps<{
     checklistItem: DataObjectRecord;

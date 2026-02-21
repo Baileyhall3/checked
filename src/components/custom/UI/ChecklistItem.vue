@@ -13,18 +13,17 @@
         @focusout="!menuOpen && (isHovered = false)"
         @click="setCurrent"
     >
-        <!-- <div class="flex justify-between items-center"> -->
         <div class="grid grid-cols-[auto_1fr_auto] gap-4 w-full items-start">
-            <div class="mt-1 flex flex-col justify-center">
+            <div class="mt-1 flex flex-col justify-center gap-y-2">
                 <template v-if="itemIsDisabled">
                     <Trash 
                         v-if="item.deleted_at || item.checklist_is_deleted" 
-                        class="w-6 h-6 text-red-600 mr-2" 
+                        class="w-5 h-5 text-red-600"
                         :title="`Deleted by ${item.deleted_by_username} ${DateUtils.toDateTime(item.deleted_at)}`"
                     />
                     <Lock 
                         v-if="item.locked_at" 
-                        class="w-6 h-6 text-gray-600 mr-2" 
+                        class="w-5 h-5 text-gray-600" 
                         :title="`Locked by ${item.locked_by_username} ${DateUtils.toDateTime(item.locked_at)}`"
                     />
                 </template>
@@ -36,7 +35,7 @@
                     v-model="item.is_checked"
                     @update:model-value="handleChecked"
                 />
-                <ItemPriorityCircle v-if="item.priority" :priority="item.priority" class="mt-2" />
+                <!-- <ItemPriorityCircle v-if="item.priority" :priority="item.priority" /> -->
             </div>
             
             <div class="w-full">
@@ -58,9 +57,27 @@
                         :rows="1"
                     ></textarea>
                 </div>
-                 <!-- <span v-if="item.deleted_at" class="text-red-600 italic text-sm">
-                    Deleted {{ DateUtils.toDateTime(item.deleted_at) }} by {{ item.deleted_by_username }}
-                </span> -->
+                <div class="flex w-full gap-2 mb-1" v-if="item.priority || item.due_date">
+                    <div class="flex items-center gap-1 rounded-lg px-1 py-0.5 border bg-gray-100" v-if="item.priority">
+                        <ItemPriorityCircle v-if="item.priority" :priority="item.priority" />
+                        <span class="text-sm">{{  priorityLabel(item.priority) }}</span>
+                    </div>
+                    <div class="flex items-center gap-1 rounded-lg px-1 py-0.5 border bg-gray-100" v-if="item.due_date">
+                        <Clock class="size-3" />
+                        <span class="text-sm">{{  DateUtils.toShortDate(item.due_date) }}</span>
+                    </div>
+
+                    <!-- <Trash 
+                        v-if="item.deleted_at || item.checklist_is_deleted" 
+                        class="w-5 h-5 text-red-600"
+                        :title="`Deleted by ${item.deleted_by_username} ${DateUtils.toDateTime(item.deleted_at)}`"
+                    />
+                    <Lock 
+                        v-if="item.locked_at" 
+                        class="w-5 h-5 text-gray-600" 
+                        :title="`Locked by ${item.locked_by_username} ${DateUtils.toDateTime(item.locked_at)}`"
+                    /> -->
+                </div>
                 <div class="flex justify-between items-start">
                     <div class="text-sm text-gray-600">
                         <div
@@ -159,7 +176,8 @@ import {
     Ellipsis, 
     Lock,
     LockOpen,
-    Text
+    Text,
+    Clock
 } from "lucide-vue-next";
 import {
   DropdownMenu,
@@ -222,6 +240,19 @@ const isCurrent = computed(() => {
 const itemIsDisabled = computed((): boolean => {
     return props.item.deleted_at || props.item.locked_at || props.item.checklist_is_deleted ? true : false;
 });
+
+const priorityLabel = (priority: number) => {
+    switch(priority) {
+        case 1:
+            return 'High';
+        case 2:
+            return 'Medium';
+        case 3:
+            return 'Low';
+        default:
+            return '';
+    }
+}
 
 function setCurrent(event: MouseEvent) {
   const target = event.target as HTMLElement

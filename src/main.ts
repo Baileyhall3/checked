@@ -14,10 +14,19 @@ import { supabase } from './api/supabase';
 import { userStore } from './store/userStore';
 import { hasAuthState } from './utils/authPersistence';
 import { resolveStartRoute } from './utils/resolveStartRoute';
+import PrimeVue from 'primevue/config'; 
+import Aura from '@primevue/themes/aura';
 
 const app = createApp(App)
   .use(IonicVue)
   .use(router)
+
+
+app.use(PrimeVue, {
+  theme: {
+        preset: Aura,
+  }
+})
 
 let authInitialized = false
 app.config.globalProperties.$authInitialized = () => authInitialized
