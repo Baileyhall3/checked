@@ -262,7 +262,7 @@ import ChecklistItem from '@/components/custom/UI/ChecklistItem.vue';
 import ChecklistDropdownContent from '@/components/custom/UI/ChecklistDropdownContent.vue';
 import EnterPIN from '@/components/dialogs/EnterPIN.vue';
 import AddNewBtn from '@/components/custom/UI/buttons/AddNewBtn.vue';
-import ChecklistLayout from '@/layouts/ChecklistLayoutManager';
+import ChecklistLayout, { ChecklistSort } from '@/layouts/ChecklistLayoutManager';
 import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 import { useThemes } from '@/composables/useThemes';
 import MainContent from '@/components/custom/UI/MainContent.vue';
@@ -279,10 +279,9 @@ const { toast } = useToast();
 
 const layout = ref<ChecklistLayout>();
 const preferences = ref<any>();
-
 const searchQuery = ref<string>('');
-
-const createChecklistDialog = ref();
+const sortConfig = ref<SortConfig>({field: 'created_at', direction: 'desc'});
+const whereClauses = ref<WhereClause[]>([]);
 
 const { resolveTheme, themeToCssVars } = useThemes()
 
@@ -313,38 +312,6 @@ const progressPercent = computed(() => {
     return totalCount.value === 0 ? 0 : Math.round((completedCount.value / totalCount.value) * 100);
 });
 
-const breadcrumbs = computed((): IBreadcrumbItem[] => {
-    const items = [
-        { label: "Home", icon: Home, href: "/home" },
-    ];
-
-    if (checklistDs.checklist?.currentRecord?.folder_name) {
-        items.push({
-            label: checklistDs.checklist.currentRecord.folder_name,
-            icon: Folder,
-            href: `/folder/${checklistDs.checklist.currentRecord.folder_id}`,
-            dropdown: checklistDs.folderChecklistsLkp?.data?.map(c => ({
-                label: c.name,
-                href: `/checklist/${c.id}`,
-                isCurrent: c.id === checklistDs.checklist?.currentRecord?.id
-            })),
-            dropdownOptions: {
-                createNewFn: () => {
-                    createChecklistDialog.value.show();
-                }
-            }
-        });
-    }
-
-    if (checklistDs.checklist?.currentRecord?.name) {
-        items.push({
-            label: checklistDs.checklist.currentRecord?.name,
-        });
-    }
-
-    return items;
-});
-
 onIonViewDidEnter(() => {
     const idParam = route.params.id
     const id = Number(idParam)
@@ -364,26 +331,7 @@ onIonViewDidEnter(() => {
         key: `checklist-${id}-layout`, 
         onPreferenceUpdated: (preference, value) => {
             if (preference == 'currentSort') {
-                const sortConfig: SortConfig = { field: 'created_at', direction: 'desc' };
-                switch(value) {
-                    case 'priority':
-                        sortConfig.field = 'priority';
-                        sortConfig.direction = 'asc';
-                        break;
-                    case 'name':
-                        sortConfig.field = 'name';
-                        sortConfig.direction = 'asc';
-                        break;
-                    case 'recent':
-                        sortConfig.field = 'created_at';
-                        sortConfig.direction = 'desc';
-                        break;
-                    case 'dueDate':
-                        sortConfig.field = 'due_date';
-                        sortConfig.direction = 'asc';
-                        break;
-                }
-                checklistDs.checklistItems?.updateSort(sortConfig);
+                updateSort(value);
             } else if (['progressBar', 'createNew', 'checked', 'deleted'].includes(preference)) {
                 if (preference === 'checked' || preference === 'deleted') {
                     updateWhereClauses();
@@ -394,6 +342,8 @@ onIonViewDidEnter(() => {
 
     layout.value = checklistLayout;
     preferences.value = checklistLayout.preferences;
+    updateSort(layout.value.preferences.currentSort, true);
+    updateWhereClauses(true);
 
     createDataObjects(id);
 });
@@ -464,15 +414,13 @@ async function initOthersDs() {
             canInsert: true,
             canUpdate: true,
             canDelete: true,
-            whereClauses: [
-                { field: 'deleted_at', operator: 'isnull' }
-            ],
+            whereClauses: whereClauses.value,
             masterDataObjectBinding: {
                 masterDataObjectId: 'checklist',
                 childBindingField: 'checklist_id',
                 masterBindingField: 'id'
             },
-            sort: { field: "created_at", direction: 'desc' },
+            sort: sortConfig.value,
             fields: checklistItemsFields
         }); 
     } catch (err) {
@@ -483,7 +431,6 @@ async function initOthersDs() {
 }
 
 const newItemName = ref("");
-
 async function addItem() {
     if (newItemName.value.trim() === "") return;
     try {
@@ -501,24 +448,50 @@ async function addItem() {
     newItemName.value = "";
 }
 
+function updateSort(value: ChecklistSort, pSkipUpdate = false) {
+    switch(value) {
+        case 'priority':
+            sortConfig.value.field = 'priority';
+            sortConfig.value.direction = 'asc';
+            break;
+        case 'name':
+            sortConfig.value.field = 'name';
+            sortConfig.value.direction = 'asc';
+            break;
+        case 'recent':
+            sortConfig.value.field = 'created_at';
+            sortConfig.value.direction = 'desc';
+            break;
+        case 'dueDate':
+            sortConfig.value.field = 'due_date';
+            sortConfig.value.direction = 'asc';
+            break;
+    }
+    if (!pSkipUpdate) {
+        checklistDs.checklistItems?.updateSort(sortConfig.value);
+    }
+}
+
 function handleSearchQuery(query: string) {
     searchQuery.value = query;
     updateWhereClauses();
 }
 
-function updateWhereClauses() {
-    const whereClauses: WhereClause[] = [];
+function updateWhereClauses(pSkipUpdate = false) {
+    whereClauses.value = [];
     if (!preferences.value.itemsView.checked) {
-        whereClauses.push({ field: 'is_checked', operator: 'equals', value: false });
+        whereClauses.value.push({ field: 'is_checked', operator: 'equals', value: false });
     }
     if (!preferences.value.itemsView.deleted) {
-        whereClauses.push({ field: 'deleted_at', operator: 'isnull' });
+        whereClauses.value.push({ field: 'deleted_at', operator: 'isnull' });
     }
     if (searchQuery.value) {
-        whereClauses.push({ field: 'name', operator: 'ilike', value: searchQuery.value });
+        whereClauses.value.push({ field: 'name', operator: 'ilike', value: searchQuery.value });
     }
-
-    checklistDs.checklistItems.whereClauses = whereClauses
+    debugger
+    if (!pSkipUpdate) {
+        checklistDs.checklistItems.whereClauses = whereClauses.value;
+    }
 }
 
 function redirect() {
