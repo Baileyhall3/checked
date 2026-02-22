@@ -65,6 +65,10 @@
                                                 Priority
                                                 <Check class="size-4" aria-hidden="true" v-if="preferences.currentSort === 'priority'" />
                                             </DropdownMenuItem>
+                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="layout.updateSort('dueDate')">
+                                                Due Date
+                                                <Check class="size-4" aria-hidden="true" v-if="preferences.currentSort === 'dueDate'" />
+                                            </DropdownMenuItem>
                                             <DropdownMenuSeparator />
 
                                             <DropdownMenuLabel>Show</DropdownMenuLabel>
@@ -373,6 +377,10 @@ onIonViewDidEnter(() => {
                     case 'recent':
                         sortConfig.field = 'created_at';
                         sortConfig.direction = 'desc';
+                        break;
+                    case 'dueDate':
+                        sortConfig.field = 'due_date';
+                        sortConfig.direction = 'asc';
                         break;
                 }
                 checklistDs.checklistItems?.updateSort(sortConfig);

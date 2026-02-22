@@ -35,25 +35,9 @@
 
             <div class="px-6 pt-4 pb-6">
                 <form class="space-y-4 pb-4" @submit.prevent>
-                    <div class="flex">
-                        <PriorityLabel :priority="checklistItem.priority" />
-                    </div>
-    
-                    <div class="*:not-first:mt-2">
-                        <span>Due Date</span>
-                        <div>
-                            <DatePicker 
-                                id="due-date-input" 
-                                v-model="props.checklistItem.due_date" 
-                                showTime 
-                                hourFormat="24" 
-                                appendTo="self" 
-                                showIcon 
-                                showClear 
-                                inputClass="text-sm"
-                                class="w-full"
-                            />
-                        </div>
+                    <div class="flex items-center h-100">
+                        <PriorityLabel v-model:priority="props.checklistItem.priority" @update:priority="props.dataObject.saveChanges()" />
+                        <DueDate v-model="props.checklistItem.due_date" @update:model-value="props.dataObject.saveChanges()" class="ms-2" />
                     </div>
 
                     <div class="flex flex-col">
@@ -172,17 +156,7 @@ import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu
 import ColoursDropdown from '../custom/UI/ColoursDropdown.vue';
 import TextEditor from '../custom/UI/input/TextEditor.vue';
 import { Checkbox } from '../ui/checkbox';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  SelectGroup,
-  SelectSeparator
-} from "@/components/ui/select";
-import ItemPriorityCircle from '../custom/UI/ItemPriorityCircle.vue';
-import DatePicker from 'primevue/datepicker';
+import DueDate from '../custom/UI/checklist/DueDate.vue';
 import PriorityLabel from '../custom/UI/checklist/PriorityLabel.vue';
 
 const props = defineProps<{

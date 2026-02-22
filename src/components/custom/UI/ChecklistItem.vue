@@ -63,8 +63,10 @@
                         <span class="text-sm">{{  priorityLabel(item.priority) }}</span>
                     </div>
                     <div class="flex items-center gap-1 rounded-lg px-1 py-0.5 border bg-gray-100" v-if="item.due_date">
-                        <Clock class="size-3" />
-                        <span class="text-sm">{{  DateUtils.toShortDate(item.due_date) }}</span>
+                        <Clock class="size-4" />
+                        <span class="text-sm">
+                            {{  DateUtils.toShortDate(item.due_date) }}
+                        </span>
                     </div>
 
                     <!-- <Trash 

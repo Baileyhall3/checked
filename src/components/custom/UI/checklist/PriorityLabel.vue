@@ -1,15 +1,13 @@
 <template>
     <SelectRoot
-    :model-value="props.priority"
-    @update:model-value="updatePriority"
-  >
+      :model-value="props.priority"
+      @update:model-value="(v) => emit('update:priority', v)"
+    >
 
     <!-- 🔘 Custom Trigger (HEADLESS) -->
     <SelectTrigger as-child>
       <div
-        class="
-          flex items-center gap-1 rounded-lg px-1 py-0.5 border bg-gray-100 cursor-pointer
-        "
+        class="flex items-center gap-1 rounded-lg px-1 py-0.5 border bg-gray-100 cursor-pointer text-sm"
       >
         <template v-if="props.priority">
           <ItemPriorityCircle :priority="props.priority" />
@@ -25,7 +23,7 @@
     <!-- 📦 Dropdown Content -->
     <SelectContent
       class="
-        z-50 mt-1
+        z-50 mt-6
         min-w-[160px]
         rounded-xl
         border
@@ -34,11 +32,11 @@
         p-1
       "
     >
-      <SelectScrollUpButton class="flex justify-center py-1">
+      <!-- <SelectScrollUpButton class="flex justify-center py-1">
         <ChevronUp class="h-4 w-4 opacity-50" />
-      </SelectScrollUpButton>
+      </SelectScrollUpButton> -->
 
-      <SelectViewport class="p-1">
+      <SelectViewport class="p-1" >
         <SelectGroup>
 
           <SelectItem
@@ -104,16 +102,15 @@
         </SelectGroup>
       </SelectViewport>
 
-      <SelectScrollDownButton class="flex justify-center py-1">
+      <!-- <SelectScrollDownButton class="flex justify-center py-1">
         <ChevronDown class="h-4 w-4 opacity-50" />
-      </SelectScrollDownButton>
+      </SelectScrollDownButton> -->
     </SelectContent>
 
 </SelectRoot>
 </template>
 
 <script setup lang="ts">
-import { DataObjectRecord } from 'supabase-dataobject-core';
 import ItemPriorityCircle from '../ItemPriorityCircle.vue';
 import {
   SelectRoot,
@@ -123,8 +120,6 @@ import {
   SelectItem,
   SelectGroup,
   SelectSeparator,
-  SelectScrollUpButton,
-  SelectScrollDownButton
 } from "reka-ui"
 
 type Priority = 1 | 2 | 3 | null
@@ -133,7 +128,7 @@ const props = defineProps<{
     priority: Priority
 }>();
 const emit = defineEmits<{
-    (e: 'priority-updated', priority: Priority): void;
+  (e: 'update:priority', value: Priority): void;
 }>()
 
 const priorityLabel = (priority: Priority) => {
@@ -147,9 +142,5 @@ const priorityLabel = (priority: Priority) => {
         default:
             return '';
     }
-}
-
-function updatePriority() {
-    emit("priority-updated", props.priority);
 }
 </script>
