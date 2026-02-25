@@ -5,9 +5,11 @@
     >
 
     <!-- 🔘 Custom Trigger (HEADLESS) -->
-    <SelectTrigger as-child>
+    <SelectTrigger as-child :disabled="props.disabled">
       <div
-        class="flex items-center gap-1 rounded-lg px-1 py-0.5 border bg-gray-100 cursor-pointer text-sm"
+        class="flex items-center gap-2 rounded-lg px-1 py-0.5 border bg-gray-100 text-sm"
+        :class="{ 'cursor-pointer' : !props.disabled }"
+        :title="`${priorityLabel(props.priority)} priority`"
       >
         <template v-if="props.priority">
           <ItemPriorityCircle :priority="props.priority" />
@@ -125,7 +127,8 @@ import {
 type Priority = 1 | 2 | 3 | null
 
 const props = defineProps<{
-    priority: Priority
+    priority: Priority;
+    disabled?: boolean;
 }>();
 const emit = defineEmits<{
   (e: 'update:priority', value: Priority): void;

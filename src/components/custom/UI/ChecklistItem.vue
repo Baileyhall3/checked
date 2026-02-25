@@ -62,17 +62,9 @@
                         :rows="1"
                     ></textarea>
                 </div>
-                <div class="flex w-full gap-2 mb-1" v-if="item.priority || item.due_date">
-                    <div class="flex items-center gap-1 rounded-lg px-1 py-0.5 border bg-gray-100" v-if="item.priority">
-                        <ItemPriorityCircle v-if="item.priority" :priority="item.priority" />
-                        <span class="text-sm">{{  priorityLabel(item.priority) }}</span>
-                    </div>
-                    <div class="flex items-center gap-1 rounded-lg px-1 py-0.5 border bg-gray-100" v-if="item.due_date">
-                        <Clock class="size-4" />
-                        <span class="text-sm">
-                            {{  DateUtils.toShortDate(item.due_date) }}
-                        </span>
-                    </div>
+                <div class="flex w-full gap-1 mb-1" v-if="item.priority || item.due_date">
+                    <PriorityLabel :priority="item.priority" disabled v-if="item.priority" />
+                    <DueDate v-model="item.due_date" v-if="item.due_date" />
 
                     <!-- <Trash 
                         v-if="item.deleted_at || item.checklist_is_deleted" 
@@ -201,6 +193,8 @@ import Confirm from '@/components/dialogs/Confirm.vue';
 import { useWindowSize } from "@vueuse/core";
 import { Checkbox } from "@/components/ui/checkbox";
 import ItemPriorityCircle from './ItemPriorityCircle.vue';
+import PriorityLabel from './checklist/PriorityLabel.vue';
+import DueDate from './checklist/DueDate.vue';
 import VoiceNotePlayback from './buttons/VoiceNotePlayback.vue';
 
 const props = defineProps<{
