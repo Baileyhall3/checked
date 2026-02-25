@@ -488,7 +488,6 @@ function updateWhereClauses(pSkipUpdate = false) {
     if (searchQuery.value) {
         whereClauses.value.push({ field: 'name', operator: 'ilike', value: searchQuery.value });
     }
-    debugger
     if (!pSkipUpdate) {
         checklistDs.checklistItems.whereClauses = whereClauses.value;
     }
