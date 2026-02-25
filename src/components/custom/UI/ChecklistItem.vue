@@ -39,7 +39,12 @@
             </div>
             
             <div class="w-full">
-                 <div class="w-full tracking-tight" :class="{ 
+                <VoiceNotePlayback 
+                    v-if="props.item.voice_note_path" 
+                    :item="props.item"
+                    :data-object="props.checklistData"
+                />
+                 <div v-else class="w-full tracking-tight" :class="{ 
                         'text-gray-700' : item.deleted_at || item.is_checked, 
                         'text-gray-900' : !item.deleted_at && !item.is_checked 
                     }"
@@ -196,6 +201,7 @@ import Confirm from '@/components/dialogs/Confirm.vue';
 import { useWindowSize } from "@vueuse/core";
 import { Checkbox } from "@/components/ui/checkbox";
 import ItemPriorityCircle from './ItemPriorityCircle.vue';
+import VoiceNotePlayback from './buttons/VoiceNotePlayback.vue';
 
 const props = defineProps<{
     item: DataObjectRecord;

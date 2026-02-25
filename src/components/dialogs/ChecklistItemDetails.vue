@@ -202,14 +202,16 @@ function handleChecked(isChecked: boolean) {
 }
 
 function cancelChanges() {
-    props.dataObject.cancelChanges();
+    props.checklistItem.revert();
     isEditingDesc.value = false;
 }
 
 async function saveChanges() {
     try {
         isSaving.value = true;
-        await props.dataObject.saveChanges();
+        console.log('record ', props.checklistItem);
+        props.checklistItem
+        await props.checklistItem.save();
         isEditingDesc.value = false;
         // close();
     } catch (err) {

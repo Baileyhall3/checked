@@ -162,8 +162,16 @@
                             <!-- Add New Item Input -->
                             <transition name="fade-slide">
                                 <div v-if="preferences.itemsView.createNew && !checklistDs.checklist.currentRecord?.deleted_at" class="flex items-center my-4">
+                                    <Button 
+                                        variant="secondary"
+                                        @click="handleVoiceClick"
+                                        :class="{ 'bg-red-100 animate-pulse text-red-500': isRecording }"
+                                    >
+                                        <Mic :size="16" />
+                                    </Button>
                                     <input
                                         v-model="newItemName"
+                                        :disabled="isRecording"
                                         type="text"
                                         placeholder="New checklist item..."
                                         class="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
@@ -226,11 +234,11 @@
 import { useRoute, useRouter } from 'vue-router';
 import { createDataObject, DataObject, SortConfig, WhereClause } from 'supabase-dataobject-core';
 import { IonContent, IonPage, onIonViewDidEnter, onIonViewDidLeave } from '@ionic/vue';
-import { reactive, ref, computed } from 'vue';
+import { reactive, ref, computed, watch } from 'vue';
 import { dataSources, checklistFields, checklistItemsFields } from '@/api/dataObjects';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast/use-toast";
-import { Folder, Home, X, ArrowUpDown, Check, Settings, Ellipsis } from "lucide-vue-next";
+import { X, ArrowUpDown, Check, Settings, Ellipsis, Mic } from "lucide-vue-next";
 import {
 DropdownMenu,
   DropdownMenuContent,
@@ -248,16 +256,10 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import ChecklistItemDetails from '@/components/dialogs/ChecklistItemDetails.vue';
 import SearchBar from '@/components/custom/UI/SearchBar.vue';
 import BlurredHeader from '@/components/header/Blurred.vue';
-import { ButtonGroup, ButtonGroupSeparator, ButtonGroupText } from '@/components/ui/button-group'
+import { ButtonGroup, ButtonGroupSeparator } from '@/components/ui/button-group'
 import Loading from '@/components/custom/UI/Loading.vue';
-import ProfileDropdown from '@/components/custom/ProfileDropdown.vue';
-import Breadcrumbs from '@/components/custom/UI/Breadcrumbs.vue';
-import type { IBreadcrumbItem } from '@/components/custom/UI/Breadcrumbs.vue';
-import ChecklistDetails from '@/components/dialogs/ChecklistDetails.vue';
-import Confirm from '@/components/dialogs/Confirm.vue';
 import ChecklistItem from '@/components/custom/UI/ChecklistItem.vue';
 import ChecklistDropdownContent from '@/components/custom/UI/ChecklistDropdownContent.vue';
 import EnterPIN from '@/components/dialogs/EnterPIN.vue';
@@ -266,8 +268,15 @@ import ChecklistLayout, { ChecklistSort } from '@/layouts/ChecklistLayoutManager
 import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 import { useThemes } from '@/composables/useThemes';
 import MainContent from '@/components/custom/UI/MainContent.vue';
-import SideBarTrigger from '@/components/custom/UI/sideBar/SideBarTrigger.vue';
 import DefaultStar from '@/components/custom/UI/DefaultStar.vue';
+import { useVoiceRecorder } from '@/composables/useVoiceRecorder'
+
+const {
+  isRecording,
+  audioBlob,
+  start,
+  stop
+} = useVoiceRecorder()
 
 const route = useRoute();
 const router = useRouter();
@@ -421,8 +430,11 @@ async function initOthersDs() {
                 masterBindingField: 'id'
             },
             sort: sortConfig.value,
-            fields: checklistItemsFields
+            fields: checklistItemsFields,
+            allowedBuckets: ['checklist-item-voice-notes']
         }); 
+
+        console.log('dataaaa ', checklistDs.checklist)
     } catch (err) {
         console.error(err);
     } finally {
@@ -431,6 +443,55 @@ async function initOthersDs() {
 }
 
 const newItemName = ref("");
+async function handleVoiceClick() {
+    if (!isRecording.value) {
+        await start()
+    } else {
+        stop()
+    }
+}
+watch(audioBlob, async (blob) => {
+  if (!blob) return
+
+  await createVoiceChecklistItem(blob)
+})
+async function createVoiceChecklistItem(blob: Blob) {
+  const checklistItemsDs = checklistDs.checklistItems
+  if (!checklistItemsDs) return
+
+  const userId = dataSources.user?.currentRecord?.auth_id;
+  if (!userId) { return; }
+
+  // 1️⃣ Create checklist item
+  const created = await checklistItemsDs.insert({
+    checklist_id: checklistDs.checklist?.currentRecord?.id,
+    name: 'Voice note'
+  })
+
+  if (!created) return
+
+  const itemId = created.id
+
+  // 2️⃣ Build file path
+  const fileName = `${crypto.randomUUID()}.webm`
+  const filePath = `${userId}/${itemId}/${fileName}`
+
+  // 3️⃣ Upload using DataObjectStorage
+  await checklistItemsDs.storage.uploadToBucket(
+    'checklist-item-voice-notes',
+    filePath,
+    blob,
+    {
+      contentType: 'audio/webm'
+    }
+  )
+
+  // 4️⃣ Update item with voice path
+  await checklistItemsDs.update(itemId, {
+    voice_note_path: filePath
+  })
+}
+
 async function addItem() {
     if (newItemName.value.trim() === "") return;
     try {
