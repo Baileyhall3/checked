@@ -152,8 +152,12 @@
                                          aria-label="Checklist progress"
                                      >
                                          <div
-                                             class="h-full bg-indigo-500 transition-all duration-500 ease-out"
-                                             :style="{ width: `${progressPercent}%` }"
+                                            class="h-full transition-all duration-500 ease-out"
+                                            :class="{ 
+                                                'bg-indigo-500' : progressPercent !== 100,
+                                                'bg-green-600' : progressPercent === 100
+                                            }"
+                                            :style="{ width: `${progressPercent}%` }"
                                          ></div>
                                      </div>
                                  </div>

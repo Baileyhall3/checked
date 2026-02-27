@@ -10,7 +10,23 @@
                         </span>
                     </template>
                     <template #rightSide>
-                        <ProfileDropdown />
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    class="rounded-full"
+                                    aria-label="Open settings"
+                                >
+                                    <Ellipsis :size="16" aria-hidden="true" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <FolderDropdownContent 
+                                label="Folder Actions"
+                                :folder="folderDs.folder?.currentRecord"
+                                :folder-data="folderDs.folder"
+                            />
+                        </DropdownMenu>
                     </template>
                 </BlurredHeader>   
                 <MainContent>
@@ -177,14 +193,12 @@ import { ref, reactive, computed } from 'vue';
 import { onIonViewDidEnter, onIonViewDidLeave } from '@ionic/vue';
 import { createDataObject, DataObject, SortConfig, WhereClause } from 'supabase-dataobject-core';
 import { checklistFields, dataSources, folderFields, checklistItemsFields } from '@/api/dataObjects';
-import { Folder, Home, Settings, Check, ArrowUpDown, ListTodo } from "lucide-vue-next";
+import { Folder, Home, Settings, Check, ArrowUpDown, ListTodo, Ellipsis } from "lucide-vue-next";
 import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 import RoundedContainer from '@/components/RoundedContainer.vue';
 import SearchBar from '@/components/custom/UI/SearchBar.vue';
 import BlurredHeader from '@/components/header/Blurred.vue';
 import Loading from '@/components/custom/UI/Loading.vue';
-import ProfileDropdown from '@/components/custom/ProfileDropdown.vue';
-import Breadcrumbs from '@/components/custom/UI/Breadcrumbs.vue';
 import type { IBreadcrumbItem } from '@/components/custom/UI/Breadcrumbs.vue';
 import { ButtonGroup, ButtonGroupSeparator } from '@/components/ui/button-group'
 import {
@@ -203,7 +217,6 @@ import ChecklistItemsGroup from '@/components/custom/ChecklistItemsGroup.vue';
 import FolderLayout from '@/layouts/FolderLayoutManager';
 import type { FolderSort, FolderListView, ChecklistsView } from '@/layouts/FolderLayoutManager';
 import MainContent from '@/components/custom/UI/MainContent.vue';
-import SideBarTrigger from '@/components/custom/UI/sideBar/SideBarTrigger.vue';
 
 const enterPinDialog = ref();
 const createChecklistDialog = ref();

@@ -63,8 +63,16 @@
                     ></textarea>
                 </div>
                 <div class="flex w-full gap-1 mb-1" v-if="item.priority || item.due_date">
-                    <PriorityLabel :priority="item.priority" disabled v-if="item.priority" />
-                    <DueDate v-model="item.due_date" v-if="item.due_date" />
+                    <PriorityLabel 
+                        v-if="item.priority" 
+                        :priority="item.priority" 
+                        disabled 
+                    />
+                    <DueDate 
+                        v-if="item.due_date" 
+                        v-model="item.due_date" 
+                        :is-complete="item.is_checked"
+                    />
 
                     <!-- <Trash 
                         v-if="item.deleted_at || item.checklist_is_deleted" 

@@ -37,7 +37,14 @@
                 <form class="space-y-4 pb-4" @submit.prevent>
                     <div class="flex items-center h-100">
                         <PriorityLabel v-model:priority="props.checklistItem.priority" @update:priority="props.dataObject.saveChanges()" />
-                        <DueDate v-model="props.checklistItem.due_date" showTime editable @update:model-value="props.dataObject.saveChanges()" class="ms-2" />
+                        <DueDate 
+                            v-model="props.checklistItem.due_date" 
+                            showTime 
+                            editable 
+                            :is-complete="props.checklistItem.is_checked"
+                            @update:model-value="props.dataObject.saveChanges()" 
+                            class="ms-2" 
+                        />
                     </div>
 
                     <div class="flex flex-col">
