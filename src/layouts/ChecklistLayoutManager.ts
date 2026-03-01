@@ -1,12 +1,16 @@
 import { DataObject } from "supabase-dataobject-core";
 import { reactive } from "vue";
 
-export type ChecklistSort = 'recent' | 'name' | 'priority' | 'dueDate'
+export type ChecklistSort = 'recent' | 'name' | 'priority' | 'dueDate' | 'custom';
 export interface ChecklistItemsView {
     progressBar: boolean;
     createNew: boolean;
     checked: boolean;
     deleted: boolean;
+}
+export interface ChecklistPreferences {
+    currentSort: ChecklistSort;
+    itemsView: ChecklistItemsView;
 }
 
 export default class ChecklistLayout {
@@ -14,10 +18,7 @@ export default class ChecklistLayout {
     private _onPreferenceUpdated: (pPreference: any, pValue: any) => void;
     private _dataObject: DataObject | undefined = undefined;
 
-    preferences = reactive<{
-        currentSort: ChecklistSort;
-        itemsView: ChecklistItemsView;
-    }>({
+    preferences = reactive<ChecklistPreferences>({
         currentSort: 'recent',
         itemsView: {
             progressBar: true,

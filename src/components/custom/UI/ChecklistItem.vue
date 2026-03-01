@@ -1,11 +1,11 @@
 <template>
     <div
-        class="bg-white checklist-item rounded-2xl shadow-sm border-gray-200 px-4 py-3 pl-5 relative
-            transition-colors duration-150 border focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            :class="{ 'ring-2 ring-indigo-400' :  isHovered || menuOpen || isCurrent,
-                'opacity-50' : itemIsDisabled,
-                'cursor-pointer' : isDraggable
-            }"
+        class="bg-white cursor-pointer checklist-item rounded-2xl shadow-sm border-gray-200 px-4 py-3 pl-5 relative
+            transition-colors duration-150 border focus:outline-none focus:ring-2 focus:ring-indigo-400 select-none"
+        :class="{ 
+            'ring-2 ring-indigo-400' :  isHovered || menuOpen || isCurrent,
+            'opacity-50' : itemIsDisabled,
+        }"
         :style="{ '--item-colour': item.bg_colour }"
         @mouseenter="isHovered = true"
         @mouseleave="isHovered = false"
@@ -35,6 +35,7 @@
                     v-model="item.is_checked"
                     @update:model-value="handleChecked"
                 />
+                <!-- <span>{{ props.item.sort_order }}</span> -->
                 <!-- <ItemPriorityCircle v-if="item.priority" :priority="item.priority" /> -->
             </div>
             
@@ -170,13 +171,9 @@ import {
     RotateCcw, 
     Trash, 
     TextAlignStart, 
-    CircleIcon, 
-    CheckCircle2Icon, 
     Ellipsis, 
     Lock,
     LockOpen,
-    Text,
-    Clock
 } from "lucide-vue-next";
 import {
   DropdownMenu,
@@ -187,12 +184,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from '@/components/ui/toast';
 import ChecklistItemDetails from '@/components/dialogs/ChecklistItemDetails.vue';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { Button } from "@/components/ui/button";
 import Confirm from '@/components/dialogs/Confirm.vue';
 import { useWindowSize } from "@vueuse/core";
 import { Checkbox } from "@/components/ui/checkbox";
-import ItemPriorityCircle from './ItemPriorityCircle.vue';
 import PriorityLabel from './checklist/PriorityLabel.vue';
 import DueDate from './checklist/DueDate.vue';
 import VoiceNotePlayback from './buttons/VoiceNotePlayback.vue';
@@ -202,7 +198,6 @@ const props = defineProps<{
     checklistData: DataObject;
     disabled?: boolean;
 }>();
-
 
 const itemDetailsDialog = ref();
 const confirmDialog = ref();
@@ -226,6 +221,7 @@ onMounted(() => {
 
 const isHovered = ref(false);
 const menuOpen = ref(false);
+const isDragging = ref(false);
 const isDraggable = computed(() => {
     return !itemIsDisabled.value;
 });
@@ -242,19 +238,6 @@ const isCurrent = computed(() => {
 const itemIsDisabled = computed((): boolean => {
     return props.item.deleted_at || props.item.locked_at || props.item.checklist_is_deleted ? true : false;
 });
-
-const priorityLabel = (priority: number) => {
-    switch(priority) {
-        case 1:
-            return 'High';
-        case 2:
-            return 'Medium';
-        case 3:
-            return 'Low';
-        default:
-            return '';
-    }
-}
 
 function setCurrent(event: MouseEvent) {
   const target = event.target as HTMLElement

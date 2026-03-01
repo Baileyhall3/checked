@@ -53,40 +53,26 @@
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent>
                                             <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="layout.updateSort('recent')">
+                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateSort('recent')">
                                                 Most Recent
-                                                <Check class="size-4" aria-hidden="true" v-if="preferences.currentSort === 'recent'" />
+                                                <Check class="size-4" aria-hidden="true" v-if="checklistState.preferences.currentSort === 'recent'" />
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="layout.updateSort('name')">
+                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateSort('name')">
                                                 Name
-                                                <Check class="size-4" aria-hidden="true" v-if="preferences.currentSort === 'name'" />
+                                                <Check class="size-4" aria-hidden="true" v-if="checklistState.preferences.currentSort === 'name'" />
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="layout.updateSort('priority')">
+                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateSort('priority')">
                                                 Priority
-                                                <Check class="size-4" aria-hidden="true" v-if="preferences.currentSort === 'priority'" />
+                                                <Check class="size-4" aria-hidden="true" v-if="checklistState.preferences.currentSort === 'priority'" />
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="layout.updateSort('dueDate')">
+                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateSort('dueDate')">
                                                 Due Date
-                                                <Check class="size-4" aria-hidden="true" v-if="preferences.currentSort === 'dueDate'" />
+                                                <Check class="size-4" aria-hidden="true" v-if="checklistState.preferences.currentSort === 'dueDate'" />
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
-
-                                            <DropdownMenuLabel>Show</DropdownMenuLabel>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="layout.updateView('progressBar')">
-                                                Progress Bar
-                                                <Check class="size-4" aria-hidden="true" v-if="preferences.itemsView.progressBar" />
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="layout.updateView('createNew')">
-                                                New Item Input
-                                                <Check class="size-4" aria-hidden="true" v-if="preferences.itemsView.createNew" />
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="layout.updateView('checked')">
-                                                Checked Items
-                                                <Check class="size-4" aria-hidden="true" v-if="preferences.itemsView.checked" />
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="layout.updateView('deleted')">
-                                                Deleted Items
-                                                <Check class="size-4" aria-hidden="true" v-if="preferences.itemsView.deleted" />
+                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateSort('custom')">
+                                                Sort Order
+                                                <Check class="size-4" aria-hidden="true" v-if="checklistState.preferences.currentSort === 'custom'" />
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
@@ -99,15 +85,28 @@
                                                 class="rounded-xl shadow-none bg-white hover:bg-gray-200"
                                                 aria-label="Open settings"
                                             >
-                                                <Settings :size="16" aria-hidden="true" />
+                                                <SlidersHorizontal :size="16" aria-hidden="true" />
                                             </Button>
                                         </DropdownMenuTrigger>
-                                        <ChecklistDropdownContent 
-                                            label="Checklist Details"
-                                            :checklist="checklistDs.checklist.currentRecord"
-                                            :checklist-data="checklistDs.checklist"
-                                            redirectOnDelete
-                                        />
+                                        <DropdownMenuContent>
+                                            <DropdownMenuLabel>Show</DropdownMenuLabel>
+                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateView('progressBar')">
+                                                Progress Bar
+                                                <Check class="size-4" aria-hidden="true" v-if="checklistState.preferences.itemsView.progressBar" />
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateView('createNew')">
+                                                New Item Input
+                                                <Check class="size-4" aria-hidden="true" v-if="checklistState.preferences.itemsView.createNew" />
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateView('checked')">
+                                                Checked Items
+                                                <Check class="size-4" aria-hidden="true" v-if="checklistState.preferences.itemsView.checked" />
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateView('deleted')">
+                                                Deleted Items
+                                                <Check class="size-4" aria-hidden="true" v-if="checklistState.preferences.itemsView.deleted" />
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
                                     </DropdownMenu>
                                 </ButtonGroup>
                             </ButtonGroup>
@@ -137,7 +136,7 @@
                             </div>
                             <!-- Checklist Progress Bar -->
                              <transition name="fade-slide">
-                                 <div v-if="checklistDs.checklistItems?.data?.length && preferences.itemsView.progressBar" class="mb-4">
+                                 <div v-if="checklistDs.checklistItems?.data?.length && checklistState.preferences.itemsView.progressBar" class="mb-4">
                                      <div class="flex justify-between text-sm text-gray-600 mb-1">
                                          <span>Progress</span>
                                          <span>{{ completedCount }} / {{ totalCount }}</span>
@@ -161,7 +160,7 @@
 
                             <!-- Add New Item Input -->
                             <transition name="fade-slide">
-                                <div v-if="preferences.itemsView.createNew && !checklistDs.checklist.currentRecord?.deleted_at" class="flex items-center my-4">
+                                <div v-if="checklistState.preferences.itemsView.createNew && !checklistDs.checklist.currentRecord?.deleted_at" class="flex items-center my-4">
                                     <Button 
                                         variant="secondary"
                                         @click="handleVoiceClick"
@@ -182,9 +181,13 @@
                             </transition>
 
                             <!-- Checklist Items -->
-                            <template v-for="(item, index) in checklistDs.checklistItems?.data" :key="item.id">
-                                <ChecklistItem :item="item" :checklistData="checklistDs.checklistItems" />
-                            </template>
+                             <div class="flex flex-col gap-3" ref="checklistEl">
+                                <ChecklistItem 
+                                    v-for="(item, index) in checklistDs.checklistItems?.data" :key="item.id"
+                                    :item="item" 
+                                    :checklistData="checklistDs.checklistItems" 
+                                />
+                             </div>
                         </div>
                     </MainContent>
                 </template>
@@ -234,11 +237,11 @@
 import { useRoute, useRouter } from 'vue-router';
 import { createDataObject, DataObject, SortConfig, WhereClause } from 'supabase-dataobject-core';
 import { IonContent, IonPage, onIonViewDidEnter, onIonViewDidLeave } from '@ionic/vue';
-import { reactive, ref, computed, watch } from 'vue';
+import { reactive, ref, computed, watch, nextTick, onMounted } from 'vue';
 import { dataSources, checklistFields, checklistItemsFields } from '@/api/dataObjects';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast/use-toast";
-import { X, ArrowUpDown, Check, Settings, Ellipsis, Mic } from "lucide-vue-next";
+import { X, ArrowUpDown, Check, Settings, Ellipsis, Mic, SlidersHorizontal } from "lucide-vue-next";
 import {
 DropdownMenu,
   DropdownMenuContent,
@@ -264,12 +267,13 @@ import ChecklistItem from '@/components/custom/UI/ChecklistItem.vue';
 import ChecklistDropdownContent from '@/components/custom/UI/ChecklistDropdownContent.vue';
 import EnterPIN from '@/components/dialogs/EnterPIN.vue';
 import AddNewBtn from '@/components/custom/UI/buttons/AddNewBtn.vue';
-import ChecklistLayout, { ChecklistSort } from '@/layouts/ChecklistLayoutManager';
+import ChecklistLayout, { ChecklistSort, ChecklistPreferences } from '@/layouts/ChecklistLayoutManager';
 import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 import { useThemes } from '@/composables/useThemes';
 import MainContent from '@/components/custom/UI/MainContent.vue';
 import DefaultStar from '@/components/custom/UI/DefaultStar.vue';
-import { useVoiceRecorder } from '@/composables/useVoiceRecorder'
+import { useVoiceRecorder } from '@/composables/useVoiceRecorder';
+import Sortable from 'sortablejs';
 
 const {
   isRecording,
@@ -282,15 +286,28 @@ const route = useRoute();
 const router = useRouter();
 
 const enterPinDialog = ref();
+const sortableInstance = ref<Sortable | null>(null)
+const checklistEl = ref<HTMLElement | null>(null)
 
 const isLoading = ref<boolean>(true);
 const { toast } = useToast();
 
-const layout = ref<ChecklistLayout>();
-const preferences = ref<any>();
-const searchQuery = ref<string>('');
-const sortConfig = ref<SortConfig>({field: 'created_at', direction: 'desc'});
-const whereClauses = ref<WhereClause[]>([]);
+const checklistState = reactive<{
+    layout: ChecklistLayout;
+    preferences: ChecklistPreferences;
+    searchQuery: string;
+    sortConfig: SortConfig<any>[];
+    whereClauses: WhereClause<any>[];
+}>({
+    layout: null,
+    preferences: null,
+    searchQuery: '',
+    sortConfig: [
+        { field: 'created_at', direction: 'desc' },
+        { field: 'sort_order', direction: 'desc' }
+    ],
+    whereClauses: []
+});
 
 const { resolveTheme, themeToCssVars } = useThemes()
 
@@ -303,9 +320,9 @@ const themeStyle = computed(() =>
 )
 
 const checklistDs = reactive({
-    checklist: null as DataObject | null,
-    checklistItems: null as DataObject | null,
-    folderChecklistsLkp: null as DataObject | null
+    checklist: null as DataObject<any> | null,
+    checklistItems: null as DataObject<any> | null,
+    folderChecklistsLkp: null as DataObject<any> | null
 });
 
 // const totalCount = computed(() => checklistDs.checklist?.currentRecord?.items_count || 0);
@@ -321,7 +338,42 @@ const progressPercent = computed(() => {
     return totalCount.value === 0 ? 0 : Math.round((completedCount.value / totalCount.value) * 100);
 });
 
-onIonViewDidEnter(() => {
+watch(
+  () => [
+    isLoading.value,
+    checklistDs.checklistItems?.data?.length
+  ],
+  async ([loading, len]) => {
+    if (loading) return
+    if (!len) return
+
+    await nextTick()   // wait for DOM to exist
+
+    if (!checklistEl.value) return
+
+    // Prevent duplicate instances
+    if ((checklistEl.value as any)._sortable) return
+
+    sortableInstance.value = Sortable.create(checklistEl.value, {
+      animation: 150,
+      forceFallback: true,
+      draggable: '.checklist-item',
+
+      ghostClass: 'drag-ghost',
+      chosenClass: 'drag-chosen',
+      dragClass: 'drag-dragging',
+
+      disabled: checklistState.preferences.currentSort !== 'custom',
+
+      onEnd: async (evt) => {
+        if (evt.oldIndex === evt.newIndex) return
+        await handleReorder(evt.oldIndex!, evt.newIndex!)
+      }
+    });
+  }
+)
+
+onIonViewDidEnter(async() => {
     const idParam = route.params.id
     const id = Number(idParam)
 
@@ -338,9 +390,13 @@ onIonViewDidEnter(() => {
 
     const checklistLayout = new ChecklistLayout({
         key: `checklist-${id}-layout`, 
-        onPreferenceUpdated: (preference, value) => {
+        onPreferenceUpdated: (preference, pValue) => {
             if (preference == 'currentSort') {
-                updateSort(value);
+                const isCustom = pValue === 'custom'
+                if (sortableInstance.value) {
+                    sortableInstance.value.option('disabled', !isCustom);
+                }
+                updateSort(pValue);
             } else if (['progressBar', 'createNew', 'checked', 'deleted'].includes(preference)) {
                 if (preference === 'checked' || preference === 'deleted') {
                     updateWhereClauses();
@@ -349,12 +405,17 @@ onIonViewDidEnter(() => {
         }
     });
 
-    layout.value = checklistLayout;
-    preferences.value = checklistLayout.preferences;
-    updateSort(layout.value.preferences.currentSort, true);
+    checklistState.layout = checklistLayout;
+    checklistState.preferences = checklistLayout.preferences;
+    updateSort(checklistState.layout.preferences.currentSort, true);
     updateWhereClauses(true);
 
-    createDataObjects(id);
+    await createDataObjects(id);
+
+    const isCustom = checklistState.layout.preferences.currentSort === 'custom'
+    if (sortableInstance.value) {
+        sortableInstance.value.option('disabled', !isCustom);
+    }
 });
 
 async function createDataObjects(id: number) {
@@ -423,13 +484,13 @@ async function initOthersDs() {
             canInsert: true,
             canUpdate: true,
             canDelete: true,
-            whereClauses: whereClauses.value,
+            whereClauses: checklistState.whereClauses,
             masterDataObjectBinding: {
                 masterDataObjectId: 'checklist',
                 childBindingField: 'checklist_id',
                 masterBindingField: 'id'
             },
-            sort: sortConfig.value,
+            sort: checklistState.sortConfig,
             fields: checklistItemsFields,
             allowedBuckets: ['checklist-item-voice-notes']
         }); 
@@ -462,7 +523,6 @@ async function createVoiceChecklistItem(blob: Blob) {
   const userId = dataSources.user?.currentRecord?.auth_id;
   if (!userId) { return; }
 
-  // 1️⃣ Create checklist item
   const created = await checklistItemsDs.insert({
     checklist_id: checklistDs.checklist?.currentRecord?.id,
     name: 'Voice note'
@@ -510,48 +570,106 @@ async function addItem() {
 }
 
 function updateSort(value: ChecklistSort, pSkipUpdate = false) {
+    const itemsSort = []
     switch(value) {
         case 'priority':
-            sortConfig.value.field = 'priority';
-            sortConfig.value.direction = 'asc';
+            itemsSort.push({ field: 'priority', direction: 'asc' });
             break;
         case 'name':
-            sortConfig.value.field = 'name';
-            sortConfig.value.direction = 'asc';
+            itemsSort.push({ field: 'name', direction: 'asc' });
             break;
         case 'recent':
-            sortConfig.value.field = 'created_at';
-            sortConfig.value.direction = 'desc';
+            itemsSort.push({ field: 'created_at', direction: 'desc' });
             break;
         case 'dueDate':
-            sortConfig.value.field = 'due_date';
-            sortConfig.value.direction = 'asc';
+            itemsSort.push({ field: 'due_date', direction: 'desc' });
+            break;
+        case 'custom':
             break;
     }
+    itemsSort.push({ field: 'sort_order', direction: 'desc' });
+    checklistState.sortConfig = itemsSort;
+    console.log('sorta ', checklistState.sortConfig)
     if (!pSkipUpdate) {
-        checklistDs.checklistItems?.updateSort(sortConfig.value);
+        checklistDs.checklistItems?.updateSort(checklistState.sortConfig);
     }
 }
 
 function handleSearchQuery(query: string) {
-    searchQuery.value = query;
+    checklistState.searchQuery = query;
     updateWhereClauses();
 }
 
 function updateWhereClauses(pSkipUpdate = false) {
-    whereClauses.value = [];
-    if (!preferences.value.itemsView.checked) {
-        whereClauses.value.push({ field: 'is_checked', operator: 'equals', value: false });
+    checklistState.whereClauses = []
+    if (!checklistState.preferences.itemsView.checked) {
+        checklistState.whereClauses.push({ field: 'is_checked', operator: 'equals', value: false });
     }
-    if (!preferences.value.itemsView.deleted) {
-        whereClauses.value.push({ field: 'deleted_at', operator: 'isnull' });
+    if (!checklistState.preferences.itemsView.deleted) {
+        checklistState.whereClauses.push({ field: 'deleted_at', operator: 'isnull' });
     }
-    if (searchQuery.value) {
-        whereClauses.value.push({ field: 'name', operator: 'ilike', value: searchQuery.value });
+    if (checklistState.searchQuery) {
+        checklistState.whereClauses.push({ field: 'name', operator: 'ilike', value: checklistState.searchQuery });
     }
     if (!pSkipUpdate) {
-        checklistDs.checklistItems.whereClauses = whereClauses.value;
+        checklistDs.checklistItems.whereClauses = checklistState.whereClauses;
     }
+}
+
+async function handleReorder(oldIndex: number, newIndex: number) {
+    const sorted = checklistDs.checklistItems?.data;
+
+    if (!sorted) { return; }
+
+    const movedItem = sorted[oldIndex]
+
+    // Remove from old position
+    sorted.splice(oldIndex, 1)
+
+    // Insert into new position
+    sorted.splice(newIndex, 0, movedItem)
+
+    const newSortOrder = calculateSortOrder(sorted, newIndex)
+
+    // Optimistic update
+    movedItem.sort_order = newSortOrder
+
+    try {
+        movedItem.save();
+    } catch (e) {
+        console.error('Reorder failed', e)
+        // Optional: reload list if needed
+    }
+}
+
+function calculateSortOrder(items: any[], index: number): number {
+    const prev = items[index - 1]
+    const next = items[index + 1]
+
+    // Dropped at top (highest sort_order)
+    if (!prev && next) {
+        return next.sort_order + 1000
+    }
+
+    // Dropped at bottom (lowest sort_order)
+    if (prev && !next) {
+        return prev.sort_order - 1000
+    }
+
+    // Only item
+    if (!prev && !next) {
+        return 1000
+    }
+
+    // Between two items
+    const gap = prev.sort_order - next.sort_order
+
+    if (gap <= 1) {
+        console.warn('Gap collapsed — normalization required')
+        // You can trigger normalization here if desired
+    }
+
+    return Math.floor((prev.sort_order + next.sort_order) / 2)
 }
 
 function redirect() {
@@ -617,5 +735,17 @@ onIonViewDidLeave(() => {
 .checklist-root {
     background-color: var(--bg-main);
     color: var(--text-primary);
+}
+
+.drag-ghost {
+  opacity: 0.4;
+}
+
+.drag-chosen {
+  cursor: grabbing;
+}
+
+.drag-dragging {
+  transform: rotate(1deg);
 }
 </style>
