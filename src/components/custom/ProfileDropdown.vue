@@ -33,10 +33,12 @@
                             Profile
                         </DropdownMenuItem>
                     </RouterLink>
-                    <DropdownMenuItem class="cursor-pointer">
-                        <Settings2 class="size-4" aria-hidden="true" />
-                        Preferences
-                    </DropdownMenuItem>
+                    <RouterLink to="/preferences">
+                        <DropdownMenuItem class="cursor-pointer">
+                            <Settings2 class="size-4" aria-hidden="true" />
+                            Preferences
+                        </DropdownMenuItem>
+                    </RouterLink>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>

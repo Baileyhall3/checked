@@ -5,6 +5,8 @@ import Checklist from '@/views/Checklist.vue';
 import Folder from '@/views/Folder.vue';
 import UserProfile from '@/views/UserProfile.vue';
 import DeletedItems from '@/views/DeletedItems.vue';
+import Notifications from '@/views/Notifications.vue';
+import Preferences from '@/views/Preferences.vue';
 
 import MainLayout from '@/layouts/MainLayout.vue';
 
@@ -77,6 +79,14 @@ const routes: Array<RouteRecordRaw> = [
         },
       },
       {
+        path: 'preferences',
+        name: 'Preferences',
+        component: Preferences,
+        meta: {
+          title: 'Preferences',
+        },
+      },
+      {
         path: 'checklist/:id',
         name: 'Checklist',
         component: Checklist,
@@ -98,6 +108,15 @@ const routes: Array<RouteRecordRaw> = [
         component: DeletedItems,
         meta: {
           title: 'Deleted Items',
+          // requiresPremium: true
+        },
+      },
+      {
+        path: 'notifications',
+        name: 'Notifications',
+        component: Notifications,
+        meta: {
+          title: 'Notifications',
           // requiresPremium: true
         },
       },

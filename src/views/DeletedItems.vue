@@ -10,7 +10,63 @@
                         </span>
                     </template>
                     <template #rightSide>
-                        <ProfileDropdown />
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    class="rounded-full"
+                                    aria-label="Open settings"
+                                >
+                                    <Ellipsis :size="16" aria-hidden="true" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger class="cursor-pointer">
+                                        <RotateCcw class="size-4 opacity-60 me-2" aria-hidden="true" />
+                                        Recover
+                                    </DropdownMenuSubTrigger>
+                                    <DropdownMenuPortal>
+                                        <DropdownMenuSubContent>
+                                            <DropdownMenuItem 
+                                                class="cursor-pointer" 
+                                                :disabled="selectedChecklistIds.size === 0"
+                                                @click="recoverSelected()"
+                                            >
+                                                Selected ({{ selectedChecklistIds.size }})
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem class="cursor-pointer" @click="recoverAll()">
+                                                All
+                                            </DropdownMenuItem>
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuPortal>
+                                </DropdownMenuSub>
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger class="cursor-pointer text-red-600">
+                                        <Trash class="size-4 opacity-60 me-2" aria-hidden="true" />
+                                        Delete
+                                    </DropdownMenuSubTrigger>
+                                    <DropdownMenuPortal>
+                                        <DropdownMenuSubContent>
+                                            <DropdownMenuItem 
+                                                class="cursor-pointer" 
+                                                :disabled="selectedChecklistIds.size === 0"
+                                                @click="confirmDeleteSelectedDialog.show()"
+                                            >
+                                                Selected ({{ selectedChecklistIds.size }})
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem 
+                                                class="cursor-pointer"
+                                                @click="confirmDeleteAllDialog.show()">
+                                                All
+                                            </DropdownMenuItem>
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuPortal>
+                                </DropdownMenuSub>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </template>
                 </BlurredHeader>
                 <MainContent>
@@ -37,95 +93,33 @@
                         <div class="flex items-center space-x-2 mb-4 justify-between">
                             <div class="flex gap-2 w-full">
                                 <SearchBar @search-entered="handleSearchQuery" />
-                                <ButtonGroup>
-                                    <ButtonGroup>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    size="icon"
-                                                    variant="secondary"
-                                                    class="rounded-xl shadow-none bg-white hover:bg-gray-200"
-                                                    aria-label="Open sort"
-                                                >
-                                                    <ArrowUpDown :size="16" aria-hidden="true" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent>
-                                                <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('recent')">
-                                                    Recently Deleted
-                                                    <Check class="size-4" aria-hidden="true" v-if="currentSort === 'recent'" />
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('name')">
-                                                    Name
-                                                    <Check class="size-4" aria-hidden="true" v-if="currentSort === 'name'" />
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('created')">
-                                                    Date Created
-                                                    <Check class="size-4" aria-hidden="true" v-if="currentSort === 'created'" />
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                        <ButtonGroupSeparator />
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    size="icon"
-                                                    variant="secondary"
-                                                    class="rounded-xl shadow-none bg-white hover:bg-gray-200"
-                                                    aria-label="Open settings"
-                                                >
-                                                    <Settings :size="16" aria-hidden="true" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent>
-                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                <DropdownMenuSub>
-                                                    <DropdownMenuSubTrigger class="cursor-pointer">
-                                                        <RotateCcw class="size-4 opacity-60 me-2" aria-hidden="true" />
-                                                        Recover
-                                                    </DropdownMenuSubTrigger>
-                                                    <DropdownMenuPortal>
-                                                        <DropdownMenuSubContent>
-                                                            <DropdownMenuItem 
-                                                                class="cursor-pointer" 
-                                                                :disabled="selectedChecklistIds.size === 0"
-                                                                @click="recoverSelected()"
-                                                            >
-                                                                Selected ({{ selectedChecklistIds.size }})
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem class="cursor-pointer" @click="recoverAll()">
-                                                                All
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuSubContent>
-                                                    </DropdownMenuPortal>
-                                                </DropdownMenuSub>
-                                                <DropdownMenuSub>
-                                                    <DropdownMenuSubTrigger class="cursor-pointer text-red-600">
-                                                        <Trash class="size-4 opacity-60 me-2" aria-hidden="true" />
-                                                        Delete
-                                                    </DropdownMenuSubTrigger>
-                                                    <DropdownMenuPortal>
-                                                        <DropdownMenuSubContent>
-                                                            <DropdownMenuItem 
-                                                                class="cursor-pointer" 
-                                                                :disabled="selectedChecklistIds.size === 0"
-                                                                @click="confirmDeleteSelectedDialog.show()"
-                                                            >
-                                                                Selected ({{ selectedChecklistIds.size }})
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem 
-                                                                class="cursor-pointer"
-                                                                @click="confirmDeleteAllDialog.show()">
-                                                                All
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuSubContent>
-                                                    </DropdownMenuPortal>
-                                                </DropdownMenuSub>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </ButtonGroup>
-                                </ButtonGroup>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button
+                                            size="icon"
+                                            variant="secondary"
+                                            class="rounded-xl shadow-none bg-white hover:bg-gray-200"
+                                            aria-label="Open sort"
+                                        >
+                                            <ArrowUpDown :size="16" aria-hidden="true" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+                                        <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('recent')">
+                                            Recently Deleted
+                                            <Check class="size-4" aria-hidden="true" v-if="currentSort === 'recent'" />
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('name')">
+                                            Name
+                                            <Check class="size-4" aria-hidden="true" v-if="currentSort === 'name'" />
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('created')">
+                                            Date Created
+                                            <Check class="size-4" aria-hidden="true" v-if="currentSort === 'created'" />
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
                         </div>
                     </template>
@@ -183,7 +177,7 @@ import { ref } from 'vue';
 import { onIonViewDidEnter } from '@ionic/vue';
 import { SortConfig, WhereClause } from 'supabase-dataobject-core';
 import { dataSources } from '@/api/dataObjects';
-import { Home, Settings, Check, ArrowUpDown, ListTodo, RotateCcw, Trash } from "lucide-vue-next";
+import { Ellipsis, Check, ArrowUpDown, ListTodo, RotateCcw, Trash } from "lucide-vue-next";
 import RoundedContainer from '@/components/RoundedContainer.vue';
 import SearchBar from '@/components/custom/UI/SearchBar.vue';
 import BlurredHeader from '@/components/header/Blurred.vue';

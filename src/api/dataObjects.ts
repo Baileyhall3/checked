@@ -42,7 +42,9 @@ export const dataSources = reactive({
     deletedChecklists: null as DataObject | null,
     templateChecklists: null as DataObject | null,
     themes: null as DataObject | null,
-    notifications: null as DataObject | null
+    readNotifications: null as DataObject | null,
+    unreadNotifications: null as DataObject | null,
+    globalNotificationPreferences: null as DataObject | null
 });
 
 /**
@@ -150,7 +152,7 @@ export async function initDataObjects(url: string, key: string, currentUserId: n
         fields: themesFields
     });
 
-    dataSources.notifications = await createDataObject('notifications', {
+    dataSources.readNotifications = await createDataObject('readNotifications', {
         viewName: 'notifications_view',
         tableName: 'notifications',
         fields: notificationFields,
@@ -162,9 +164,47 @@ export async function initDataObjects(url: string, key: string, currentUserId: n
             childBindingField: 'user_id',
             masterBindingField: 'id'
         },
-        // sort: [
-        //     { field: 'created_at', direction: 'asc'}
-        // ]
+        whereClauses: [
+            { field: 'read', operator: 'equals', value: true }
+        ],
+        sort: [
+            { field: 'created_at', direction: 'desc'}
+        ]
+    });
+
+    dataSources.unreadNotifications = await createDataObject('unreadNotifications', {
+        viewName: 'notifications_view',
+        tableName: 'notifications',
+        fields: notificationFields,
+        canInsert: true,
+        canUpdate: true,
+        canDelete: true,
+        masterDataObjectBinding: {
+            masterDataObjectId: 'user',
+            childBindingField: 'user_id',
+            masterBindingField: 'id'
+        },
+        whereClauses: [
+            { field: 'read', operator: 'equals', value: false }
+        ],
+        sort: [
+            { field: 'created_at', direction: 'desc'}
+        ]
+    });
+
+    dataSources.globalNotificationPreferences = await createDataObject('globalNotificationPreferences', {
+        viewName: 'notification_preferences_global_view',
+        tableName: 'notification_preferences_global',
+        fields: notificationPreferencesFields,
+        canUpdate: true,
+        masterDataObjectBinding: {
+            masterDataObjectId: 'user',
+            childBindingField: 'user_id',
+            masterBindingField: 'id'
+        },
+        sort: [
+            { field: 'type', direction: 'desc'}
+        ]
     });
 
     console.log('data sources: ', dataSources);
@@ -297,4 +337,16 @@ export const notificationFields: DataObjectField[] = [
     { name: "read" },
     { name: "priority" },
     { name: "expires_at" },
+    { name: "type_muted" }
+]
+
+export const notificationPreferencesFields: DataObjectField[] = [
+    { name: "id" },
+    { name: "user_id" },
+    { name: "type" },
+    { name: "description" },
+    { name: "supports_email" },
+    { name: "supports_push" },
+    { name: "allow_push" },
+    { name: "allow_email" },
 ]
