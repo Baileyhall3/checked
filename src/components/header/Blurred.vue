@@ -12,6 +12,7 @@
                             <slot name="center"></slot>
                         </div>
                         <div class="justify-self-end">
+                            <NotificationBell />
                             <slot name="rightSide"></slot>
                         </div>
                     </div>
@@ -27,6 +28,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import SideBarTrigger from '../custom/UI/sideBar/SideBarTrigger.vue';
+import NotificationBell from '../custom/UI/buttons/NotificationBell.vue';
 
 const props = defineProps<{
     background?: string

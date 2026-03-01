@@ -41,7 +41,8 @@ export const dataSources = reactive({
     checklistsNoFolderLkp: null as DataObject | null,
     deletedChecklists: null as DataObject | null,
     templateChecklists: null as DataObject | null,
-    themes: null as DataObject | null
+    themes: null as DataObject | null,
+    notifications: null as DataObject | null
 });
 
 /**
@@ -147,6 +148,23 @@ export async function initDataObjects(url: string, key: string, currentUserId: n
         viewName: 'themes',
         tableName: 'themes',
         fields: themesFields
+    });
+
+    dataSources.notifications = await createDataObject('notifications', {
+        viewName: 'notifications_view',
+        tableName: 'notifications',
+        fields: notificationFields,
+        canInsert: true,
+        canUpdate: true,
+        canDelete: true,
+        masterDataObjectBinding: {
+            masterDataObjectId: 'user',
+            childBindingField: 'user_id',
+            masterBindingField: 'id'
+        },
+        // sort: [
+        //     { field: 'created_at', direction: 'asc'}
+        // ]
     });
 
     console.log('data sources: ', dataSources);
@@ -262,4 +280,21 @@ export const themesFields: DataObjectField[] = [
     { name: "owner_id" },
     { name: "is_public" },
     { name: "is_premium" },
+]
+
+export const notificationFields: DataObjectField[] = [
+    { name: "id" },
+    { name: "created_at" },
+    { name: "user_id" },
+    { name: "type" },
+    { name: "checklist_id" },
+    { name: "checklist" },
+    { name: "item_id" },
+    { name: "checklist_item" },
+    { name: "actor_user_id" },
+    { name: "username" },
+    { name: "data" },
+    { name: "read" },
+    { name: "priority" },
+    { name: "expires_at" },
 ]

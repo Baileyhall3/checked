@@ -2,8 +2,9 @@
   <div ref="pickerRoot" class="relative inline-block">
     <!-- Trigger -->
     <div
-      class="flex items-center gap-2 rounded-lg px-1 py-0.5 border bg-gray-100 text-sm"
-      :class="props.class, { 'cursor-pointer' : props.editable }"
+      class="flex items-center gap-2 rounded-lg px-1 py-0.5 border text-sm"
+      :class="[backgroundClass, props.class, { 'cursor-pointer' : props.editable }]"
+      :title="dueTitle"
       @click.stop="toggleDatePicker"
     >
       <Clock class="size-4" :class="{ 'opacity-50' : !modelValue }"/>
@@ -17,7 +18,7 @@
       <button
         v-if="modelValue && props.editable"
         type="button"
-        class="ml-1 text-gray-400 hover:text-gray-700 transition"
+        class="ml-1  hover:text-gray-700 transition"
         @click.stop="clearDate"
       >
         <X class="size-4" />
@@ -43,7 +44,7 @@
 <script setup lang="ts">
 import DatePicker from 'primevue/datepicker'
 import DateUtils from '@/utils/DateUtils'
-import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount, computed } from 'vue'
 import { Clock, X } from 'lucide-vue-next'
 
 const props = defineProps<{
@@ -51,6 +52,7 @@ const props = defineProps<{
   showTime?: boolean;
   class?: string;
   editable?: boolean;
+  isComplete?: boolean;
 }>()
 
 const emit = defineEmits<{
@@ -60,6 +62,76 @@ const emit = defineEmits<{
 const datePickerOpen = ref(false)
 const internalDate = ref<Date | null>(normalizeDate(props.modelValue))
 const pickerRoot = ref<HTMLElement | null>(null);
+
+const backgroundClass = computed(() => {
+  if (!internalDate.value) return 'bg-gray-100'
+
+  if (props.isComplete) {
+    return 'bg-green-600 text-white';
+  }
+
+  const now = new Date()
+  const due = internalDate.value
+  const diffMs = due.getTime() - now.getTime()
+  const diffHours = diffMs / (1000 * 60 * 60)
+
+  if (diffMs < 0) {
+    return 'bg-red-300 border-red-700 text-red-700'
+  }
+
+  if (diffHours <= 24) {
+    return 'bg-yellow-300 border-yellow-700 text-yellow-700'
+  }
+
+  return 'bg-gray-100'
+});
+
+const dueTitle = computed(() => {
+  if (!internalDate.value) return 'No due date set'
+
+  if (props.isComplete) return 'Item completed'
+
+  const now = new Date()
+  const due = internalDate.value
+  const diffMs = due.getTime() - now.getTime()
+  const diffMinutes = Math.round(diffMs / (1000 * 60))
+  const diffHours = Math.round(diffMs / (1000 * 60 * 60))
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24))
+
+  const formatted = props.showTime
+    ? DateUtils.toDateTime(due)
+    : DateUtils.toShortDate(due)
+
+  if (diffMs < 0) {
+    const overdueMinutes = Math.abs(diffMinutes)
+    const overdueHours = Math.abs(diffHours)
+    const overdueDays = Math.abs(diffDays)
+
+    if (overdueMinutes < 60) {
+      return `Overdue by ${overdueMinutes} minute${overdueMinutes === 1 ? '' : 's'}`
+    }
+
+    if (overdueHours < 24) {
+      return `Overdue by ${overdueHours} hour${overdueHours === 1 ? '' : 's'}`
+    }
+
+    return `Overdue by ${overdueDays} day${overdueDays === 1 ? '' : 's'}`
+  }
+
+  if (diffMinutes < 60) {
+    return `Due in ${diffMinutes} minute${diffMinutes === 1 ? '' : 's'}`
+  }
+
+  if (diffHours < 24) {
+    return `Due in ${diffHours} hour${diffHours === 1 ? '' : 's'}`
+  }
+
+  if (diffDays === 1) {
+    return `Due tomorrow at ${DateUtils.toDateTime(due)}`
+  }
+
+  return `Due on ${formatted}`
+});
 
 function normalizeDate(v: unknown): Date | null {
   if (!v) return null
