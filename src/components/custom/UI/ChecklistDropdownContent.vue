@@ -42,6 +42,9 @@
                 <Eye class="size-4" aria-hidden="true" />
                 Remove PIN
             </DropdownMenuItem>
+
+            <slot name="additionalActionItems" />
+
             <DropdownMenuSeparator />
             <DropdownMenuItem class="cursor-pointer">
                 <ListX class="size-4 opacity-60" aria-hidden="true" />

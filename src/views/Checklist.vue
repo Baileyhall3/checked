@@ -30,7 +30,14 @@
                                     :checklist="checklistDs.checklist.currentRecord"
                                     :checklist-data="checklistDs.checklist"
                                     redirectOnDelete
-                                />
+                                >
+                                    <template #additionalActionItems>
+                                        <DropdownMenuItem class="cursor-pointer" @click="copyItems()">
+                                            <Clipboard class="size-4" aria-hidden="true" />
+                                            Copy to Clipboard
+                                        </DropdownMenuItem>
+                                    </template>
+                                </ChecklistDropdownContent>
                             </DropdownMenu>
                         </template>
                         <!-- <Breadcrumbs :items="breadcrumbs" :text-color="resolvedTheme?.config.header.text" :muted-color="resolvedTheme?.config.text.muted" /> -->
@@ -108,6 +115,17 @@
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
+                                    <!-- <ButtonGroupSeparator />
+                                    <Button
+                                        size="icon"
+                                        variant="secondary"
+                                        class="rounded-xl shadow-none bg-white hover:bg-gray-200"
+                                        aria-label="Enter select mode"
+                                        @click="allowSelection = !allowSelection"
+                                    >
+                                        <SquareX :size="16" aria-hidden="true" v-if="allowSelection" />
+                                        <SquareCheck :size="16" aria-hidden="true" v-else />
+                                    </Button> -->
                                 </ButtonGroup>
                             </ButtonGroup>
                         </div>
@@ -134,53 +152,35 @@
                                     </div>
                                 </div>
                             </div>
+
                             <!-- Checklist Progress Bar -->
-                             <transition name="fade-slide">
-                                 <div v-if="checklistDs.checklistItems?.data?.length && checklistState.preferences.itemsView.progressBar" class="mb-4">
-                                     <div class="flex justify-between text-sm text-gray-600 mb-1">
-                                         <span>Progress</span>
-                                         <span>{{ completedCount }} / {{ totalCount }}</span>
-                                     </div>
-     
-                                     <div
-                                         class="bg-gray-200 h-2 w-full overflow-hidden rounded-full"
-                                         role="progressbar"
-                                         :aria-valuenow="progressPercent"
-                                         aria-valuemin="0"
-                                         :aria-valuemax="100"
-                                         aria-label="Checklist progress"
-                                     >
-                                         <div
-                                            class="h-full transition-all duration-500 ease-out"
-                                            :class="{ 
-                                                'bg-indigo-500' : progressPercent !== 100,
-                                                'bg-green-600' : progressPercent === 100
-                                            }"
-                                            :style="{ width: `${progressPercent}%` }"
-                                         ></div>
-                                     </div>
-                                 </div>
-                             </transition>
+                            <transition name="fade-slide">
+                                <div v-if="checklistDs.checklistItems?.data?.length && checklistState.preferences.itemsView.progressBar" class="pb-4">
+                                    <ProgressBar :total-count="totalCount" :completed-count="completedCount" />
+                                </div>
+                            </transition>
 
                             <!-- Add New Item Input -->
                             <transition name="fade-slide">
-                                <div v-if="checklistState.preferences.itemsView.createNew && !checklistDs.checklist.currentRecord?.deleted_at" class="flex items-center my-4">
-                                    <Button 
-                                        variant="secondary"
-                                        @click="handleVoiceClick"
-                                        :class="{ 'bg-red-100 animate-pulse text-red-500': isRecording }"
-                                    >
-                                        <Mic :size="16" />
-                                    </Button>
-                                    <input
-                                        v-model="newItemName"
-                                        :disabled="isRecording"
-                                        type="text"
-                                        placeholder="New checklist item..."
-                                        class="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                                        @keyup.enter="addItem"
-                                    />
-                                    <AddNewBtn class="ms-2" add-terminology="Add" @add-clicked="addItem" />
+                                <div v-if="checklistState.preferences.itemsView.createNew && !checklistDs.checklist.currentRecord?.deleted_at" class="pb-4">
+                                    <AddItem v-model="newItemName" @add-clicked="addItem" @finished-voice-recording="createVoiceChecklistItem" />
+                                </div>
+                            </transition>
+
+                            <!-- Bulk Actions -->
+                            <transition name="fade-slide">
+                                <div class="pb-4" v-if="allowSelection">
+                                    <div class="flex items-center gap-2" >
+                                        <Checkbox 
+                                            id="selectAll"
+                                            :model-value="selectedItemIds.size === allIds.length"
+                                            :indeterminate="isIndeterminate"
+                                            @update:model-value="selectAll"
+                                        />
+                                        <span class="text-sm">
+                                            {{ selectedItemIds.size === allIds.length ? 'Unelect All' : 'Select All' }}
+                                        </span>
+                                    </div>
                                 </div>
                             </transition>
 
@@ -190,6 +190,9 @@
                                     v-for="(item, index) in checklistDs.checklistItems?.data" :key="item.id"
                                     :item="item" 
                                     :checklistData="checklistDs.checklistItems" 
+                                    :allowSelection="allowSelection"
+                                    :isSelected="selectedItemIds.has(item.id)"
+                                    @selection-changed="updateSelected"
                                 />
                              </div>
                         </div>
@@ -245,7 +248,7 @@ import { reactive, ref, computed, watch, nextTick, onMounted } from 'vue';
 import { dataSources, checklistFields, checklistItemsFields } from '@/api/dataObjects';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast/use-toast";
-import { X, ArrowUpDown, Check, Settings, Ellipsis, Mic, SlidersHorizontal } from "lucide-vue-next";
+import { X, ArrowUpDown, Check, Ellipsis, SlidersHorizontal, Clipboard, SquareCheck, SquareX } from "lucide-vue-next";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -270,21 +273,15 @@ import Loading from '@/components/custom/UI/Loading.vue';
 import ChecklistItem from '@/components/custom/UI/ChecklistItem.vue';
 import ChecklistDropdownContent from '@/components/custom/UI/ChecklistDropdownContent.vue';
 import EnterPIN from '@/components/dialogs/EnterPIN.vue';
-import AddNewBtn from '@/components/custom/UI/buttons/AddNewBtn.vue';
 import ChecklistLayout, { ChecklistSort, ChecklistPreferences } from '@/layouts/ChecklistLayoutManager';
 import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 import { useThemes } from '@/composables/useThemes';
 import MainContent from '@/components/custom/UI/MainContent.vue';
 import DefaultStar from '@/components/custom/UI/DefaultStar.vue';
-import { useVoiceRecorder } from '@/composables/useVoiceRecorder';
 import Sortable from 'sortablejs';
-
-const {
-  isRecording,
-  audioBlob,
-  start,
-  stop
-} = useVoiceRecorder()
+import AddItem from '@/components/custom/UI/input/AddItem.vue';
+import ProgressBar from '@/components/custom/UI/ProgressBar.vue';
+import { Checkbox } from "@/components/ui/checkbox";
 
 const route = useRoute();
 const router = useRouter();
@@ -292,6 +289,8 @@ const router = useRouter();
 const enterPinDialog = ref();
 const sortableInstance = ref<Sortable | null>(null)
 const checklistEl = ref<HTMLElement | null>(null)
+const allowSelection = ref<boolean>(false);
+const selectedItemIds = ref<Set<number>>(new Set())
 
 const isLoading = ref<boolean>(true);
 const { toast } = useToast();
@@ -323,6 +322,15 @@ const themeStyle = computed(() =>
     themeToCssVars(resolvedTheme.value)
 )
 
+const allIds = computed(() =>
+    checklistDs.checklistItems?.data?.map(i => i.id) ?? []
+)
+
+const isIndeterminate = computed(() =>
+    selectedItemIds.value.size > 0 &&
+    selectedItemIds.value.size < allIds.value.length
+)
+
 const checklistDs = reactive({
     checklist: null as DataObject<any> | null,
     checklistItems: null as DataObject<any> | null,
@@ -340,6 +348,10 @@ const totalCount = computed(() => checklistDs.checklistItems?.data?.length || 0)
 const completedCount = computed(() => checklistDs.checklistItems?.data?.filter((item: any) => item.is_checked)?.length || 0);
 const progressPercent = computed(() => {
     return totalCount.value === 0 ? 0 : Math.round((completedCount.value / totalCount.value) * 100);
+});
+
+watch(allowSelection, val => {
+    if (!val) selectedItemIds.value = new Set()
 });
 
 watch(
@@ -508,18 +520,6 @@ async function initOthersDs() {
 }
 
 const newItemName = ref("");
-async function handleVoiceClick() {
-    if (!isRecording.value) {
-        await start()
-    } else {
-        stop()
-    }
-}
-watch(audioBlob, async (blob) => {
-  if (!blob) return
-
-  await createVoiceChecklistItem(blob)
-})
 async function createVoiceChecklistItem(blob: Blob) {
   const checklistItemsDs = checklistDs.checklistItems
   if (!checklistItemsDs) return
@@ -674,6 +674,37 @@ function calculateSortOrder(items: any[], index: number): number {
     }
 
     return Math.floor((prev.sort_order + next.sort_order) / 2)
+}
+
+function copyItems() {
+    const itemsData = checklistDs.checklistItems?.data;
+    if (!itemsData) { return; }
+    const titles = itemsData
+        .filter(i => !i.deleted_at)
+        .map(i => i.name)
+        .join('\n')
+
+    navigator.clipboard.writeText(titles)
+    toast({
+        title: 'Items copied to clipboard.',
+    });
+}
+
+function selectAll(val: boolean) {
+    selectedItemIds.value = val ? new Set(allIds.value) : new Set()
+}
+
+function updateSelected(isSelected: boolean, checklistId: number) {
+    if (!allowSelection.value && isSelected && selectedItemIds.value.size === 0) {
+        allowSelection.value = true;
+    } else if (allowSelection.value && !isSelected && selectedItemIds.value.size === 1) {
+        allowSelection.value = false;
+    }
+    if (isSelected) {
+        selectedItemIds.value.add(checklistId);
+    } else {
+        selectedItemIds.value.delete(checklistId);
+    }
 }
 
 function redirect() {

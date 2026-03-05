@@ -1,42 +1,81 @@
 <template>
     <Dialog v-model:open="isDialogOpen">
         <DialogContent class="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
-            <DialogHeader class="contents space-y-0 text-left">
+            <DialogHeader class=" text-right">
+                <!-- oioi -->
             </DialogHeader>
-            <div 
-                class=" px-6 py-2 text-base border-b relative"
-                :style="{ '--item-colour': props.checklistItem.bg_colour }"
-            >
-                <div class="flex justify-between items-start">
-                    <Checkbox
-                        v-if="!props.checklistItem.deleted_at"
-                        :style="{ 'background-color': props.checklistItem.is_checked ? '#00bc7d' : 'transparent'}"
-                        :class="{ 'border border-gray-400 !border-solid' : !props.checklistItem.is_checked }"
-                        class="rounded-full mr-2 mt-1"
-                        v-model="props.checklistItem.is_checked"
-                        @update:model-value="handleChecked"
-                    />
-                    <div class="w-full pe-4 font-semibold tracking-tight">
-                        <textarea
-                            ref="nameInput"
-                            v-model="props.checklistItem.name"
-                            class="block w-full bg-transparent border-none focus:outline-none resize-none overflow-hidden leading-relaxed"
-                            :class="{ 
-                                'text-gray-700' : props.checklistItem.deleted_at || props.checklistItem.is_checked, 
-                                'text-gray-900' : !props.checklistItem.deleted_at && !props.checklistItem.is_checked 
-                            }"
-                            :rows="1"
-                            @input="autoResize"
-                            @blur="props.dataObject.saveChanges()"
-                        ></textarea>
+            <div class="px-6 py-2 text-base border-b relative grid grid-cols-[85%_15%]">
+                <div 
+                    :style="{ '--item-colour': props.checklistItem.bg_colour }"
+                >
+                    <div class="flex justify-between items-start">
+                        <Checkbox
+                            v-if="!props.checklistItem.deleted_at"
+                            :style="{ 'background-color': props.checklistItem.is_checked ? '#00bc7d' : 'transparent'}"
+                            :class="{ 'border border-gray-400 !border-solid' : !props.checklistItem.is_checked }"
+                            class="rounded-full mr-2 mt-1"
+                            v-model="props.checklistItem.is_checked"
+                            @update:model-value="handleChecked"
+                        />
+                        <div class="w-full pe-4 font-semibold tracking-tight">
+                            <textarea
+                                ref="nameInput"
+                                v-model="props.checklistItem.name"
+                                class="block w-full bg-transparent border-none focus:outline-none resize-none overflow-hidden leading-relaxed"
+                                :class="{ 
+                                    'text-gray-700' : props.checklistItem.deleted_at || props.checklistItem.is_checked, 
+                                    'text-gray-900' : !props.checklistItem.deleted_at && !props.checklistItem.is_checked 
+                                }"
+                                :rows="1"
+                                @input="autoResize"
+                                @blur="props.dataObject.saveChanges()"
+                            ></textarea>
+                        </div>
                     </div>
+                </div>
+                <div class="px-4 py-0.5">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                class="opacity-60 active:opacity-100 rounded-full size-6"
+                                aria-label="Open edit menu"
+                            >
+                                <Ellipsis  aria-hidden="true" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <ChecklistItemDropdownContent 
+                            :checklist-data="props.dataObject" 
+                            :item="props.checklistItem" 
+                            hideDetailsOption
+                        />
+                    </DropdownMenu>
                 </div>
             </div>
 
             <div class="px-6 pt-4 pb-6">
                 <form class="space-y-4 pb-4" @submit.prevent>
+                    <div v-if="props.checklistItem.locked_at" 
+                        class="flex items-center gap-2 rounded-lg px-1 py-2 border text-sm bg-gray-300 border-gray-700 text-gray-700 w-100 justify-center">
+                        <Lock class="size-4" />
+                        {{ `Locked by ${props.checklistItem.locked_by_username} ${DateUtils.toFullDateTime(props.checklistItem.locked_at)}` }}
+                    </div>
+                    <div v-if="props.checklistItem.deleted_at" 
+                        class="flex items-center gap-2 rounded-lg px-1 py-2 border text-sm bg-red-200 border-red-700 text-red-700 w-100 justify-center">
+                        <Trash class="size-4" />
+                        {{ `Deleted by ${props.checklistItem.deleted_by_username} ${DateUtils.toFullDateTime(props.checklistItem.deleted_at)}` }}
+                    </div>
                     <div class="flex items-center h-100">
-                        <PriorityLabel v-model:priority="props.checklistItem.priority" @update:priority="props.dataObject.saveChanges()" />
+                        <!-- <LockedLabel 
+                            v-if="props.checklistItem.locked_at"
+                            :locked-at="props.checklistItem.locked_at"
+                            :locked-by="props.checklistItem.locked_by_username"
+                        /> -->
+                        <PriorityLabel 
+                            v-model:priority="props.checklistItem.priority" 
+                            @update:priority="props.dataObject.saveChanges()" 
+                        />
                         <DueDate 
                             v-model="props.checklistItem.due_date" 
                             showTime 
@@ -95,7 +134,7 @@
                     </div>
                 </form>
                 <div class="flex flex-col space-y-4">
-                    <div class="flex flex-col text-red-600" v-if="props.checklistItem.deleted_at">
+                    <!-- <div class="flex flex-col text-red-600" v-if="props.checklistItem.deleted_at">
                         <span class="font-medium items-center flex">
                             <Trash class="w-4 h-4 inline-block mr-2" />
                             Deleted
@@ -112,7 +151,7 @@
                         <p class="text-sm text-muted-foreground">
                             {{ DateUtils.toDateTime(props.checklistItem.locked_at) }} by {{ props.checklistItem.locked_by_username }}
                         </p>
-                    </div>
+                    </div> -->
                     <div class="flex flex-col">
                         <span class="font-medium">Created</span>
                         <p class="text-sm text-muted-foreground">
@@ -158,13 +197,15 @@ import { useToast } from "@/components/ui/toast/use-toast";
 import { ref, nextTick } from 'vue';
 import Textarea from '../ui/textarea/Textarea.vue';
 import DateUtils from '@/utils/DateUtils';
-import { CheckCircle2Icon, CircleIcon, Calendar, Palette, Lock, Trash, X } from 'lucide-vue-next';
+import { CheckCircle2Icon, CircleIcon, Calendar, Palette, Lock, Trash, X, Ellipsis } from 'lucide-vue-next';
 import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import ColoursDropdown from '../custom/UI/ColoursDropdown.vue';
 import TextEditor from '../custom/UI/input/TextEditor.vue';
 import { Checkbox } from '../ui/checkbox';
 import DueDate from '../custom/UI/checklist/DueDate.vue';
 import PriorityLabel from '../custom/UI/checklist/PriorityLabel.vue';
+import ChecklistItemDropdownContent from '../custom/UI/ChecklistItemDropdownContent.vue';
+import LockedLabel from '../custom/UI/checklist/LockedLabel.vue';
 
 const props = defineProps<{
     checklistItem: DataObjectRecord;

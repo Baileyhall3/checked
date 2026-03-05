@@ -76,11 +76,11 @@ const backgroundClass = computed(() => {
   const diffHours = diffMs / (1000 * 60 * 60)
 
   if (diffMs < 0) {
-    return 'bg-red-300 border-red-700 text-red-700'
+    return 'bg-red-200 border-red-700 text-red-700'
   }
 
   if (diffHours <= 24) {
-    return 'bg-yellow-300 border-yellow-700 text-yellow-700'
+    return 'bg-yellow-200 border-yellow-700 text-yellow-700'
   }
 
   return 'bg-gray-100'
