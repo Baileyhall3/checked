@@ -32,15 +32,18 @@
                                     redirectOnDelete
                                 >
                                     <template #additionalActionItems>
+                                        <DropdownMenuItem class="cursor-pointer" @click="$refs.importItemsDialog?.show()">
+                                            <Import class="size-4 opacity-60" aria-hidden="true" />
+                                            Import Items
+                                        </DropdownMenuItem>
                                         <DropdownMenuItem class="cursor-pointer" @click="copyItems()">
-                                            <Clipboard class="size-4" aria-hidden="true" />
+                                            <Clipboard class="size-4 opacity-60" aria-hidden="true" />
                                             Copy to Clipboard
                                         </DropdownMenuItem>
                                     </template>
                                 </ChecklistDropdownContent>
                             </DropdownMenu>
                         </template>
-                        <!-- <Breadcrumbs :items="breadcrumbs" :text-color="resolvedTheme?.config.header.text" :muted-color="resolvedTheme?.config.text.muted" /> -->
                     </BlurredHeader>
                     <MainContent>
                         <div class="w-full flex mb-4">
@@ -237,6 +240,11 @@
             :folder="{id: checklistDs.checklist?.currentRecord?.folder_id, name: checklistDs.checklist?.currentRecord?.folder_name}" 
             @checklist-created="refreshChecklists" 
         />
+        <ImportItems 
+            ref="importItemsDialog"
+            :checklist="checklistDs.checklist?.currentRecord"
+            @items-imported="checklistDs.checklistItems?.refresh()"
+        />
     </IonPage>
 </template>
 
@@ -248,7 +256,7 @@ import { reactive, ref, computed, watch, nextTick, onMounted } from 'vue';
 import { dataSources, checklistFields, checklistItemsFields } from '@/api/dataObjects';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast/use-toast";
-import { X, ArrowUpDown, Check, Ellipsis, SlidersHorizontal, Clipboard, SquareCheck, SquareX } from "lucide-vue-next";
+import { X, ArrowUpDown, Check, Ellipsis, SlidersHorizontal, Clipboard, SquareCheck, SquareX, Import } from "lucide-vue-next";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -282,6 +290,7 @@ import Sortable from 'sortablejs';
 import AddItem from '@/components/custom/UI/input/AddItem.vue';
 import ProgressBar from '@/components/custom/UI/ProgressBar.vue';
 import { Checkbox } from "@/components/ui/checkbox";
+import ImportItems from '@/components/dialogs/ImportItems.vue';
 
 const route = useRoute();
 const router = useRouter();

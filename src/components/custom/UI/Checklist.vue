@@ -18,13 +18,13 @@
                                 class="w-5 h-5 text-gray-600 mr-2" 
                                 :title="`PIN set ${DateUtils.toDateTime(checklist.pin_protected_at)} by ${checklist.pin_set_by_username}`"
                             />
-                            <template v-if="checklist.completed_at">
+                            <!-- <template v-if="checklist.completed_at">
                                 <img src="/public/assets/images/check-icon-no-bg.png"
                                     alt="Checked Logo"
                                     class="h-6 w-6 me-1" 
                                     :title="`Checklist completed ${DateUtils.toDateTime(checklist.completed_at)} by ${checklist.completed_by_username}`"
                                 />
-                            </template>
+                            </template> -->
                             <RouterLink :to="`/checklist/${checklist.id}`" class="cursor-pointer hover:underline">
                                 <span class="text-lg font-medium">{{ checklist.name }}</span>
                             </RouterLink>
@@ -77,9 +77,13 @@
                                 class="text-muted-foreground" 
                                 title="Checklist is a template"
                             />
-                            <span class="text-sm font-medium text-muted-foreground flex items-center" v-if="!props.hideItemsCount">
-                                {{ checklist.items_checked_count }}/{{ checklist.items_count }}
+                            <span 
+                                v-if="!props.hideItemsCount"
+                                class="text-sm font-medium text-muted-foreground flex items-center gap-2" 
+                                :class="{ 'flex items-center gap-2 rounded-lg px-1 py-0.5 border text-sm bg-green-600 text-white' : (checklist.items_checked_count == checklist.items_count) }"
+                                >
                                 <CircleCheckBig :size="14" class="ms-1" />
+                                {{ checklist.items_checked_count }}/{{ checklist.items_count }}
                             </span>
                         </div>
                     </div>
