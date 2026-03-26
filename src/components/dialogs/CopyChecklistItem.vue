@@ -2,28 +2,37 @@
     <Dialog v-model:open="isDialogOpen">
         <DialogContent class="sm:max-w-[425px]">
             <DialogHeader>
-                <DialogTitle>Copy Checklist</DialogTitle>
+                <DialogTitle>Copy Item</DialogTitle>
                 <DialogDescription>
                     <p>
-                        Create a copy of <span class="font-semibold"> {{ props.checklist.name }}</span> in the current folder. 
-                    </p>
-                    <p>
-                        Copying checklists which are templates will copy all items from the checklists, marking them <span class="font-bold">unchecked</span>.
+                        Create a specified number of copies of <span class="font-semibold"> {{ props.item.name }}</span> in the current checklist. 
                     </p>
                 </DialogDescription>
             </DialogHeader>
 
             <form class="mt-4 gap-4 flex flex-col" @submit.prevent="copyChecklist" novalidate>
                 <div class="*:not-first:mt-2">
-                    <Label for="checklistName">
+                    <Label for="itemName">
                         New Checklist Name
                     </Label>
                     <Input 
-                        id="checklistName" 
+                        id="itemName" 
                         placeholder="Name... e.g. 'Groceries'" 
                         type="text" 
                         required 
-                        v-model="checklistName" 
+                        v-model="itemName" 
+                        class="border-gray-300 focus:ring-blue-500"
+                    />
+                </div>
+                <div class="*:not-first:mt-2">
+                    <Label for="copyCount">
+                        Number of Copies to Create
+                    </Label>
+                    <Input 
+                        id="copyCount" 
+                        type="number" 
+                        required 
+                        v-model="copyCount" 
                         class="border-gray-300 focus:ring-blue-500"
                     />
                 </div>
@@ -62,16 +71,17 @@ import { useToast } from "@/components/ui/toast/use-toast";
 import { DataObjectRecord } from "supabase-dataobject-core";
 
 const props = defineProps<{
-    checklist: DataObjectRecord;
+    item: DataObjectRecord;
 }>();
 
 const emit = defineEmits<{
-  (e: 'checklist-copied', newChecklistId: number): void
+  (e: 'item-copied'): void
 }>();
 
 const isCopying = ref<boolean>(false);
 const isDialogOpen = ref<boolean>(false);
-const checklistName = ref<string>();
+const itemName = ref<string>();
+const copyCount = ref<number>(1);
 
 async function copyChecklist() {
     const { toast } = useToast();
@@ -79,31 +89,32 @@ async function copyChecklist() {
     try {
         isCopying.value = true;
 
-        if (!checklistName.value) {
+        if (!itemName.value) {
             toast({
-                title: 'Could not copy checklist.',
+                title: 'Could not copy checklist item.',
                 description: 'Please enter a name.',
                 variant: "destructive"
             });
             return; 
         }
 
-        const { data, error } = await supabase.rpc('copy_checklist', {
-            p_source_checklist_id: props.checklist.id,
-            p_new_name: checklistName.value,
+        const { data, error } = await supabase.rpc('copy_checklist_item', {
+            p_source_id: props.item.id,
+            p_copy_count: copyCount.value,
+            p_name: itemName.value
         });
 
         if (error) {
             toast({
-                title: 'Could not copy checklist. An error occurred.',
+                title: 'Could not copy checklist item. An error occurred.',
                 description: `Error: ${error.message}`,
                 variant: "destructive"
             });
-            throw new Error(`Error copying checklist: ${error.message}`);
+            throw new Error(`Error copying item: ${error.message}`);
         } else {
-            toast({title: 'Checklist copied!'});
-            emit("checklist-copied", data);
-            checklistName.value = '';
+            toast({title: 'Item copied!'});
+            emit("item-copied");
+            itemName.value = '';
             close();
         }
     } catch (err) {
@@ -114,7 +125,7 @@ async function copyChecklist() {
 }
 
 const show = () => {
-    checklistName.value = props.checklist.name + ' (Copy)';
+    itemName.value = props.item.name + ' (Copy)';
     isDialogOpen.value = true;
 }
 

@@ -92,23 +92,36 @@ const items = computed(() => {
     checklistsByFolder[folderId].push(checklist)
   }
 
-  return dataSources.myFolders.data.map((folder: DataObjectRecord) => ({
+  return [...dataSources.myFolders.data]
+  .sort((a, b) => {
+    const aDate = new Date(a.content_updated_at ?? 0).getTime()
+    const bDate = new Date(b.content_updated_at ?? 0).getTime()
+    return bDate - aDate // folders: descending
+  })
+  .map((folder: DataObjectRecord) => ({
     title: folder.name,
     icon: 'lucide:folder',
     type: 'folder',
     folderId: folder.id,
     id: `folder-${folder.id}`,
     folder: folder,
-    children: (checklistsByFolder[folder.id] || []).map((cl: DataObjectRecord) => ({
-      title: cl.name,
-      icon: 'lucide:list-check',
-      type: 'checklist',
-      checklistId: cl.id,
-      id: `checklist-${cl.id}`,
-      checklist: cl
-    }))
+    children: (checklistsByFolder[folder.id] || [])
+      .slice() // avoid mutating original
+      .sort((a, b) => {
+        const aDate = new Date(a.items_updated_at ?? 0).getTime()
+        const bDate = new Date(b.items_updated_at ?? 0).getTime()
+        return bDate - aDate // checklists: descending
+      })
+      .map((cl: DataObjectRecord) => ({
+        title: cl.name,
+        icon: 'lucide:list-check',
+        type: 'checklist',
+        checklistId: cl.id,
+        id: `checklist-${cl.id}`,
+        checklist: cl
+      }))
   }))
-});
+})
 
 const onItemClick = (
   handleSelect: () => void,

@@ -170,16 +170,88 @@
                             <!-- Bulk Actions -->
                             <transition name="fade-slide">
                                 <div class="pb-4" v-if="allowSelection">
-                                    <div class="flex items-center gap-2" >
-                                        <Checkbox 
-                                            id="selectAll"
-                                            :model-value="selectedItemIds.size === allIds.length"
-                                            :indeterminate="isIndeterminate"
-                                            @update:model-value="selectAll"
-                                        />
-                                        <span class="text-sm">
-                                            {{ selectedItemIds.size === allIds.length ? 'Unelect All' : 'Select All' }}
-                                        </span>
+                                    <div class="flex items-center justify-between pb-4">
+                                        <div>
+                                            <span class="font-semibold">
+                                                {{ selectedItemIds.size }} selected
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <ButtonGroup>
+                                                <ButtonGroup class="ml-3">
+                                                    <Button
+                                                        size="icon"
+                                                        variant="secondary"
+                                                        class="rounded-xl shadow-none bg-white hover:bg-gray-200 text-green-600"
+                                                        aria-label="Mark as checked"
+                                                    >
+                                                        <Check :size="16" aria-hidden="true" />
+                                                    </Button>
+                                                    <ButtonGroupSeparator />
+                                                    <Button
+                                                        size="icon"
+                                                        variant="secondary"
+                                                        class="rounded-xl shadow-none bg-white hover:bg-gray-200"
+                                                        aria-label="Move items"
+                                                        >
+                                                        <MoveLeft :size="16" aria-hidden="true" />
+                                                    </Button>
+                                                    <ButtonGroupSeparator />
+                                                    <Button
+                                                        size="icon"
+                                                        variant="secondary"
+                                                        class="rounded-xl shadow-none bg-white hover:bg-gray-200 text-red-500"
+                                                        aria-label="Delete items"
+                                                    >
+                                                        <Trash :size="16" aria-hidden="true" />
+                                                    </Button>
+                                                    <ButtonGroupSeparator />
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button
+                                                                size="icon"
+                                                                variant="secondary"
+                                                                class="rounded-xl shadow-none bg-white hover:bg-gray-200"
+                                                                aria-label="Bulk actions"
+                                                            >
+                                                                <Ellipsis :size="16" aria-hidden="true" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent>
+                                                            <DropdownMenuLabel>Bulk Actions</DropdownMenuLabel>
+                                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateView('progressBar')">
+                                                                Set Priority
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateView('createNew')">
+                                                                Set Due Date
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateView('checked')">
+                                                                Lock
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </ButtonGroup>
+                                            </ButtonGroup>
+                                        </div>
+                                    </div>
+                                    <div class="justify-between flex items-center">
+                                        <div class="flex items-center gap-2">
+                                            <Checkbox 
+                                                id="selectAll"
+                                                :model-value="selectedItemIds.size === allIds.length"
+                                                :indeterminate="isIndeterminate"
+                                                @update:model-value="selectAll"
+                                            />
+                                            <span class="text-sm">
+                                                {{ selectedItemIds.size === allIds.length ? 'Unelect All' : 'Select All' }}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <Button variant="secondary" @click="allowSelection = false">
+                                                Cancel
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
                             </transition>
@@ -248,7 +320,7 @@ import { reactive, ref, computed, watch, nextTick, onMounted } from 'vue';
 import { dataSources, checklistFields, checklistItemsFields } from '@/api/dataObjects';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast/use-toast";
-import { X, ArrowUpDown, Check, Ellipsis, SlidersHorizontal, Clipboard, SquareCheck, SquareX } from "lucide-vue-next";
+import { X, ArrowUpDown, Check, Ellipsis, SlidersHorizontal, Clipboard, SquareCheck, SquareX, Trash, MoveLeft } from "lucide-vue-next";
 import {
     DropdownMenu,
     DropdownMenuContent,

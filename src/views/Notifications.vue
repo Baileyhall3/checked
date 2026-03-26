@@ -129,9 +129,9 @@
                         </div> -->
                         <div class="h-full overflow-auto">
                             <Tabs defaultValue="tab-1" class="items-center w-full">
-                                <TabsList class="bg-white">
-                                    <TabsTrigger class="data-[state=active]:bg-muted data-[state=active]:shadow-none" value="tab-1">Unread</TabsTrigger>
-                                    <TabsTrigger class="data-[state=active]:bg-muted data-[state=active]:shadow-none" value="tab-2">Read</TabsTrigger>
+                                <TabsList class="bg-gray-200 w-full">
+                                    <TabsTrigger value="tab-1">Unread</TabsTrigger>
+                                    <TabsTrigger value="tab-2">Read</TabsTrigger>
                                 </TabsList>
                                 <TabsContent value="tab-1" class="w-full">
                                     <Empty 
