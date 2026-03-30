@@ -22,6 +22,12 @@
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
+                                <RouterLink to="/preferences">
+                                    <DropdownMenuItem class="cursor-pointer">
+                                        <Settings2 class="size-4" aria-hidden="true" />
+                                        Preferences
+                                    </DropdownMenuItem>
+                                </RouterLink>
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('priority')">
                                     Priority
@@ -134,16 +140,14 @@
                                     <TabsTrigger value="tab-2">Read</TabsTrigger>
                                 </TabsList>
                                 <TabsContent value="tab-1" class="w-full">
-                                    <Empty 
-                                        v-if="dataSources.unreadNotifications?.data.length === 0"
-                                        class="p-6 mb-8">
+                                    <Empty v-if="dataSources.unreadNotifications?.data.length === 0" class="p-6 mb-8">
                                         <EmptyHeader>
                                             <EmptyMedia variant="icon">
-                                                <ListTodo />
+                                                <Bell />
                                             </EmptyMedia>
-                                            <EmptyTitle>No Notifications Yet</EmptyTitle>
+                                            <EmptyTitle>No Unread Notifications Yet</EmptyTitle>
                                             <EmptyDescription>
-                                                You do not have any notifications yet.
+                                                You do not have any unread notifications yet.
                                             </EmptyDescription>
                                         </EmptyHeader>
                                         <EmptyContent>
@@ -216,7 +220,7 @@ import { ref } from 'vue';
 import { onIonViewDidEnter } from '@ionic/vue';
 import { SortConfig, WhereClause } from 'supabase-dataobject-core';
 import { dataSources } from '@/api/dataObjects';
-import { Home, Settings, Check, ArrowUpDown, ListTodo, RotateCcw, Trash, Ellipsis } from "lucide-vue-next";
+import { Home, Settings, Check, ArrowUpDown, ListTodo, RotateCcw, Trash, Ellipsis, Bell, Settings2 } from "lucide-vue-next";
 import RoundedContainer from '@/components/RoundedContainer.vue';
 import SearchBar from '@/components/custom/UI/SearchBar.vue';
 import BlurredHeader from '@/components/header/Blurred.vue';

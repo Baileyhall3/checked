@@ -182,22 +182,11 @@
 
 <script setup lang="ts">
 import { DataObject, DataObjectRecord } from 'supabase-dataobject-core';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-    DialogClose
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
-import { useToast } from "@/components/ui/toast/use-toast";
 import { ref, nextTick } from 'vue';
-import Textarea from '../ui/textarea/Textarea.vue';
 import DateUtils from '@/utils/DateUtils';
-import { CheckCircle2Icon, CircleIcon, Calendar, Palette, Lock, Trash, X, Ellipsis } from 'lucide-vue-next';
+import { Palette, Lock, Trash, Ellipsis } from 'lucide-vue-next';
 import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import ColoursDropdown from '../custom/UI/ColoursDropdown.vue';
 import TextEditor from '../custom/UI/input/TextEditor.vue';
@@ -205,7 +194,6 @@ import { Checkbox } from '../ui/checkbox';
 import DueDate from '../custom/UI/checklist/DueDate.vue';
 import PriorityLabel from '../custom/UI/checklist/PriorityLabel.vue';
 import ChecklistItemDropdownContent from '../custom/UI/ChecklistItemDropdownContent.vue';
-import LockedLabel from '../custom/UI/checklist/LockedLabel.vue';
 
 const props = defineProps<{
     checklistItem: DataObjectRecord;
@@ -229,19 +217,6 @@ const autoResize = (ev) => {
 
 // const maxLength = 180;
 // const characterCount = computed(() => props.checklistItem.description?.length ?? maxLength);
-
-const priorityLabel = (priority: number) => {
-    switch(priority) {
-        case 1:
-            return 'High';
-        case 2:
-            return 'Medium';
-        case 3:
-            return 'Low';
-        default:
-            return '';
-    }
-}
 
 function handleChecked(isChecked: boolean) {
     props.dataObject.update(props.checklistItem.id, {

@@ -24,23 +24,36 @@
             </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-            <span class="text-gray-500 text-sm" v-if="unreadCount === 0">No notifications.</span>
-            <template v-else>
-                <DropdownMenuLabel>Unread Notifications</DropdownMenuLabel>
-                <div class="flex justify-between items-center border-b pb-2 px-2">
+            <DropdownMenuLabel>
+                <div class="flex items-center justify-between">
+                    <span>Unread Notifications</span>
+                    <DropdownMenuItem asChild class="p-0 text-sm">
+                        <RouterLink :to="`/notifications`">
+                            <div>
+                                <span class="text-sm cursor-pointer hover:underline">
+                                    View all
+                                </span>
+                            </div>
+                        </RouterLink>
+                    </DropdownMenuItem>
+                </div>
+            </DropdownMenuLabel>
+            <div class="flex items-center border-b pb-2 px-2">
+                <div>
                     <span
+                        v-if="unreadCount > 0"
                         class="text-sm cursor-pointer hover:underline"
                         @click="markAllAsRead"
                     >
                         Mark all as read
                     </span>
-                    <RouterLink :to="`/notifications`">
-                        <span class="text-sm cursor-pointer hover:underline">
-                            View all
-                        </span>
-                    </RouterLink>
                 </div>
-                <div style="max-width: 20rem; max-height: 25rem; overflow: auto;">
+            </div>
+            <div style="width: 20rem; max-height: 25rem; overflow: auto;">
+                <div class="p-2" v-if="unreadCount === 0">
+                    <span class="text-gray-500 text-sm">No unread notifications.</span>
+                </div>
+                <div v-else>
                     <div 
                         v-for="(notif, index) in dataSources.unreadNotifications?.data" 
                         :key="notif.id" 
@@ -54,25 +67,21 @@
                         />
                     </div>
                 </div>
-            </template>
+            </div>
         </DropdownMenuContent>
     </DropdownMenu>
 </template>
 
 <script setup lang="ts">
 import { dataSources } from '@/api/dataObjects';
-import { Bell } from 'lucide-vue-next';
+import { Bell, Settings2 } from 'lucide-vue-next';
 import { Button } from "@/components/ui/button";
 import { computed, ref } from 'vue';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import NotificationCard from '../NotificationCard.vue';
+import { useToast } from "@/components/ui/toast/use-toast";
+
+const { toast } = useToast();
 
 const unreadCount = computed(() => {
     if (dataSources.unreadNotifications?.data.length) {
@@ -86,4 +95,20 @@ const displayCount = computed(() => {
   if (unreadCount.value > 9) return '9+'
   return unreadCount.value
 });
+
+async function markAllAsRead() {
+    if (!dataSources.unreadNotifications?.data) return;
+
+    const unreadNotifs = dataSources.unreadNotifications.data.filter(x => x.read == false);
+    const idsToUpdate = unreadNotifs.map(x => x.id);
+
+    try {
+        await dataSources.unreadNotifications?.bulkUpdate(idsToUpdate, { read: true });
+        toast({
+            title: 'All notifications marked as read.',
+        });
+    } catch (err) {
+        console.error('Failed to mark notifications as read', err);
+    }
+}
 </script>

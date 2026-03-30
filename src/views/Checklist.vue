@@ -165,7 +165,7 @@
 
                             <!-- Add New Item Input -->
                             <transition name="fade-slide">
-                                <div v-if="checklistState.preferences.itemsView.createNew && !checklistDs.checklist.currentRecord?.deleted_at" class="pb-4">
+                                <div v-if="checklistState.preferences.itemsView.createNew && !checklistDs.checklist.currentRecord?.deleted_at && !allowSelection" class="pb-4">
                                     <AddItem v-model="newItemName" @add-clicked="addItem" @finished-voice-recording="createVoiceChecklistItem" />
                                 </div>
                             </transition>
@@ -187,6 +187,8 @@
                                                         variant="secondary"
                                                         class="rounded-xl shadow-none bg-white hover:bg-gray-200 text-green-600"
                                                         aria-label="Mark as checked"
+                                                        title="Mark selected items as checked"
+                                                        @click="applyBulkUpdates('is_checked', true)"
                                                     >
                                                         <Check :size="16" aria-hidden="true" />
                                                     </Button>
@@ -196,8 +198,9 @@
                                                         variant="secondary"
                                                         class="rounded-xl shadow-none bg-white hover:bg-gray-200"
                                                         aria-label="Move items"
-                                                        >
-                                                        <MoveLeft :size="16" aria-hidden="true" />
+                                                        title="Move selected items to new checklist"
+                                                    >
+                                                        <MoveLeft :size="16" aria-hidden="true" class="opacity-60" />
                                                     </Button>
                                                     <ButtonGroupSeparator />
                                                     <Button
@@ -205,6 +208,8 @@
                                                         variant="secondary"
                                                         class="rounded-xl shadow-none bg-white hover:bg-gray-200 text-red-500"
                                                         aria-label="Delete items"
+                                                        title="Delete selected items"
+                                                        @click="applyBulkUpdates('deleted_at', new Date())"
                                                     >
                                                         <Trash :size="16" aria-hidden="true" />
                                                     </Button>
@@ -222,14 +227,14 @@
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent>
                                                             <DropdownMenuLabel>Bulk Actions</DropdownMenuLabel>
-                                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateView('progressBar')">
+                                                            <DropdownMenuItem class="cursor-pointer justify-between">
                                                                 Set Priority
                                                             </DropdownMenuItem>
-                                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateView('createNew')">
+                                                            <DropdownMenuItem class="cursor-pointer justify-between">
                                                                 Set Due Date
                                                             </DropdownMenuItem>
                                                             <DropdownMenuSeparator />
-                                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateView('checked')">
+                                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="applyBulkUpdates('locked_at', new Date())">
                                                                 Lock
                                                             </DropdownMenuItem>
                                                         </DropdownMenuContent>
@@ -652,6 +657,25 @@ async function addItem() {
         });
     }
     newItemName.value = "";
+}
+
+async function applyBulkUpdates(field: string, value: any) {
+    const ids = Array.from(selectedItemIds.value);
+    const fieldUpdate = {[field]: value};
+
+    try {
+        await checklistDs.checklistItems?.bulkUpdate(ids, fieldUpdate, false);
+        selectedItemIds.value = new Set();
+        allowSelection.value = false;
+        toast({
+            title: `${ids.length} items updated.`
+        });
+    } catch (err) {
+        toast({
+            title: 'Failed to update items',
+            variant: "destructive"
+        });
+    }
 }
 
 function updateSort(value: ChecklistSort, pSkipUpdate = false) {
