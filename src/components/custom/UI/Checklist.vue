@@ -80,9 +80,10 @@
                             <span 
                                 v-if="!props.hideItemsCount"
                                 class="text-sm font-medium text-muted-foreground flex items-center gap-2" 
-                                :class="{ 'flex items-center gap-2 rounded-lg px-1 py-0.5 border text-sm bg-green-600 text-white' : (checklist.items_checked_count == checklist.items_count) }"
-                                >
-                                <CircleCheckBig :size="14" class="ms-1" />
+                                :class="{ 'flex items-center gap-2 rounded-lg px-1 py-0.5 border text-sm bg-green-600 text-white' : ((checklist.items_checked_count > 0) && (checklist.items_checked_count == checklist.items_count)) }"
+                                :title="`${checklist.items_checked_count} out of ${checklist.items_count} checklist items completed`"
+                            >
+                                <CircleCheckBig :size="14" />
                                 {{ checklist.items_checked_count }}/{{ checklist.items_count }}
                             </span>
                         </div>
