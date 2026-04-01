@@ -2,34 +2,34 @@
     <Dialog v-model:open="isDialogOpen">
         <DialogContent class="sm:max-w-[425px]">
             <DialogHeader>
-                <DialogTitle>Move Checklist</DialogTitle>
+                <DialogTitle>Move Checklist Item</DialogTitle>
                 <DialogDescription>
                     <p>
-                        Move {{ props.checklist.name }} to a new folder. 
+                        Move <span class="font-semibold"> {{ props.item.name }}</span> to a new checklist. 
                     </p>
                 </DialogDescription>
             </DialogHeader>
 
-            <form class="mt-4 gap-4 flex flex-col" @submit.prevent="moveChecklist" novalidate>
+            <form class="mt-4 gap-4 flex flex-col" @submit.prevent="moveItem" novalidate>
                 <div class="*:not-first:mt-2">
-                    <Label for="checklistFolder">New Folder</Label>
+                    <Label for="itemChecklist">New Checklist</Label>
                     <div class="select-input">
                         <Select 
                             class="select-input" 
-                            :disabled="folderData.length === 0"
-                            v-model="newFolderId"
+                            :disabled="filteredChecklists.length === 0"
+                            v-model="newChecklistId"
                         >
-                            <SelectTrigger id="checklistFolder" class="relative ps-9 rounded-lg">
+                            <SelectTrigger id="itemChecklist" class="relative ps-9 rounded-lg">
                                 <div
                                     class="text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 group-has-[select[disabled]]:opacity-50"
                                 >
-                                    <Folder class="h-4 w-4" aria-hidden="true" />
+                                    <ListCheck class="h-4 w-4" aria-hidden="true" />
                                 </div>
-                                <SelectValue placeholder="Select folder" />
+                                <SelectValue placeholder="Select checklist" />
                             </SelectTrigger>
                             <SelectContent>
-                                <template v-for="folder in folderData" :key="folder.id">
-                                    <SelectItem :value="folder.id">{{ folder.name }}</SelectItem>
+                                <template v-for="checklist in filteredChecklists" :key="checklist.id">
+                                    <SelectItem :value="checklist.id">{{ checklist.name }}</SelectItem>
                                 </template>
                             </SelectContent>
                         </Select>
@@ -41,7 +41,7 @@
                 <DialogClose asChild>
                     <Button type="button" variant="secondary" class="border">Cancel</Button>
                 </DialogClose>
-                <Button type="button" :disabled="isMoving" @click="moveChecklist()">
+                <Button type="button" :disabled="isMoving" @click="moveItem()">
                   <Spinner v-if="isMoving" />
                   Move
                 </Button>
@@ -73,17 +73,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Folder } from "lucide-vue-next";
+import { ListCheck } from "lucide-vue-next";
 import { dataSources } from "@/api/dataObjects";
 import { useRouter } from "vue-router";
 
 const props = defineProps<{
+    item: DataObjectRecord;
     checklist: DataObjectRecord;
-    checklistData: DataObject;
+    checklistData: DataObject
 }>();
 
 const emit = defineEmits<{
-  (e: 'checklist-moved', newFolderId: number): void
+  (e: 'item-moved', newChecklistId: number): void
 }>();
 
 const isMoving = ref<boolean>(false);
@@ -91,33 +92,36 @@ const isDialogOpen = ref<boolean>(false);
 
 const router = useRouter();
 
-const folderData = computed(() => {
-    return dataSources.myFolders?.data.filter(x => x.id !== props.checklist.folder_id) || [];
+const filteredChecklists = computed(() => {
+    return dataSources.myChecklists?.data.filter(x => x.folder_id === props.checklist.folder_id && x.id !== props.checklist.id) || [];
 });
 
-const newFolderId = ref<number | null>(null);
+const newChecklistId = ref<number | null>(null);
 
-async function moveChecklist() {
+async function moveItem() {
     const { toast } = useToast();
 
     try {
         isMoving.value = true;
 
-        if (!newFolderId.value) {
+        if (!newChecklistId.value) {
             toast({
-                title: 'Could not move checklist.',
-                description: 'Please select a folder.',
+                title: 'Could not move checklist item.',
+                description: 'Please select a checklist.',
                 variant: "destructive"
             });
             return; 
         }
-
-        props.checklist.folder_id = newFolderId.value;
+        
+        console.log('new id ', newChecklistId.value)
+        props.item.checklist_id = newChecklistId.value;
         await props.checklistData.saveChanges();
 
-        toast({title: 'Checklist moved!'});
-        emit("checklist-moved", newFolderId.value);
-        router.push(`/folder/${newFolderId.value}`);
+        debugger
+
+        toast({title: 'Checklist item moved!'});
+        emit("item-moved", newChecklistId.value);
+        router.push(`/checklist/${newChecklistId.value}`);
         // close();
     } catch (err) {
         console.error(err);
@@ -132,7 +136,7 @@ const show = () => {
 
 const close = () => {
     isDialogOpen.value = false;
-    newFolderId.value = null;
+    newChecklistId.value = null;
 }
 
 defineExpose({show, close})

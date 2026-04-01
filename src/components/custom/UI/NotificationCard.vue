@@ -7,7 +7,7 @@
         <div class="flex flex-col w-full">
             <div class="flex justify-between items-center">
                 <RouterLink :to="notifRoute" class="hover:underline">
-                    <span class="font-semibold">
+                    <span class="font-semibold text-sm">
                         {{ formatNotifType(notif.type) }}
                     </span>
                 </RouterLink>

@@ -9,7 +9,14 @@
         </template>
 
         <slot name="additionalItemsTop"></slot>
-        
+        <DropdownMenuItem class="cursor-pointer" title="Move this checklist to another folder" @click="$refs.copyItemDialog.show()">
+            <Copy class="size-4 opacity-60" aria-hidden="true" />
+            Copy
+        </DropdownMenuItem>
+        <DropdownMenuItem class="cursor-pointer" title="Move this checklist to another folder" @click="$refs.moveItemDialog.show()">
+            <MoveLeft class="size-4 opacity-60" aria-hidden="true" />
+            Move
+        </DropdownMenuItem>
         <DropdownMenuItem 
             v-if="!item.locked_at"
             class="cursor-pointer" 
@@ -55,16 +62,29 @@
         confirm-type="delete"
         @confirmed="hardDeleteItem"
     />
+    <MoveChecklistItem 
+        ref="moveItemDialog"
+        :item="props.item"
+        :checklist="props.checklistData.currentRecord"
+        :checklist-data="props.checklistData"
+    />
+    <CopyChecklistItem
+        ref="copyItemDialog"
+        :item="props.item"
+        @item-copied="handleItemCopied"
+    />
 </template>
 
 <script setup lang="ts">
 import { DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { RotateCcw, Trash, TextAlignStart, Lock, LockOpen } from "lucide-vue-next";
+import { RotateCcw, Trash, TextAlignStart, Lock, LockOpen, MoveLeft, Copy } from "lucide-vue-next";
 import type { DataObject, DataObjectRecord } from "supabase-dataobject-core";
 import ChecklistItemDetails from '@/components/dialogs/ChecklistItemDetails.vue';
 import Confirm from '@/components/dialogs/Confirm.vue';
 import { ref } from 'vue';
 import { useToast } from '@/components/ui/toast';
+import MoveChecklistItem from "@/components/dialogs/MoveChecklistItem.vue";
+import CopyChecklistItem from "@/components/dialogs/CopyChecklistItem.vue";
 
 const props = defineProps<{
     item: DataObjectRecord;
@@ -116,5 +136,9 @@ function recoverItem() {
     props.checklistData.update(props.item.id, {
         deleted_at: null
     });
+}
+
+function handleItemCopied() {
+    props.checklistData.refresh();
 }
 </script>
