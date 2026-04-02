@@ -135,7 +135,7 @@
                                     <DropdownMenuItem 
                                         v-if="isSelected"
                                         class="cursor-pointer" 
-                                        title="Locking this item will prevent people from updating it"
+                                        title="Select item"
                                         @click="handleSelected(false)" 
                                     >
                                         <SquareX class="size-4 opacity-60" aria-hidden="true" />

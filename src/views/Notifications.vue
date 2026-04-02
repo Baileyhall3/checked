@@ -38,156 +38,115 @@
                     </template>
                 </BlurredHeader>
                 <MainContent>
-                    
-                        <!-- <div class="flex items-center space-x-2 mb-4 justify-between">
-                            <div class="flex gap-2 w-full">
-                                <SearchBar @search-entered="handleSearchQuery" />
-                                <ButtonGroup>
-                                    <ButtonGroup>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    size="icon"
-                                                    variant="secondary"
-                                                    class="rounded-xl shadow-none bg-white hover:bg-gray-200"
-                                                    aria-label="Open sort"
-                                                >
-                                                    <ArrowUpDown :size="16" aria-hidden="true" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent>
-                                                <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('recent')">
-                                                    Recently Deleted
-                                                    <Check class="size-4" aria-hidden="true" v-if="currentSort === 'recent'" />
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('name')">
-                                                    Name
-                                                    <Check class="size-4" aria-hidden="true" v-if="currentSort === 'name'" />
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('created')">
-                                                    Date Created
-                                                    <Check class="size-4" aria-hidden="true" v-if="currentSort === 'created'" />
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                        <ButtonGroupSeparator />
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    size="icon"
-                                                    variant="secondary"
-                                                    class="rounded-xl shadow-none bg-white hover:bg-gray-200"
-                                                    aria-label="Open settings"
-                                                >
-                                                    <Settings :size="16" aria-hidden="true" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent>
-                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                <DropdownMenuSub>
-                                                    <DropdownMenuSubTrigger class="cursor-pointer">
-                                                        <RotateCcw class="size-4 opacity-60 me-2" aria-hidden="true" />
-                                                        Recover
-                                                    </DropdownMenuSubTrigger>
-                                                    <DropdownMenuPortal>
-                                                        <DropdownMenuSubContent>
-                                                            <DropdownMenuItem 
-                                                                class="cursor-pointer" 
-                                                                :disabled="selectedChecklistIds.size === 0"
-                                                                @click="recoverSelected()"
-                                                            >
-                                                                Selected ({{ selectedChecklistIds.size }})
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem class="cursor-pointer" @click="recoverAll()">
-                                                                All
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuSubContent>
-                                                    </DropdownMenuPortal>
-                                                </DropdownMenuSub>
-                                                <DropdownMenuSub>
-                                                    <DropdownMenuSubTrigger class="cursor-pointer text-red-600">
-                                                        <Trash class="size-4 opacity-60 me-2" aria-hidden="true" />
-                                                        Delete
-                                                    </DropdownMenuSubTrigger>
-                                                    <DropdownMenuPortal>
-                                                        <DropdownMenuSubContent>
-                                                            <DropdownMenuItem 
-                                                                class="cursor-pointer" 
-                                                                :disabled="selectedChecklistIds.size === 0"
-                                                                @click="confirmDeleteSelectedDialog.show()"
-                                                            >
-                                                                Selected ({{ selectedChecklistIds.size }})
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem 
-                                                                class="cursor-pointer"
-                                                                @click="confirmDeleteAllDialog.show()">
-                                                                All
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuSubContent>
-                                                    </DropdownMenuPortal>
-                                                </DropdownMenuSub>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </ButtonGroup>
-                                </ButtonGroup>
-                            </div>
-                        </div> -->
-                        <div class="h-full overflow-auto">
-                            <Tabs defaultValue="tab-1" class="items-center w-full">
-                                <TabsList class="bg-gray-200 w-full">
-                                    <TabsTrigger value="tab-1">Unread</TabsTrigger>
-                                    <TabsTrigger value="tab-2">Read</TabsTrigger>
-                                </TabsList>
-                                <TabsContent value="tab-1" class="w-full">
-                                    <Empty v-if="dataSources.unreadNotifications?.data.length === 0" class="p-6 mb-8">
-                                        <EmptyHeader>
-                                            <EmptyMedia variant="icon">
-                                                <Bell />
-                                            </EmptyMedia>
-                                            <EmptyTitle>No Unread Notifications Yet</EmptyTitle>
-                                            <EmptyDescription>
-                                                You do not have any unread notifications yet.
-                                            </EmptyDescription>
-                                        </EmptyHeader>
-                                        <EmptyContent>
-                                            <EmptyDescription>
-                                                Go back <router-link to="/home">home</router-link>.
-                                            </EmptyDescription>
-                                        </EmptyContent>
-                                    </Empty>
-                                    <RoundedContainer class="w-full flex flex-col" v-else>
-                                        <div 
-                                            v-for="(notif, index) in dataSources.unreadNotifications?.data" 
-                                            :key="notif.id"
-                                            class="flex flex-col p-2 w-full"
-                                            :class="{ 'border-b' : index !== (dataSources.unreadNotifications?.data?.length - 1) }"
-                                        >
-                                            <NotificationCard :notif="notif" :notifications-data="dataSources.unreadNotifications" />
-                                        </div>
-                                    </RoundedContainer>
-                                </TabsContent>
-                                <TabsContent value="tab-2" class="w-full">
-                                    <RoundedContainer class=" flex flex-col">
-                                        <div 
-                                            v-for="(notif, index) in dataSources.readNotifications?.data" 
-                                            :key="notif.id"
-                                            class="flex flex-col p-2 w-full"
-                                            :class="{ 'border-b' : index !== (dataSources.readNotifications?.data?.length - 1) }"
-                                        >
-                                            <NotificationCard :notif="notif" :notifications-data="dataSources.readNotifications" />
-                                        </div>
-                                    </RoundedContainer>
-                                </TabsContent>
-                            </Tabs>
-                        </div>
+                    <div class="h-full overflow-auto">
+                        <Tabs ref="notificationTabs" v-model="activeTab" defaultValue="tab-unread" class="items-center w-full" @update:model-value="handleTabSwitch">
+                            <TabsList class="bg-gray-200 w-full">
+                                <TabsTrigger value="tab-unread">Unread</TabsTrigger>
+                                <TabsTrigger value="tab-read">Read</TabsTrigger>
+                            </TabsList>
+
+                            <!-- Bulk Actions -->
+                            <transition name="fade-slide">
+                                <div class="w-full" v-if="allowSelection">
+                                    <SelectionControl 
+                                        :selectedIds="selectedIds" 
+                                        :allIds="allIds"
+                                        @selectAll="selectAll"
+                                        @deselectAll="selectAll(false)"
+                                        @select-cancelled="allowSelection = false" 
+                                    >
+                                        <template #actions>
+                                            <ButtonGroup>
+                                                <ButtonGroup class="ml-3">
+                                                    <Button
+                                                        size="icon"
+                                                        variant="secondary"
+                                                        class="rounded-xl shadow-none bg-white hover:bg-gray-200"
+                                                        :title="activeTab === 'tab-unread' ? 'Mark selected items as read' : 'Mark selected items as unread'"
+                                                        @click="applyBulkUpdates('read')"
+                                                    >
+                                                        <BellMinus :size="16" aria-hidden="true" v-if="activeTab === 'tab-unread'" />
+                                                        <BellDot :size="16" aria-hidden="true" v-else-if="activeTab === 'tab-read'" />
+                                                    </Button>
+                                                    <ButtonGroupSeparator />
+                                                    <Button
+                                                        size="icon"
+                                                        variant="secondary"
+                                                        class="rounded-xl shadow-none bg-white hover:bg-gray-200 text-red-500"
+                                                        aria-label="Delete items"
+                                                        title="Delete selected items"
+                                                        @click="applyBulkUpdates('delete')"
+                                                    >
+                                                        <Trash :size="16" aria-hidden="true" />
+                                                    </Button>
+                                                </ButtonGroup>
+                                            </ButtonGroup>
+                                        </template>
+                                    </SelectionControl>
+                                </div>
+                            </transition>
+
+                            <TabsContent value="tab-unread" class="w-full">
+                                <Empty v-if="dataSources.unreadNotifications?.data.length === 0" class="p-6 mb-8">
+                                    <EmptyHeader>
+                                        <EmptyMedia variant="icon">
+                                            <Bell />
+                                        </EmptyMedia>
+                                        <EmptyTitle>No Unread Notifications Yet</EmptyTitle>
+                                        <EmptyDescription>
+                                            You do not have any unread notifications yet.
+                                        </EmptyDescription>
+                                    </EmptyHeader>
+                                    <EmptyContent>
+                                        <EmptyDescription>
+                                            Go back <router-link to="/home">home</router-link>.
+                                        </EmptyDescription>
+                                    </EmptyContent>
+                                </Empty>
+                                <RoundedContainer class="w-full flex flex-col" v-else>
+                                    <div 
+                                        v-for="(notif, index) in dataSources.unreadNotifications?.data" 
+                                        :key="notif.id"
+                                        class="flex flex-col p-2 w-full"
+                                        :class="{ 'border-b' : index !== (dataSources.unreadNotifications?.data?.length - 1) }"
+                                    >
+                                        <NotificationCard 
+                                            :notif="notif" 
+                                            :notifications-data="dataSources.unreadNotifications" 
+                                            :allowSelection="allowSelection" 
+                                            :isSelected="selectedIds.has(notif.id)"
+                                            @selection-changed="updateSelected"
+                                        />
+                                    </div>
+                                </RoundedContainer>
+                            </TabsContent>
+                            <TabsContent value="tab-read" class="w-full">
+                                <RoundedContainer class=" flex flex-col">
+                                    <div 
+                                        v-for="(notif, index) in dataSources.readNotifications?.data" 
+                                        :key="notif.id"
+                                        class="flex flex-col p-2 w-full"
+                                        :class="{ 'border-b' : index !== (dataSources.readNotifications?.data?.length - 1) }"
+                                    >
+                                        <NotificationCard 
+                                            :notif="notif" 
+                                            :notifications-data="dataSources.readNotifications" 
+                                            :allowSelection="allowSelection" 
+                                            :isSelected="selectedIds.has(notif.id)"
+                                            @selection-changed="updateSelected"
+                                        />
+                                    </div>
+                                </RoundedContainer>
+                            </TabsContent>
+                        </Tabs>
+                    </div>
                 </MainContent>
             </template>
         </IonContent>
         
         <Confirm
             title="Please Confirm"
-            description="Are you sure you would like to delete all checklists? This cannot be undone."
+            description="Are you sure you would like to delete all notifications? This cannot be undone."
             ref="confirmDeleteAllDialog" 
             confirm-text="Delete"
             confirm-type="delete"
@@ -196,7 +155,7 @@
 
         <Confirm
             title="Please Confirm"
-            :description="`Are you sure you would like to delete ` + selectedChecklistIds.size + ` selected checklists? This cannot be undone.`"
+            :description="`Are you sure you would like to delete ` + selectedIds.size + ` selected notifications? This cannot be undone.`"
             ref="confirmDeleteSelectedDialog" 
             confirm-text="Delete"
             confirm-type="delete"
@@ -216,11 +175,11 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { onIonViewDidEnter } from '@ionic/vue';
 import { SortConfig, WhereClause } from 'supabase-dataobject-core';
 import { dataSources } from '@/api/dataObjects';
-import { Home, Settings, Check, ArrowUpDown, ListTodo, RotateCcw, Trash, Ellipsis, Bell, Settings2 } from "lucide-vue-next";
+import { Check, Trash, Ellipsis, Bell, Settings2, BellDot, BellMinus } from "lucide-vue-next";
 import RoundedContainer from '@/components/RoundedContainer.vue';
 import SearchBar from '@/components/custom/UI/SearchBar.vue';
 import BlurredHeader from '@/components/header/Blurred.vue';
@@ -238,23 +197,83 @@ import { useToast } from '@/components/ui/toast';
 import MainContent from '@/components/custom/UI/MainContent.vue';
 import NotificationCard from '@/components/custom/UI/NotificationCard.vue';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SelectionControl from '@/components/custom/UI/selectionControl/SelectionControl.vue';
+import { useSelectionControl } from '@/components/custom/UI/selectionControl/useSelectionControl';
+import { ButtonGroup, ButtonGroupSeparator } from '@/components/ui/button-group'
 
 const confirmDeleteAllDialog = ref();
 const confirmDeleteSelectedDialog = ref();
 
+type TabKey = 'tab-unread' | 'tab-read';
+
 const isLoading = ref(true);
 const searchQuery = ref('');
-const selectedChecklistIds = ref<Set<number>>(new Set())
 const currentSort = ref<'recent' | 'name' | 'created'>('recent');
 const baseWhereClauases = ref<WhereClause[]>([]);
+const notificationTabs = ref();
+const activeTab = ref<TabKey>('tab-unread');
+
+const activeDataSource = computed(() => {
+    return activeTab.value === 'tab-unread' 
+        ? dataSources.unreadNotifications 
+        : dataSources.readNotifications;
+});
+
+const allIds = computed(() =>
+    activeDataSource.value?.data?.map(i => i.id) ?? []
+)
+
+const {
+        isAllSelected,
+        selectedIds,
+        allowSelection,
+        selectAll,
+        isIndeterminate,
+        updateSelected
+    } = useSelectionControl(allIds.value);
 
 const { toast } = useToast();
 
 onIonViewDidEnter(async () => {
-    await dataSources.notifications?.refresh();
-    baseWhereClauases.value = dataSources.notifications?.whereClauses;
+    await dataSources.unreadNotifications?.refresh();
+    // baseWhereClauases.value = dataSources.notifications?.whereClauses;
     isLoading.value = false;
 });
+
+function handleTabSwitch(newValue: TabKey) {
+    activeTab.value = newValue;
+    selectedIds.value.clear();
+    allowSelection.value = false;
+}
+
+async function applyBulkUpdates(action: 'read' | 'delete') {
+    if (action === 'read') {
+        const ids = Array.from(selectedIds.value);
+        const fieldUpdate = {'read': activeTab.value === 'tab-unread' ? true : false };
+        try {
+            await activeDataSource.value?.bulkUpdate(ids, fieldUpdate, false);
+            selectedIds.value = new Set();
+            allowSelection.value = false;
+            if (activeTab.value === 'tab-unread') {
+                await dataSources.readNotifications?.refresh();
+            } else {
+                await dataSources.unreadNotifications?.refresh();
+            }
+            toast({
+                title: `${ids.length} items marked as ${fieldUpdate.read ? 'read' : 'unread'}.`
+            });
+        } catch (err) {
+            toast({
+                title: 'Failed to update notifications.',
+                variant: "destructive"
+            });
+        }
+    } else if (action === 'delete') {
+        confirmDeleteSelectedDialog.value.open();
+    }
+    selectedIds.value.clear();
+    await activeDataSource.value?.refresh();
+}
 
 function updateSort(sortBy: 'recent' | 'name' | 'created') {
     currentSort.value = sortBy;
@@ -269,65 +288,36 @@ function updateSort(sortBy: 'recent' | 'name' | 'created') {
     dataSources.notifications?.updateSort(sortConfig);
 }
 
-function updateSelected(isChecked: boolean, checklistId: number) {
-    if (isChecked) {
-        selectedChecklistIds.value.add(checklistId);
-    } else {
-        selectedChecklistIds.value.delete(checklistId);
+async function deleteSelected() {
+    try {
+        const ids = Array.from(selectedIds.value);
+        await activeDataSource.value?.bulkDelete(ids);
+        selectedIds.value = new Set();
+        allowSelection.value = false;
+        toast({
+            title: `${ids.length} notifications deleted.`
+        });
+    } catch (err) {
+        toast({
+            title: 'Failed to delete notifications.',
+            variant: "destructive"
+        });
     }
 }
 
-function handleSearchQuery(query: string) {
-    searchQuery.value = query;
-    const whereClauses: WhereClause[] = [];
-    whereClauses.push(...baseWhereClauases.value);
-    if (searchQuery.value) {
-        whereClauses.push({ field: 'name', operator: 'ilike', value: searchQuery.value });
-    }   
-    dataSources.notifications!.whereClauses = whereClauses;
-    dataSources.notifications?.refresh();
-}
-
-async function recoverSelected() {
-    await supabase.rpc('recover_checklists', {
-        ids: Array.from(selectedChecklistIds.value)
-    });
-
-    selectedChecklistIds.value.clear();
-    await dataSources.notifications?.refresh();
-    toast({
-        title: 'Selected checklists recovered.',
-    });
-}
-
-async function recoverAll() {
-    await supabase.rpc('recover_checklists');
-    selectedChecklistIds.value.clear();
-    await dataSources.notifications?.refresh();
-    toast({
-        title: 'All checklists recovered.',
-    });
-}
-
-async function deleteSelected() {
-    await supabase.rpc('hard_delete_checklists', {
-        ids: Array.from(selectedChecklistIds.value)
-    });
-
-    selectedChecklistIds.value.clear();
-    await dataSources.notifications?.refresh();
-    toast({
-        title: 'Selected checklists deleted.',
-    });
-}
-
-async function deleteAll() {
-    await supabase.rpc('hard_delete_checklists');
-    selectedChecklistIds.value.clear();
-    await dataSources.notifications?.refresh();
-    toast({
-        title: 'All checklists deleted.',
-    });
-}
-
 </script>
+
+<style scoped>
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+    transition: all 0.25s ease;
+}
+.fade-slide-enter-from {
+    opacity: 0;
+    transform: translateY(-8px);
+}
+.fade-slide-leave-to {
+    opacity: 0;
+    transform: translateY(-8px);
+}
+</style>

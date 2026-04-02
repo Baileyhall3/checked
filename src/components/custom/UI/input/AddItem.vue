@@ -21,25 +21,6 @@
             </InputGroupButton>
         </InputGroupAddon>
     </InputGroup>
-<!-- 
-    <div v-if="checklistState.preferences.itemsView.createNew && !checklistDs.checklist.currentRecord?.deleted_at" class="flex items-center my-4">
-        <Button 
-            variant="secondary"
-            @click="handleVoiceClick"
-            :class="{ 'bg-red-100 animate-pulse text-red-500': isRecording }"
-        >
-            <Mic :size="16" />
-        </Button>
-        <input
-            v-model="newItemName"
-            :disabled="isRecording"
-            type="text"
-            placeholder="New checklist item..."
-            class="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            @keyup.enter="addItem"
-        />
-        <AddNewBtn class="ms-2" add-terminology="Add" @add-clicked="addItem" />
-    </div> -->
 </template>
 
 <script setup lang="ts">
