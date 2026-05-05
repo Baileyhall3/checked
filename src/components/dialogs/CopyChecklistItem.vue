@@ -10,10 +10,10 @@
                 </DialogDescription>
             </DialogHeader>
 
-            <form class="mt-4 gap-4 flex flex-col" @submit.prevent="copyChecklist" novalidate>
+            <form class="mt-4 gap-4 flex flex-col" @submit.prevent="copyChecklistItem" novalidate>
                 <div class="*:not-first:mt-2">
                     <Label for="itemName">
-                        New Checklist Name
+                        New Checklist Item Name
                     </Label>
                     <Input 
                         id="itemName" 
@@ -42,7 +42,7 @@
                 <DialogClose asChild>
                     <Button type="button" variant="secondary" class="border">Cancel</Button>
                 </DialogClose>
-                <Button type="button" :disabled="isCopying" @click="copyChecklist()">
+                <Button type="button" :disabled="isCopying" @click="copyChecklistItem()">
                   <Spinner v-if="isCopying" />
                   Create
                 </Button>
@@ -83,7 +83,7 @@ const isDialogOpen = ref<boolean>(false);
 const itemName = ref<string>();
 const copyCount = ref<number>(1);
 
-async function copyChecklist() {
+async function copyChecklistItem() {
     const { toast } = useToast();
 
     try {

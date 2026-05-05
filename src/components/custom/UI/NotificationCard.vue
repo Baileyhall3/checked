@@ -61,7 +61,7 @@
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
-                <span class="text-sm">{{ formatNotifData(notif.data, notif.type) }}</span>
+                <span class="text-sm" v-html="formatNotifData(notif.data, notif.type)"></span>
                 <div class="flex items-center justify-between mt-2">
                     <div>
                         <span
@@ -145,16 +145,16 @@ function handleSelected(newValue: boolean) {
     emit('selection-changed', newValue, props.notif.id);
 }
 
-function formatNotifData(data: object, type: string) {
+function formatNotifData(data: any, type: string) {
     if (type === 'friend_request_accepted') {
         if (data.actor_name) {
-            return `${data.actor_name} sent you a friend request.`;
+            return `<strong>${data.actor_name}</strong> sent you a friend request.`;
         }
     } else if (type === 'checklist_item_checked') {
         if (data.checked_by) {
-            return `${data.item_name} was checked by ${data.checked_by}.`;
+            return `<strong>${data.item_name}</strong> was checked by <strong>${data.checked_by}</strong>.`;
         } else {
-            return `${data.item_name} was checked.`;
+            return `<strong>${data.item_name}</strong> was checked.`;
         }
     }
 }

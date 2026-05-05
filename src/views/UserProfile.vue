@@ -117,7 +117,7 @@
                         </form>
                     </RoundedContainer>
                     <RoundedContainer class="p-4 mt-6">
-                        <div class="text-lg font-medium mb-3">Start page</div>
+                        <div class="text-lg font-semibold mb-3">Start page</div>
                         <div class="space-y-3">
                             <!-- Last opened -->
                             <label class="flex items-start gap-3 cursor-pointer">
