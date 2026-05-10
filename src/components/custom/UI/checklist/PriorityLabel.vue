@@ -7,7 +7,7 @@
     <!-- 🔘 Custom Trigger (HEADLESS) -->
     <SelectTrigger as-child :disabled="props.disabled">
       <div
-        class="flex items-center gap-2 rounded-lg px-1 py-0.5 border bg-gray-100 text-sm"
+        class="flex items-center gap-2 rounded-lg px-1 py-0.5 border bg-gray-100 text-sm hover:bg-gray-200"
         :class="{ 'cursor-pointer' : !props.disabled }"
         :title="`${priorityLabel(props.priority)} priority`"
       >

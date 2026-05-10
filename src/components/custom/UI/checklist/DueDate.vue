@@ -2,7 +2,7 @@
   <div ref="pickerRoot" class="relative inline-block">
     <!-- Trigger -->
     <div
-      class="flex items-center gap-2 rounded-lg px-1 py-0.5 border text-sm"
+      class="flex items-center gap-2 rounded-lg px-1 py-0.5 border text-sm hover:bg-gray-200"
       :class="[backgroundClass, props.class, { 'cursor-pointer' : props.editable }]"
       :title="dueTitle"
       @click.stop="toggleDatePicker"

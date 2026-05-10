@@ -135,9 +135,7 @@
                         <div class="flex flex-col space-y-3">
                             <!-- Checklist deleted notice -->
                             <div class="bg-white rounded-md border px-4 py-3 shadow-md" v-if="checklistDs.checklist.currentRecord?.deleted_at">
-                                <div
-                                    class="flex flex-col justify-between gap-3 md:flex-row md:items-center"
-                                >
+                                <div class="flex flex-col justify-between gap-3 md:flex-row md:items-center">
                                     <div>
                                         <p class="text-sm">
                                             This checklist was deleted {{ DateUtils.toDateTime(checklistDs.checklist.currentRecord?.deleted_at) }} by {{ checklistDs.checklist.currentRecord?.deleted_by_username }}

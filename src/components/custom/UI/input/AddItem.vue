@@ -1,13 +1,15 @@
 <template>
-    <InputGroup class="flex-1 border bg-white border-gray-300 rounded-xl pe-1 text-sm w-full h-full">
-        <InputGroupInput 
+    <InputGroup class="flex-1 border bg-white border-gray-300 rounded-xl pe-1 text-sm w-full focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
+        <textarea 
+            ref="textareaRef"
             v-model="inputValue"
             :disabled="isRecording"
             type="text"
             placeholder="New checklist item..."
-            class=""
-            oninput="this.style.cursor='none';" 
-            onmousemove="this.style.cursor='auto';"
+            :rows="1"
+            class="w-full resize-none overflow-hidden bg-transparent px-3 py-2 outline-none"
+            @mousemove="handleMouseMove"
+            @input="autoResize"
             @keyup.enter="addItem"
         />
         <InputGroupAddon align="inline-end" v-if="!modelValue" @click="handleVoiceClick" :class="{ 'bg-red-100 animate-pulse text-red-500': isRecording }">
@@ -28,10 +30,11 @@ import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-  InputGroupButton
+  InputGroupButton,
+  InputGroupTextarea
 } from "@/components/ui/input-group";
 import { Mic, Plus } from "lucide-vue-next";
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, nextTick } from 'vue';
 import { useVoiceRecorder } from '@/composables/useVoiceRecorder';
 
 export interface IProps {
@@ -44,6 +47,22 @@ const emit = defineEmits<{
   (e: 'add-clicked'): void;
   (e: 'finished-voice-recording', blob: any): void;
 }>();
+
+const textareaRef = ref<HTMLTextAreaElement | null>(null);
+
+function autoResize() {
+    const el = textareaRef.value;
+    if (!el) return;
+    el.style.cursor = 'none';
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+}
+
+function handleMouseMove() {
+    const el = textareaRef.value;
+    if (!el) return;
+    el.style.cursor = 'text';
+}
 
 const {
   isRecording,

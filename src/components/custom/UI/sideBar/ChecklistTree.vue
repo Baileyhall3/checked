@@ -1,5 +1,6 @@
 <template>
   <TreeRoot
+    v-model:expanded="expanded"
     v-slot="{ flattenItems }"
     :items="items"
     :get-key="item => `${item.type}-${item.folderId ?? item.checklistId}`"
@@ -65,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { TreeRoot, TreeItem, } from 'reka-ui'
 import { dataSources } from '@/api/dataObjects';
 import ChecklistTreeItem from './ChecklistTreeItem.vue';
@@ -75,6 +76,8 @@ import { DataObjectRecord } from 'supabase-dataobject-core';
 import FolderActions from './FolderActions.vue';
 import { useRouter } from "vue-router";
 import { FolderOpen, Folder, ListTodo } from 'lucide-vue-next';
+
+const expanded = ref<string[]>([]);
 
 const items = computed(() => {
   if (
@@ -154,4 +157,26 @@ function isSelected(item: any) {
 
   return false
 }
+
+watch(
+    () => router.currentRoute.value,
+    (route) => {
+        if (route.name !== 'Checklist') return;
+
+        const checklistId = Number(route.params.id);
+
+        const checklist = dataSources.myChecklists?.data?.find(
+            x => x.id === checklistId
+        );
+
+        if (!checklist?.folder_id) return;
+
+        const folderKey = `folder-${checklist.folder_id}`;
+
+        if (!expanded.value.includes(folderKey)) {
+            expanded.value.push(folderKey);
+        }
+    },
+    { immediate: true }
+);
 </script>

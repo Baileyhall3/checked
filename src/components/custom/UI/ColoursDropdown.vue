@@ -14,19 +14,27 @@
                 }"
             >
             </div>
+            <!-- <div v-if="props.allowClear" class="flex items-center justify-center rounded-full text-gray-500 text-lg font-semibold cursor-pointer transition duration-200">
+                <Ban 
+                    style="width: 1rem; height: 1rem"
+                    @click="selectColour(null)" 
+                />
+            </div> -->
         </div>
     </DropdownMenuContent>
 </template>
 
 <script setup lang="ts">
 import { DropdownMenuContent,  DropdownMenuLabel } from "@/components/ui/dropdown-menu";
+import { Ban } from "lucide-vue-next";
 
 const props = defineProps<{
-    currentColour?: string
+    currentColour?: string;
+    allowClear?: boolean;
 }>();
 
 const emit = defineEmits<{
-    (e: 'colour-selected', colour: string ): void
+    (e: 'colour-selected', colour: string | null): void
 }>();
 
 const selectableColours = [
@@ -42,7 +50,7 @@ const selectableColours = [
     '#778899'  // light slate gray
 ]
 
-function selectColour(colour: string) {
+function selectColour(colour: string | null) {
     emit("colour-selected", colour);
 }
 </script>

@@ -10,7 +10,7 @@
                     title="Bold"
                     @click="exec('bold')"
                 >
-                    <BoldIcon class="w-5 h-5" />
+                    <BoldIcon class="w-3 h-3" />
                 </button>
                 <button
                     v-if="!props.hideItalic"
@@ -19,7 +19,7 @@
                     title="Italic"
                     @click="exec('italic')"
                 >
-                    <ItalicIcon class="w-5 h-5" />
+                    <ItalicIcon class="w-3 h-3" />
                 </button>
                 <button
                     v-if="!props.hideUnderline"
@@ -28,7 +28,7 @@
                     title="Underline"
                     @click="exec('underline')"
                 >
-                    <UnderlineIcon class="w-5 h-5" />
+                    <UnderlineIcon class="w-3 h-3" />
                 </button>
                 <button
                     v-if="!props.hideBulletList"
@@ -37,7 +37,7 @@
                     title="Bullet List"
                     @click="exec('insertUnorderedList')"
                 >
-                    <List class="w-5 h-5" />
+                    <List class="w-3 h-3" />
                 </button>
                 <button
                     v-if="!props.hideNumberedList"
@@ -46,7 +46,7 @@
                     title="Numbered List"
                     @click="exec('insertOrderedList')"
                 >
-                    <ListOrdered class="w-5 h-5" />
+                    <ListOrdered class="w-3 h-3" />
                 </button>
             </div>
 
@@ -58,7 +58,7 @@
                     title="Undo"
                     @click="exec('undo')"
                 >
-                    <CornerUpLeftIcon class="w-5 h-5" />
+                    <CornerUpLeftIcon class="w-3 h-3" />
                 </button>
                 <button
                     type="button"
@@ -66,7 +66,7 @@
                     title="Redo"
                     @click="exec('redo')"
                 >
-                    <CornerUpRight class="w-5 h-5" />
+                    <CornerUpRight class="w-3 h-3" />
                 </button>
             </div>
         </div>
@@ -74,12 +74,23 @@
         <!-- Editable Area -->
         <div
             ref="editor"
-            class="rich-editor p-4 h-[14rem] outline-none text-sm sm:text-base overflow-y-auto"
+            class="rich-editor p-2 min-h-[8rem] outline-none text-sm sm:text-base overflow-y-auto"
             contenteditable="true"
             :data-placeholder="props.placeholder"
             @input="onInput"
             @paste="sanitizePaste"
         ></div>
+
+        <!-- <div class="flex flex-wrap justify-between items-center border-t border-gray-200 px-2 py-1 bg-gray-50 rounded-b-xl">
+            <div class="flex gap-1 justify-end w-full">
+                <Button variant="secondary" size="sm" @click="cancelChanges">
+                    Cancel
+                </Button>
+                <Button size="sm" @click="saveChanges">
+                    Save
+                </Button>
+            </div>
+        </div> -->
     </div>
 </template>
 
@@ -94,6 +105,8 @@ import {
     CornerUpRight 
 } from 'lucide-vue-next';
 import { ref, watch, onMounted } from 'vue';
+import { Button } from "@/components/ui/button";
+
 
 const props = defineProps<{
     modelValue: string;

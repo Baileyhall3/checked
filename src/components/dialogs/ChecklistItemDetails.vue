@@ -84,27 +84,58 @@
                             @update:model-value="props.dataObject.saveChanges()" 
                             class="ms-2" 
                         />
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <div class="flex items-center gap-2 rounded-lg px-1 py-0.5 border bg-gray-100 text-sm ms-2 cursor-pointer hover:bg-gray-200">
+                                    <button
+                                        type="button"
+                                        
+                                        class="focus-visible:border-ring focus-visible:ring-ring/50 flex items-center justify-center rounded-full text-white transition-[color,box-shadow] outline-none hover:opacity-80 focus-visible:ring-[3px]"
+                                        aria-label="Change background colour"
+                                    >
+                                        <Palette class="size-4" aria-hidden="true" 
+                                        :style="{ color: props.checklistItem.bg_colour ?? 'rgb(107, 114, 128)' }" />
+                                    </button>
+                                    <span :class="{ 'text-gray-500' : !props.checklistItem.bg_colour }">Colour</span>
+                                    <button
+                                        v-if="props.checklistItem.bg_colour"
+                                        type="button"
+                                        class="ml-1  hover:text-gray-700 transition"
+                                        @click.stop="setNewColour(null)"
+                                    >
+                                        <X class="size-4" />
+                                    </button>
+                                </div>
+                            </DropdownMenuTrigger>
+                            <ColoursDropdown :current-colour="props.checklistItem.bg_colour" allowClear @colour-selected="setNewColour" />
+                        </DropdownMenu>
                     </div>
 
                     <div class="flex flex-col">
                         <div class="flex justify-between items-center">
                             <span class="font-medium">Description</span>
-                            <Button v-if="!isEditingDesc" variant="secondary" @click="isEditingDesc = !isEditingDesc">
+                            <Button v-if="!isEditingDesc && props.checklistItem.description" variant="secondary" size="sm" @click="isEditingDesc = !isEditingDesc">
                                 Edit
                             </Button>
                         </div>
                         <template v-if="isEditingDesc">
                             <TextEditor v-model="props.checklistItem.description" />
-                            <div class="flex gap-2 mt-2 justify-self-end">
-                                <Button variant="secondary" @click="cancelChanges">
+                            <div class="flex gap-1 justify-end w-full mt-2 gap-2">
+                                <Button variant="secondary" size="sm" @click="cancelChanges">
                                     Cancel
                                 </Button>
-                                <Button @click="saveChanges">
+                                <Button size="sm" @click="saveChanges">
                                     Save
                                 </Button>
                             </div>
                         </template>
-                        <div class="text-sm text-gray-600" v-else>
+                        <div v-else-if="!props.checklistItem.description"
+                            class="text-sm text-gray-600 border border-gray-300 rounded-lg p-2 bg-white hover:bg-gray-100 min-h-[5rem] cursor-pointer"
+                            @click="isEditingDesc = true"
+                        >
+                            Add a description...
+                        </div>
+                        <div v-else class="text-sm text-gray-600 hover:bg-gray-50 rounded-lg p-2cursor-pointer" @click="handleDescriptionClick">
                             <div
                                 class="prose prose-sm
                                     prose-ul:list-disc prose-ul:list-inside prose-ul:pl-0
@@ -114,7 +145,7 @@
                         </div>
                     </div>
 
-                    <div>
+                    <!-- <div>
                         <span>
                             Background Colour
                         </span>
@@ -131,7 +162,7 @@
                             </DropdownMenuTrigger>
                             <ColoursDropdown :current-colour="props.checklistItem.bg_colour" @colour-selected="setNewColour" />
                         </DropdownMenu>
-                    </div>
+                    </div> -->
                 </form>
                 <div class="flex flex-col space-y-4">
                     <!-- <div class="flex flex-col text-red-600" v-if="props.checklistItem.deleted_at">
@@ -186,7 +217,7 @@ import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ref, nextTick } from 'vue';
 import DateUtils from '@/utils/DateUtils';
-import { Palette, Lock, Trash, Ellipsis } from 'lucide-vue-next';
+import { Palette, Lock, Trash, Ellipsis, X } from 'lucide-vue-next';
 import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import ColoursDropdown from '../custom/UI/ColoursDropdown.vue';
 import TextEditor from '../custom/UI/input/TextEditor.vue';
@@ -194,6 +225,7 @@ import { Checkbox } from '../ui/checkbox';
 import DueDate from '../custom/UI/checklist/DueDate.vue';
 import PriorityLabel from '../custom/UI/checklist/PriorityLabel.vue';
 import ChecklistItemDropdownContent from '../custom/UI/ChecklistItemDropdownContent.vue';
+import { set } from '@vueuse/core';
 
 const props = defineProps<{
     checklistItem: DataObjectRecord;
@@ -224,6 +256,14 @@ function handleChecked(isChecked: boolean) {
     }, true);
 }
 
+function handleDescriptionClick() {
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+        return;
+    }
+    isEditingDesc.value = true;
+}
+
 function cancelChanges() {
     props.checklistItem.revert();
     isEditingDesc.value = false;
@@ -244,12 +284,9 @@ async function saveChanges() {
     }
 }
 
-function setNewColour(colour: string) {
-    if (props.checklistItem.bg_colour === colour) {
-        props.checklistItem.bg_colour = null;
-    } else {
-        props.checklistItem.bg_colour = colour;
-    }
+function setNewColour(colour: string | null) {
+    props.checklistItem.bg_colour = colour;
+    props.checklistItem.save();
 }
 
 const show = async() => {
