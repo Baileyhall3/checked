@@ -62,28 +62,34 @@
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent>
-                                            <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateSort('recent')">
-                                                Most Recent
-                                                <Check class="size-4" aria-hidden="true" v-if="checklistState.preferences.currentSort === 'recent'" />
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateSort('name')">
-                                                Name
-                                                <Check class="size-4" aria-hidden="true" v-if="checklistState.preferences.currentSort === 'name'" />
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateSort('priority')">
-                                                Priority
-                                                <Check class="size-4" aria-hidden="true" v-if="checklistState.preferences.currentSort === 'priority'" />
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateSort('dueDate')">
-                                                Due Date
-                                                <Check class="size-4" aria-hidden="true" v-if="checklistState.preferences.currentSort === 'dueDate'" />
-                                            </DropdownMenuItem>
+                                            <DropdownMenuRadioGroup v-model="checklistState.preferences.currentSort">
+                                                <DropdownMenuRadioItem value="recent" @click="checklistState.layout.updateSort('recent')" class="cursor-pointer">Most Recent</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="name" @click="checklistState.layout.updateSort('name')" class="cursor-pointer">Name</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="priority" @click="checklistState.layout.updateSort('priority')" class="cursor-pointer">Priority</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="dueDate" @click="checklistState.layout.updateSort('dueDate')" class="cursor-pointer">Due Date</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="custom" @click="checklistState.layout.updateSort('custom')" class="cursor-pointer">Sort Order</DropdownMenuRadioItem>
+                                            </DropdownMenuRadioGroup>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateSort('custom')">
-                                                Sort Order
-                                                <Check class="size-4" aria-hidden="true" v-if="checklistState.preferences.currentSort === 'custom'" />
-                                            </DropdownMenuItem>
+                                            <DropdownMenuRadioGroup v-model="checklistState.preferences.sortDirection">
+                                                <DropdownMenuRadioItem value="asc" @click="checklistState.layout.updateSortDirection('asc')" class="cursor-pointer">Ascending</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="desc" @click="checklistState.layout.updateSortDirection('desc')" class="cursor-pointer">Descending</DropdownMenuRadioItem>
+                                            </DropdownMenuRadioGroup>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuSub>
+                                                <DropdownMenuSubTrigger inset class="cursor-pointer pl-8">Group By</DropdownMenuSubTrigger>
+                                                <DropdownMenuPortal>
+                                                    <DropdownMenuSubContent>
+                                                        <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateSort('name')">
+                                                            Priority
+                                                            <Check class="size-4" aria-hidden="true" v-if="checklistState.preferences.currentSort === 'name'" />
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateSort('name')">
+                                                            Due Date
+                                                            <Check class="size-4" aria-hidden="true" v-if="checklistState.preferences.currentSort === 'name'" />
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuSubContent>
+                                                </DropdownMenuPortal>
+                                            </DropdownMenuSub>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                     <ButtonGroupSeparator />
@@ -100,22 +106,18 @@
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent>
                                             <DropdownMenuLabel>Show</DropdownMenuLabel>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateView('progressBar')">
+                                            <DropdownMenuCheckboxItem class="cursor-pointer justify-between" v-model="checklistState.layout.showProgressBar">
                                                 Progress Bar
-                                                <Check class="size-4" aria-hidden="true" v-if="checklistState.preferences.itemsView.progressBar" />
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateView('createNew')">
+                                            </DropdownMenuCheckboxItem>
+                                            <DropdownMenuCheckboxItem class="cursor-pointer justify-between" v-model="checklistState.layout.showCreateNew">
                                                 New Item Input
-                                                <Check class="size-4" aria-hidden="true" v-if="checklistState.preferences.itemsView.createNew" />
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateView('checked')">
+                                            </DropdownMenuCheckboxItem>
+                                            <DropdownMenuCheckboxItem class="cursor-pointer justify-between" v-model="checklistState.layout.showChecked">
                                                 Checked Items
-                                                <Check class="size-4" aria-hidden="true" v-if="checklistState.preferences.itemsView.checked" />
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateView('deleted')">
+                                            </DropdownMenuCheckboxItem>
+                                            <DropdownMenuCheckboxItem class="cursor-pointer justify-between" v-model="checklistState.layout.showDeleted">
                                                 Deleted Items
-                                                <Check class="size-4" aria-hidden="true" v-if="checklistState.preferences.itemsView.deleted" />
-                                            </DropdownMenuItem>
+                                            </DropdownMenuCheckboxItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                     <!-- <ButtonGroupSeparator />
@@ -340,7 +342,14 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
     DropdownMenuSeparator ,
-    DropdownMenuLabel
+    DropdownMenuLabel,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
+    DropdownMenuCheckboxItem,
+    DropdownMenuPortal,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
 import DateUtils from '@/utils/DateUtils';
 import {
@@ -498,7 +507,9 @@ onIonViewDidEnter(async() => {
                 if (sortableInstance.value) {
                     sortableInstance.value.option('disabled', !isCustom);
                 }
-                updateSort(pValue);
+                updateSort(pValue, checklistState.layout.preferences.sortDirection ?? 'asc');
+            } else if (preference == 'sortDirection') {
+                updateSort(checklistState.layout.preferences.currentSort, pValue);
             } else if (['progressBar', 'createNew', 'checked', 'deleted'].includes(preference)) {
                 if (preference === 'checked' || preference === 'deleted') {
                     updateWhereClauses();
@@ -509,7 +520,7 @@ onIonViewDidEnter(async() => {
 
     checklistState.layout = checklistLayout;
     checklistState.preferences = checklistLayout.preferences;
-    updateSort(checklistState.layout.preferences.currentSort, true);
+    updateSort(checklistState.layout.preferences.currentSort, checklistState.layout.preferences.sortDirection ?? 'asc', true);
     updateWhereClauses(true);
 
     await createDataObjects(id);
@@ -678,25 +689,25 @@ async function applyBulkUpdates(field: string, value: any) {
     }
 }
 
-function updateSort(value: ChecklistSort, pSkipUpdate = false) {
+function updateSort(value: ChecklistSort, direction: 'asc' | 'desc', pSkipUpdate = false) {
     const itemsSort = []
     switch(value) {
         case 'priority':
-            itemsSort.push({ field: 'priority', direction: 'asc' });
+            itemsSort.push({ field: 'priority', direction: direction });
             break;
         case 'name':
-            itemsSort.push({ field: 'name', direction: 'asc' });
+            itemsSort.push({ field: 'name', direction: direction });
             break;
         case 'recent':
-            itemsSort.push({ field: 'created_at', direction: 'desc' });
+            itemsSort.push({ field: 'created_at', direction: direction });
             break;
         case 'dueDate':
-            itemsSort.push({ field: 'due_date', direction: 'desc' });
+            itemsSort.push({ field: 'due_date', direction: direction });
             break;
         case 'custom':
             break;
     }
-    itemsSort.push({ field: 'sort_order', direction: 'desc' });
+    itemsSort.push({ field: 'sort_order', direction: direction });
     checklistState.sortConfig = itemsSort;
     console.log('sorta ', checklistState.sortConfig)
     if (!pSkipUpdate) {

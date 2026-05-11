@@ -10,6 +10,7 @@ export interface ChecklistItemsView {
 }
 export interface ChecklistPreferences {
     currentSort: ChecklistSort;
+    sortDirection?: 'asc' | 'desc';
     itemsView: ChecklistItemsView;
 }
 
@@ -20,6 +21,7 @@ export default class ChecklistLayout {
 
     preferences = reactive<ChecklistPreferences>({
         currentSort: 'recent',
+        sortDirection: 'asc',
         itemsView: {
             progressBar: true,
             createNew: true,
@@ -30,6 +32,57 @@ export default class ChecklistLayout {
 
     get localStorageKey() {
         return `${this._key}`;
+    }
+
+    get currentSort() {
+        return this.preferences.currentSort;
+    }
+
+    get sortDirection() {
+        return this.preferences.sortDirection;
+    }
+
+    get showProgressBar() {
+        return this.preferences.itemsView.progressBar;
+    }
+
+    get showCreateNew() {
+        return this.preferences.itemsView.createNew;
+    }
+
+    get showChecked() {
+        return this.preferences.itemsView.checked;
+    }
+
+    get showDeleted() {
+        return this.preferences.itemsView.deleted;
+    }
+
+    /*
+     * Preference Setters
+     */
+    set currentSort(sort: ChecklistSort) {
+        this.updateSort(sort);
+    }
+
+    set sortDirection(direction: 'asc' | 'desc') {
+        this.updateSortDirection(direction);
+    }
+
+    set showProgressBar(value: boolean) {
+        this.updateView('progressBar', value);
+    }
+
+    set showCreateNew(value: boolean) {
+        this.updateView('createNew', value);
+    }
+
+    set showChecked(value: boolean) {
+        this.updateView('checked', value);
+    }
+
+    set showDeleted(value: boolean) {
+        this.updateView('deleted', value);
     }
 
     constructor(pOptions: {
@@ -49,9 +102,16 @@ export default class ChecklistLayout {
         this._saveToStorage();
     }
 
-    updateView(key: keyof typeof this.preferences.itemsView) {
-        this.preferences.itemsView[key] = !this.preferences.itemsView[key];
-        this._onPreferenceUpdated(key, this.preferences.itemsView[key]);
+    updateSortDirection(direction: 'asc' | 'desc') {
+        this.preferences.sortDirection = direction;
+        this._onPreferenceUpdated('sortDirection', direction);
+        this._saveToStorage();
+    }
+
+    updateView(key: keyof typeof this.preferences.itemsView, pValue: boolean) {
+        debugger
+        this.preferences.itemsView[key] = pValue;
+        this._onPreferenceUpdated(key, pValue);
         this._saveToStorage();
     }
 

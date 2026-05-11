@@ -73,41 +73,17 @@
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent>
-                                                <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('recent')">
-                                                    Most Recent
-                                                    <Check class="size-4" aria-hidden="true" v-if="preferences.currentSort === 'recent'" />
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('name')">
-                                                    Name
-                                                    <Check class="size-4" aria-hidden="true" v-if="preferences.currentSort === 'name'" />
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('created')">
-                                                    Date Created
-                                                    <Check class="size-4" aria-hidden="true" v-if="preferences.currentSort === 'created'" />
-                                                </DropdownMenuItem>
+                                                <DropdownMenuLabel>Sort</DropdownMenuLabel>
+                                                <DropdownMenuRadioGroup v-model="layout.currentSort">
+                                                    <DropdownMenuRadioItem value="recent" @click="layout.updateSort('recent')" class="cursor-pointer">Most Recent</DropdownMenuRadioItem>
+                                                    <DropdownMenuRadioItem value="name" @click="layout.updateSort('name')" class="cursor-pointer">Name</DropdownMenuRadioItem>
+                                                    <DropdownMenuRadioItem value="created" @click="layout.updateSort('created')" class="cursor-pointer">Date Created</DropdownMenuRadioItem>
+                                                </DropdownMenuRadioGroup>
                                                 <DropdownMenuSeparator />
-
-                                                <DropdownMenuLabel>Show</DropdownMenuLabel>
-                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('completed')">
-                                                    Completed
-                                                    <Check class="size-4" aria-hidden="true" v-if="preferences.checklistsView.completed" />
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateView('deleted')">
-                                                    Deleted
-                                                    <Check class="size-4" aria-hidden="true" v-if="preferences.checklistsView.deleted" />
-                                                </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
-
-                                                <DropdownMenuLabel>View</DropdownMenuLabel>
-                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateGroupBy('checklists')">
-                                                    Checklists
-                                                    <Check class="size-4" aria-hidden="true" v-if="preferences.listView === 'checklists'" />
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem class="cursor-pointer justify-between" @click="updateGroupBy('items')">
-                                                    Checklist Items
-                                                    <Check class="size-4" aria-hidden="true" v-if="preferences.listView === 'items'" />
-                                                </DropdownMenuItem>
+                                                <DropdownMenuRadioGroup v-model="layout.sortDirection">
+                                                    <DropdownMenuRadioItem value="asc" @click="layout.updateSortDirection('asc')" class="cursor-pointer">Ascending</DropdownMenuRadioItem>
+                                                    <DropdownMenuRadioItem value="desc" @click="layout.updateSortDirection('desc')" class="cursor-pointer">Descending</DropdownMenuRadioItem>
+                                                </DropdownMenuRadioGroup>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                         <ButtonGroupSeparator />
@@ -119,14 +95,39 @@
                                                     class="rounded-xl shadow-none bg-white hover:bg-gray-200"
                                                     aria-label="Open settings"
                                                 >
-                                                    <Settings :size="16" aria-hidden="true" />
+                                                    <ListTodo v-if="layout.listView == 'checklists'" :size="16" aria-hidden="true" />
+                                                    <CircleCheckBig v-else-if="layout.listView == 'items'" :size="16" aria-hidden="true" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <FolderDropdownContent 
-                                                label="Folder Actions"
-                                                :folder="folderDs.folder?.currentRecord"
-                                                :folder-data="folderDs.folder"
-                                            />
+                                            <DropdownMenuContent>
+                                                <DropdownMenuLabel>View</DropdownMenuLabel>
+                                                <DropdownMenuRadioGroup v-model="layout.listView">
+                                                    <DropdownMenuRadioItem value="checklists" @click="updateGroupBy('checklists')" class="cursor-pointer">Checklists</DropdownMenuRadioItem>
+                                                    <DropdownMenuRadioItem value="items" @click="updateGroupBy('items')" class="cursor-pointer">Checklist Items</DropdownMenuRadioItem>
+                                                </DropdownMenuRadioGroup>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                        <ButtonGroupSeparator />
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button
+                                                    size="icon"
+                                                    variant="secondary"
+                                                    class="rounded-xl shadow-none bg-white hover:bg-gray-200"
+                                                    aria-label="Open settings"
+                                                >
+                                                    <SlidersHorizontal :size="16" aria-hidden="true" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent>
+                                                <DropdownMenuLabel>Show</DropdownMenuLabel>
+                                                <DropdownMenuCheckboxItem class="cursor-pointer justify-between" v-model="layout.showCompleted">
+                                                    Completed
+                                                </DropdownMenuCheckboxItem>
+                                                <DropdownMenuCheckboxItem class="cursor-pointer justify-between" v-model="layout.showDeleted">
+                                                    Deleted
+                                                </DropdownMenuCheckboxItem>
+                                            </DropdownMenuContent>
                                         </DropdownMenu>
                                     </ButtonGroup>
                                 </ButtonGroup>
@@ -193,7 +194,7 @@ import { ref, reactive, computed } from 'vue';
 import { onIonViewDidEnter, onIonViewDidLeave } from '@ionic/vue';
 import { createDataObject, DataObject, SortConfig, WhereClause } from 'supabase-dataobject-core';
 import { checklistFields, dataSources, folderFields, checklistItemsFields } from '@/api/dataObjects';
-import { Folder, Home, Settings, Check, ArrowUpDown, ListTodo, Ellipsis } from "lucide-vue-next";
+import { Folder, Home, Settings, Check, ArrowUpDown, ListTodo, Ellipsis, SlidersHorizontal, CircleCheckBig } from "lucide-vue-next";
 import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 import RoundedContainer from '@/components/RoundedContainer.vue';
 import SearchBar from '@/components/custom/UI/SearchBar.vue';
@@ -202,12 +203,19 @@ import Loading from '@/components/custom/UI/Loading.vue';
 import type { IBreadcrumbItem } from '@/components/custom/UI/Breadcrumbs.vue';
 import { ButtonGroup, ButtonGroupSeparator } from '@/components/ui/button-group'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator ,
-  DropdownMenuLabel
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    DropdownMenuSeparator ,
+    DropdownMenuLabel,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
+    DropdownMenuCheckboxItem,
+    DropdownMenuPortal,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
 import Checklist from '@/components/custom/UI/Checklist.vue';
 import FolderDropdownContent from '@/components/custom/UI/FolderDropdownContent.vue';
@@ -233,22 +241,6 @@ const folderDs = reactive({
     folder: null as DataObject | null,
     checklists: null as DataObject | null,
     checklistItems: null as DataObject | null
-});
-
-const breadcrumbs = computed((): IBreadcrumbItem[] => {
-    const items = [
-        { label: "Home", icon: Home, href: "/home" },
-    ];
-
-    items.push({
-        label: folderDs.folder?.currentRecord?.name,
-        icon: Folder,
-        dropdown: folderDs.checklists?.data?.map(c => ({
-            label: c.name,
-            href: `/checklist/${c.id}`,
-        })),
-    });
-    return items;
 });
 
 onIonViewDidEnter(() => {

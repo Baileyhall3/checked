@@ -1,8 +1,9 @@
 import { DataObject } from "supabase-dataobject-core";
 import { reactive } from "vue";
 
-export type FolderSort = 'recent' | 'created' | 'name'
+export type FolderSort = 'recent' | 'created' | 'name';
 export type FolderListView = 'checklists' | 'items';
+
 export interface ChecklistsView {
     completed: boolean;
     deleted: boolean;
@@ -15,10 +16,12 @@ export default class FolderLayout {
 
     preferences = reactive<{
         currentSort: FolderSort;
+        sortDirection?: 'asc' | 'desc';
         listView: FolderListView;
         checklistsView: ChecklistsView;
     }>({
         currentSort: 'recent',
+        sortDirection: 'desc',
         listView: 'checklists',
         checklistsView: {
             completed: true,
@@ -28,6 +31,52 @@ export default class FolderLayout {
 
     get localStorageKey() {
         return `${this._key}`;
+    }
+
+    /*
+     * Preference Getters
+     */
+    get currentSort() {
+        return this.preferences.currentSort;
+    }
+
+    get sortDirection() {
+        return this.preferences.sortDirection ?? 'desc';
+    }
+
+    get listView() {
+        return this.preferences.listView;
+    }
+
+    get showCompleted() {
+        return this.preferences.checklistsView.completed;
+    }
+
+    get showDeleted() {
+        return this.preferences.checklistsView.deleted;
+    }
+
+    /*
+     * Preference Setters
+     */
+    set currentSort(sort: FolderSort) {
+        this.updateSort(sort);
+    }
+
+    set sortDirection(direction: 'asc' | 'desc') {
+        this.updateSortDirection(direction);
+    }
+
+    set listView(view: FolderListView) {
+        this.updateGroupBy(view);
+    }
+
+    set showCompleted(value: boolean) {
+        this.toggleView('completed', value);
+    }
+    
+    set showDeleted(value: boolean) {
+        this.toggleView('deleted', value);
     }
 
     constructor(pOptions: {
@@ -47,15 +96,21 @@ export default class FolderLayout {
         this._saveToStorage();
     }
 
+    updateSortDirection(direction: 'asc' | 'desc') {
+        this.preferences.sortDirection = direction;
+        this._onPreferenceUpdated('sortDirection', direction);
+        this._saveToStorage();
+    }
+
     updateGroupBy(view: FolderListView) {
         this.preferences.listView = view;
         this._onPreferenceUpdated('listView', this.preferences.listView);
         this._saveToStorage();
     }
 
-    toggleView(key: keyof typeof this.preferences.checklistsView) {
-        this.preferences.checklistsView[key] = !this.preferences.checklistsView[key];
-        this._onPreferenceUpdated(key, this.preferences.checklistsView[key]);
+    toggleView(key: keyof typeof this.preferences.checklistsView, pValue: boolean) {
+        this.preferences.checklistsView[key] = pValue;
+        this._onPreferenceUpdated(key, pValue);
         this._saveToStorage();
     }
 
@@ -65,7 +120,8 @@ export default class FolderLayout {
 
     private _loadFromStorage() {
         const storedPreferences = localStorage.getItem(this.localStorageKey);
-        if (storedPreferences) {            
+
+        if (storedPreferences) {
             const parsed = JSON.parse(storedPreferences);
             Object.assign(this.preferences, parsed);
         }
