@@ -11,7 +11,7 @@
             class="bg-white cursor-pointer checklist-item rounded-2xl shadow-sm border-gray-200 px-4 py-3 pl-5 relative
                 transition-colors duration-150 border focus:outline-none focus:ring-2 focus:ring-indigo-400 select-none"
             :class="{ 
-                'ring-2 ring-indigo-400' :  isHovered || menuOpen || (isCurrent && !props.allowSelection) || isSelected,
+                'ring-2 ring-indigo-400' :  isHovered || menuOpen || isSelected,
                 'opacity-50' : itemIsDisabled,
             }"
             :style="{ '--item-colour': item.bg_colour }"
