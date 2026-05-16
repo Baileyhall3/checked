@@ -1,5 +1,5 @@
 <template>
-    <div class="flex flex-col h-screen">
+    <div class="flex flex-col h-screen absolute">
         <div class="py-4 flex justify-between items-center px-2">
             <RouterLink to="/home" class="text-lg font-semibold text-foreground flex items-center px-1" @click="sideBarState.onTreeItemClick();">
                 <img src="/public/assets/images/check-icon-no-bg.png"

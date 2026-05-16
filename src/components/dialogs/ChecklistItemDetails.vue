@@ -114,12 +114,12 @@
                     <div class="flex flex-col">
                         <div class="flex justify-between items-center">
                             <span class="font-medium">Description</span>
-                            <Button v-if="!isEditingDesc && props.checklistItem.description" variant="secondary" size="sm" @click="isEditingDesc = !isEditingDesc">
+                            <Button v-if="!isEditingDesc && props.checklistItem.description" variant="secondary" size="sm" @click="beginEditingDescription">
                                 Edit
                             </Button>
                         </div>
                         <template v-if="isEditingDesc">
-                            <TextEditor v-model="props.checklistItem.description" />
+                            <TextEditor ref="textEditorRef" v-model="props.checklistItem.description" />
                             <div class="flex gap-1 justify-end w-full mt-2 gap-2">
                                 <Button variant="secondary" size="sm" @click="cancelChanges">
                                     Cancel
@@ -144,25 +144,6 @@
                             ></div>
                         </div>
                     </div>
-
-                    <!-- <div>
-                        <span>
-                            Background Colour
-                        </span>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <button
-                                    type="button"
-                                    :style="{ backgroundColor: props.checklistItem.bg_colour ?? 'rgb(0 0 0 / 0.6)' }"
-                                    class="focus-visible:border-ring focus-visible:ring-ring/50 flex size-8 cursor-pointer items-center justify-center rounded-full text-white transition-[color,box-shadow] outline-none hover:opacity-80 focus-visible:ring-[3px]"
-                                    aria-label="Change background colour"
-                                >
-                                    <Palette class="size-4" aria-hidden="true" />
-                                </button>
-                            </DropdownMenuTrigger>
-                            <ColoursDropdown :current-colour="props.checklistItem.bg_colour" @colour-selected="setNewColour" />
-                        </DropdownMenu>
-                    </div> -->
                 </form>
                 <div class="flex flex-col space-y-4">
                     <!-- <div class="flex flex-col text-red-600" v-if="props.checklistItem.deleted_at">
@@ -236,6 +217,7 @@ const isDialogOpen = ref<boolean>(false);
 const isSaving = ref<boolean>(false);
 const nameInput = ref(null);
 const isEditingDesc = ref<boolean>(false);
+const textEditorRef = ref(null);
 
 const autoResize = (ev) => {
     const el = ev?.target ?? nameInput.value;
@@ -256,12 +238,19 @@ function handleChecked(isChecked: boolean) {
     }, true);
 }
 
+function beginEditingDescription() {
+    isEditingDesc.value = true;
+    nextTick(() => {
+        textEditorRef?.value?.focus();
+    });
+}
+
 function handleDescriptionClick() {
     const selection = window.getSelection();
     if (selection && selection.toString().length > 0) {
         return;
     }
-    isEditingDesc.value = true;
+    beginEditingDescription();
 }
 
 function cancelChanges() {

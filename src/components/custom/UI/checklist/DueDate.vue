@@ -2,12 +2,12 @@
   <div ref="pickerRoot" class="relative inline-block">
     <!-- Trigger -->
     <div
-      class="flex items-center gap-2 rounded-lg px-1 py-0.5 border text-sm hover:bg-gray-200"
-      :class="[backgroundClass, props.class, { 'cursor-pointer' : props.editable }]"
+      class="flex items-center gap-2 rounded-lg px-1 py-0.5 border text-sm"
+      :class="[backgroundClass, props.class, { 'cursor-pointer hover:bg-gray-200' : props.editable }]"
       :title="dueTitle"
       @click.stop="toggleDatePicker"
     >
-      <Clock class="size-4" :class="{ 'opacity-50' : !modelValue }"/>
+      <Clock class="size-4" :class="{ 'opacity-50' : !modelValue }" />
 
       <span v-if="modelValue">
         {{ props.showTime ? DateUtils.toDateTime(modelValue) : DateUtils.toShortDate(modelValue) }}

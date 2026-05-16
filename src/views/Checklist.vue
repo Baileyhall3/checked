@@ -53,12 +53,12 @@
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button
-                                                size="icon"
                                                 variant="secondary"
                                                 class="rounded-xl shadow-none bg-white hover:bg-gray-200"
                                                 aria-label="Open sort"
                                             >
                                                 <ArrowUpDown :size="16" aria-hidden="true" />
+                                                <span v-if="!isMobile">Sort</span>
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent>
@@ -96,12 +96,12 @@
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button
-                                                size="icon"
                                                 variant="secondary"
                                                 class="rounded-xl shadow-none bg-white hover:bg-gray-200"
                                                 aria-label="Open settings"
                                             >
                                                 <SlidersHorizontal :size="16" aria-hidden="true" />
+                                                <span v-if="!isMobile">Show</span>
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent>
@@ -375,6 +375,7 @@ import AddItem from '@/components/custom/UI/input/AddItem.vue';
 import ProgressBar from '@/components/custom/UI/ProgressBar.vue';
 import { Checkbox } from "@/components/ui/checkbox";
 import ImportItems from '@/components/dialogs/ImportItems.vue';
+import { useWindowSize } from "@vueuse/core";
 
 const route = useRoute();
 const router = useRouter();
@@ -387,6 +388,9 @@ const selectedItemIds = ref<Set<number>>(new Set())
 
 const isLoading = ref<boolean>(true);
 const { toast } = useToast();
+
+const { width } = useWindowSize();
+const isMobile = computed(() => width.value < 768);
 
 const checklistState = reactive<{
     layout: ChecklistLayout;

@@ -64,12 +64,12 @@
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button
-                                                    size="icon"
                                                     variant="secondary"
                                                     class="rounded-xl shadow-none bg-white hover:bg-gray-200"
                                                     aria-label="Open sort"
                                                 >
                                                     <ArrowUpDown :size="16" aria-hidden="true" />
+                                                    <span v-if="!isMobile">Sort</span>
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent>
@@ -90,13 +90,13 @@
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button
-                                                    size="icon"
                                                     variant="secondary"
                                                     class="rounded-xl shadow-none bg-white hover:bg-gray-200"
                                                     aria-label="Open settings"
                                                 >
                                                     <ListTodo v-if="layout.listView == 'checklists'" :size="16" aria-hidden="true" />
                                                     <CircleCheckBig v-else-if="layout.listView == 'items'" :size="16" aria-hidden="true" />
+                                                    <span v-if="!isMobile">View</span>
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent>
@@ -111,12 +111,12 @@
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button
-                                                    size="icon"
                                                     variant="secondary"
                                                     class="rounded-xl shadow-none bg-white hover:bg-gray-200"
                                                     aria-label="Open settings"
                                                 >
                                                     <SlidersHorizontal :size="16" aria-hidden="true" />
+                                                    <span v-if="!isMobile">Show</span>
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent>
@@ -225,6 +225,7 @@ import ChecklistItemsGroup from '@/components/custom/ChecklistItemsGroup.vue';
 import FolderLayout from '@/layouts/FolderLayoutManager';
 import type { FolderSort, FolderListView, ChecklistsView } from '@/layouts/FolderLayoutManager';
 import MainContent from '@/components/custom/UI/MainContent.vue';
+import { useWindowSize } from "@vueuse/core";
 
 const enterPinDialog = ref();
 const createChecklistDialog = ref();
@@ -236,6 +237,9 @@ const layout = ref<FolderLayout>();
 const preferences = ref<any>();
 
 const searchQuery = ref('');
+
+const { width } = useWindowSize();
+const isMobile = computed(() => width.value < 768);
 
 const folderDs = reactive({
     folder: null as DataObject | null,

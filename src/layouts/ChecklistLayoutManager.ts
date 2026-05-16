@@ -1,4 +1,5 @@
 import { DataObject } from "supabase-dataobject-core";
+import type { GroupByConfig } from "supabase-dataobject-core/dist/types";
 import { reactive } from "vue";
 
 export type ChecklistSort = 'recent' | 'name' | 'priority' | 'dueDate' | 'custom';
@@ -12,6 +13,7 @@ export interface ChecklistPreferences {
     currentSort: ChecklistSort;
     sortDirection?: 'asc' | 'desc';
     itemsView: ChecklistItemsView;
+    groupBy?: GroupByConfig<any>;
 }
 
 export default class ChecklistLayout {
@@ -27,7 +29,8 @@ export default class ChecklistLayout {
             createNew: true,
             checked: true,
             deleted: false
-        }
+        },
+        groupBy: undefined
     });
 
     get localStorageKey() {
@@ -58,6 +61,10 @@ export default class ChecklistLayout {
         return this.preferences.itemsView.deleted;
     }
 
+    get groupBy() {
+        return this.preferences.groupBy;
+    }
+
     /*
      * Preference Setters
      */
@@ -85,6 +92,10 @@ export default class ChecklistLayout {
         this.updateView('deleted', value);
     }
 
+    set groupBy(groupBy: GroupByConfig<any> | undefined) {
+        this.updateGroupBy(groupBy);
+    }
+
     constructor(pOptions: {
         key: string;
         onPreferenceUpdated: (pPreference: any, pValue: any) => void;
@@ -109,9 +120,14 @@ export default class ChecklistLayout {
     }
 
     updateView(key: keyof typeof this.preferences.itemsView, pValue: boolean) {
-        debugger
         this.preferences.itemsView[key] = pValue;
         this._onPreferenceUpdated(key, pValue);
+        this._saveToStorage();
+    }
+
+    updateGroupBy(groupBy: GroupByConfig<any> | undefined) {
+        this.preferences.groupBy = groupBy;
+        this._onPreferenceUpdated('groupBy', groupBy);
         this._saveToStorage();
     }
 
