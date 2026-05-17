@@ -99,6 +99,7 @@
                             :title="`Locked by ${item.locked_by_username} ${DateUtils.toDateTime(item.locked_at)}`"
                         /> -->
                     </div>
+                    <!-- Description -->
                     <div class="flex justify-between items-start">
                         <div class="text-sm text-gray-600">
                             <div
@@ -109,6 +110,15 @@
                             ></div>
                         </div>
                     </div>
+
+                    <!-- <div class="flex flex-col mt-2">
+                        <div class="text-xs text-gray-500">
+                            Created {{ DateUtils.toRelevantDateOrTime(item.created_at) }}
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            Updated {{ DateUtils.toDateTime(item.updated_at) }}
+                        </div>
+                    </div> -->
                 </div>
                 
                 <div>
@@ -132,20 +142,22 @@
                                 :item="props.item" 
                             >
                                 <template #additionalItemsTop>
-                                    <DropdownMenuItem 
-                                        v-if="isSelected"
-                                        class="cursor-pointer" 
-                                        title="Select item"
-                                        @click="handleSelected(false)" 
-                                    >
-                                        <SquareX class="size-4 opacity-60" aria-hidden="true" />
-                                        Unselect
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem class="cursor-pointer" @click="handleSelected(true)" v-else>
-                                        <SquareCheck class="size-4 opacity-60" aria-hidden="true" />
-                                        Select
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
+                                    <!-- <template v-if="props.allowSelection"> -->
+                                        <DropdownMenuItem 
+                                            v-if="isSelected"
+                                            class="cursor-pointer" 
+                                            title="Select item"
+                                            @click="handleSelected(false)" 
+                                        >
+                                            <SquareX class="size-4 opacity-60" aria-hidden="true" />
+                                            Unselect
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem class="cursor-pointer" @click="handleSelected(true)" v-else>
+                                            <SquareCheck class="size-4 opacity-60" aria-hidden="true" />
+                                            Select
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                    <!-- </template> -->
                                 </template>
                             </ChecklistItemDropdownContent>
                         </DropdownMenu>

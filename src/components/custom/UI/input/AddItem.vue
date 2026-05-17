@@ -10,7 +10,7 @@
             class="w-full resize-none overflow-hidden bg-transparent px-3 py-2 outline-none"
             @mousemove="handleMouseMove"
             @input="autoResize"
-            @keyup.enter="addItem"
+            @keydown.enter.exact.prevent="addItem"
         />
         <InputGroupAddon align="inline-end" v-if="!modelValue" @click="handleVoiceClick" :class="{ 'bg-red-100 animate-pulse text-red-500': isRecording }">
             <InputGroupButton size="icon-sm" aria-label="Subscribe">

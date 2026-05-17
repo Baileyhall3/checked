@@ -92,7 +92,7 @@ export const userStore = {
       if (state.user) await this.fetchUserProfile()
 
       if (state.userProfile && state.userProfile.id && !dataSources.manager) {
-        await initDataObjects(supabaseUrl, supabasePublishableKey, state.userProfile.id);
+        await initDataObjects(supabase, state.userProfile.id);
       }
 
       return { success: true }

@@ -13,7 +13,7 @@
         {{ props.showTime ? DateUtils.toDateTime(modelValue) : DateUtils.toShortDate(modelValue) }}
       </span>
 
-      <span v-else class="text-gray-500">Set due date</span>
+      <span v-else class="text-gray-500">Due date</span>
 
       <button
         v-if="modelValue && props.editable"

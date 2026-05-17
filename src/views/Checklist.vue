@@ -509,7 +509,7 @@ onIonViewDidEnter(async() => {
                 if (sortableInstance.value) {
                     sortableInstance.value.option('disabled', !isCustom);
                 }
-                updateSort(pValue, checklistState.layout.preferences.sortDirection ?? 'asc');
+                updateSort(pValue, checklistState.layout.preferences.sortDirection ?? 'desc');
             } else if (preference == 'sortDirection') {
                 updateSort(checklistState.layout.preferences.currentSort, pValue);
             } else if (['progressBar', 'createNew', 'checked', 'deleted'].includes(preference)) {

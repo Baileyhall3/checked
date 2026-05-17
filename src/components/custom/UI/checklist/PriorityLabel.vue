@@ -17,7 +17,7 @@
         </template>
 
         <template v-else>
-          <span class="text-gray-500">Set priority</span>
+          <span class="text-gray-500">Priority</span>
         </template>
       </div>
     </SelectTrigger>

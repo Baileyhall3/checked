@@ -6,6 +6,7 @@ import { DataObjectManager, DataObject } from 'supabase-dataobject-core';
 import type { DataObjectErrorHandler, DataObjectField } from 'supabase-dataobject-core';
 import { reactive } from 'vue';
 import { useToast } from '@/components/ui/toast';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 const { toast } = useToast();
 
@@ -54,9 +55,9 @@ export const dataSources = reactive({
  * @param key 
  * @param currentUserId 
  */
-export async function initDataObjects(url: string, key: string, currentUserId: number) {
+export async function initDataObjects(supabase: SupabaseClient, currentUserId: number) {
     dataSources.manager = initializeDataObjectManager({
-        supabaseConfig: { url, anonKey: key },
+        supabaseClient: supabase,
         errorHandler
     });
 

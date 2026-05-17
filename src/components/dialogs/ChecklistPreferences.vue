@@ -157,9 +157,7 @@ async function createDataObjects(id: number) {
             ]
         }); 
 
-        if (preferencesData?.data.length) {
-            preferenceDs.checklist = preferencesData;
-        }
+        preferenceDs.checklist = preferencesData;
     } catch (err) {
         console.error(err);
     } finally {

@@ -23,7 +23,7 @@ export default class ChecklistLayout {
 
     preferences = reactive<ChecklistPreferences>({
         currentSort: 'recent',
-        sortDirection: 'asc',
+        sortDirection: 'desc',
         itemsView: {
             progressBar: true,
             createNew: true,
