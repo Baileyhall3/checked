@@ -1,7 +1,7 @@
 <template>
     <DropdownMenuContent>
         <DropdownMenuLabel>Add Link</DropdownMenuLabel>
-        <form class="gap-4 flex flex-col p-2" novalidate>
+        <div class="gap-4 flex flex-col p-2">
             <div class="*:not-first:mt-2">
                 <Label for="linkUrl">
                     URL
@@ -36,7 +36,7 @@
                     Cancel
                 </Button>
             </div>
-        </form>
+        </div>
     </DropdownMenuContent>
 </template>
 
@@ -45,24 +45,29 @@ import { DropdownMenuContent, DropdownMenuLabel } from "@/components/ui/dropdown
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { computed } from 'vue';
+import { ref } from 'vue';
 
 interface LinkData {
     url: string;
     title?: string;
 }
 
-const props = defineProps<{
-    modelValue: LinkData;
-}>();
+// const props = defineProps<{
+//     link: LinkData
+// }>();
 const emit = defineEmits<{
-    (e: 'update:modelValue', value: LinkData): void;
+    // (e: 'update:modelValue', value: LinkData): void;
     (e: 'add-link', link: LinkData): void;
     (e: 'cancel-create'): void;
 }>();
 
-const link = computed({
-    get: () => props.modelValue,
-    set: (val) => emit('update:modelValue', val)
+const link = ref({
+    url: '',
+    title: ''
 });
+
+// const link = computed({
+//     get: () => props.modelValue,
+//     set: (val) => emit('update:modelValue', val)
+// });
 </script>

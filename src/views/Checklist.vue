@@ -118,6 +118,35 @@
                                             <DropdownMenuCheckboxItem class="cursor-pointer justify-between" v-model="checklistState.layout.showDeleted">
                                                 Deleted Items
                                             </DropdownMenuCheckboxItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuSub>
+                                                <DropdownMenuSubTrigger inset class="cursor-pointer pl-8">Item Fields</DropdownMenuSubTrigger>
+                                                <DropdownMenuPortal>
+                                                    <DropdownMenuSubContent>
+                                                        <DropdownMenuCheckboxItem class="cursor-pointer justify-between" v-model="checklistState.layout.showDescription">
+                                                            Description
+                                                        </DropdownMenuCheckboxItem>
+                                                        <DropdownMenuCheckboxItem class="cursor-pointer justify-between" v-model="checklistState.layout.showPriority">
+                                                            Priority
+                                                        </DropdownMenuCheckboxItem>
+                                                        <DropdownMenuCheckboxItem class="cursor-pointer justify-between" v-model="checklistState.layout.showDueDate">
+                                                            Due Date
+                                                        </DropdownMenuCheckboxItem>
+                                                        <DropdownMenuCheckboxItem class="cursor-pointer justify-between" v-model="checklistState.layout.showCreatedAt">
+                                                            Created At
+                                                        </DropdownMenuCheckboxItem>
+                                                        <DropdownMenuCheckboxItem class="cursor-pointer justify-between" v-model="checklistState.layout.showCreatedBy">
+                                                            Created By
+                                                        </DropdownMenuCheckboxItem>
+                                                        <DropdownMenuCheckboxItem class="cursor-pointer justify-between" v-model="checklistState.layout.showUpdatedAt">
+                                                            Updated At
+                                                        </DropdownMenuCheckboxItem>
+                                                        <DropdownMenuCheckboxItem class="cursor-pointer justify-between" v-model="checklistState.layout.showUpdatedBy">
+                                                            Updated By
+                                                        </DropdownMenuCheckboxItem>
+                                                    </DropdownMenuSubContent>
+                                                </DropdownMenuPortal>
+                                            </DropdownMenuSub>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                     <!-- <ButtonGroupSeparator />
@@ -272,6 +301,7 @@
                                     :checklistData="checklistDs.checklistItems" 
                                     :allowSelection="allowSelection"
                                     :isSelected="selectedItemIds.has(item.id)"
+                                    :fields-view="checklistState.layout.preferences.itemFieldsView"
                                     @selection-changed="updateSelected"
                                 />
                              </div>
@@ -365,7 +395,7 @@ import Loading from '@/components/custom/UI/Loading.vue';
 import ChecklistItem from '@/components/custom/UI/ChecklistItem.vue';
 import ChecklistDropdownContent from '@/components/custom/UI/ChecklistDropdownContent.vue';
 import EnterPIN from '@/components/dialogs/EnterPIN.vue';
-import ChecklistLayout, { ChecklistSort, ChecklistPreferences } from '@/layouts/ChecklistLayoutManager';
+import ChecklistLayout, { ChecklistSort, ChecklistPreferences, ChecklistItemFieldsView } from '@/layouts/ChecklistLayoutManager';
 import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 import { useThemes } from '@/composables/useThemes';
 import MainContent from '@/components/custom/UI/MainContent.vue';

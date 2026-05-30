@@ -71,14 +71,14 @@
                             :rows="1"
                         ></textarea>
                     </div>
-                    <div class="flex w-full gap-1 mb-1" v-if="item.priority || item.due_date">
+                    <div class="flex w-full gap-1 mb-1" v-if="((item.priority || item.due_date) && (props.fieldsView?.priority || props.fieldsView?.dueDate)) || item.locked_at">
                         <PriorityLabel 
-                            v-if="item.priority" 
+                            v-if="item.priority && props.fieldsView?.priority" 
                             :priority="item.priority" 
                             disabled 
                         />
                         <DueDate 
-                            v-if="item.due_date" 
+                            v-if="item.due_date && props.fieldsView?.dueDate" 
                             v-model="item.due_date" 
                             :is-complete="item.is_checked"
                         />
@@ -100,7 +100,7 @@
                         /> -->
                     </div>
                     <!-- Description -->
-                    <div class="flex justify-between items-start">
+                    <div class="flex justify-between items-start" v-if="props.fieldsView?.description">
                         <div class="text-sm text-gray-600">
                             <div
                                 class="prose prose-sm
@@ -111,14 +111,14 @@
                         </div>
                     </div>
 
-                    <!-- <div class="flex flex-col mt-2">
-                        <div class="text-xs text-gray-500">
-                            Created {{ DateUtils.toRelevantDateOrTime(item.created_at) }}
+                    <div class="flex flex-col mt-2" v-if="doShowCreatedUpdated">
+                        <div class="text-xs text-gray-500" v-if="props.fieldsView?.createdAt || props.fieldsView?.createdBy">
+                            Created {{ props.fieldsView?.createdAt ? DateUtils.toDateTime(item.created_at) : '' }} {{ props.fieldsView?.createdBy ? 'by ' + item.created_by_username : '' }}
                         </div>
-                        <div class="text-xs text-gray-500">
-                            Updated {{ DateUtils.toDateTime(item.updated_at) }}
+                        <div class="text-xs text-gray-500" v-if="(props.fieldsView?.updatedAt || props.fieldsView?.updatedBy) && item.updated_at">
+                            Updated {{ props.fieldsView?.updatedAt ? DateUtils.toDateTime(item.updated_at) : '' }} {{ props.fieldsView?.updatedBy ? 'by ' + item.updated_by_username : '' }}
                         </div>
-                    </div> -->
+                    </div>
                 </div>
                 
                 <div>
@@ -189,6 +189,7 @@ import DueDate from './checklist/DueDate.vue';
 import VoiceNotePlayback from './buttons/VoiceNotePlayback.vue';
 import ChecklistItemDropdownContent from './ChecklistItemDropdownContent.vue';
 import LockedLabel from './checklist/LockedLabel.vue';
+import type { ChecklistItemFieldsView } from '@/layouts/ChecklistLayoutManager.js';
 
 const props = defineProps<{
     item: DataObjectRecord;
@@ -196,6 +197,7 @@ const props = defineProps<{
     disabled?: boolean;
     allowSelection?: boolean;
     isSelected?: boolean;
+    fieldsView?: ChecklistItemFieldsView;
 }>();
 
 const emit = defineEmits<{
@@ -238,6 +240,10 @@ const isMobile = computed(() => width.value < 768);
 
 const isCurrent = computed(() => {
     return props.checklistData.currentRecord?.id === props.item.id;
+});
+
+const doShowCreatedUpdated = computed(() => {
+    return props.fieldsView?.createdAt || props.fieldsView?.createdBy || props.fieldsView?.updatedAt || props.fieldsView?.updatedBy;
 });
 
 const itemIsDisabled = computed((): boolean => {

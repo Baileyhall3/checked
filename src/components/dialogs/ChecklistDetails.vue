@@ -64,6 +64,11 @@
                     <p class="text-sm text-muted-foreground">{{ props.checklist.owner_username }}</p>
                     <!-- <p class="text-sm text-muted-foreground">{{ props.checklist.owner_email }}</p> -->
                 </div>
+                <div class="flex flex-col pb-4" v-if="props.checklist.completed_at">
+                    <span class="font-medium">Completed</span>
+                    <p class="text-sm text-muted-foreground">{{ DateUtils.toDateTime(props.checklist.completed_at) }} {{ props.checklist.completed_by_username ? ` by ${props.checklist.completed_by_username}` : '' }}</p>
+                    <!-- <p class="text-sm text-muted-foreground">{{ props.checklist.owner_email }}</p> -->
+                </div>
                 <div class="flex flex-col pb-4" v-if="props.checklist.items_updated_at">
                     <span class="font-medium">Last Updated</span>
                     <p class="text-sm text-muted-foreground">

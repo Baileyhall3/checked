@@ -9,10 +9,20 @@ export interface ChecklistItemsView {
     checked: boolean;
     deleted: boolean;
 }
+export interface ChecklistItemFieldsView {
+    description: boolean;
+    priority: boolean;
+    dueDate: boolean;
+    createdAt: boolean;
+    createdBy: boolean;
+    updatedAt: boolean;
+    updatedBy: boolean;
+}
 export interface ChecklistPreferences {
     currentSort: ChecklistSort;
     sortDirection?: 'asc' | 'desc';
     itemsView: ChecklistItemsView;
+    itemFieldsView: ChecklistItemFieldsView;
     groupBy?: GroupByConfig<any>;
 }
 
@@ -29,6 +39,15 @@ export default class ChecklistLayout {
             createNew: true,
             checked: true,
             deleted: false
+        },
+        itemFieldsView: {
+            description: true,
+            priority: true,
+            dueDate: true,
+            createdAt: false,
+            createdBy: false,
+            updatedAt: false,
+            updatedBy: false
         },
         groupBy: undefined
     });
@@ -59,6 +78,34 @@ export default class ChecklistLayout {
 
     get showDeleted() {
         return this.preferences.itemsView.deleted;
+    }
+
+    get showDescription() {
+        return this.preferences.itemFieldsView.description;
+    }
+
+    get showPriority() {
+        return this.preferences.itemFieldsView.priority;
+    }
+
+    get showDueDate() {
+        return this.preferences.itemFieldsView.dueDate;
+    }
+
+    get showCreatedAt() {
+        return this.preferences.itemFieldsView.createdAt;
+    }
+
+    get showCreatedBy() {
+        return this.preferences.itemFieldsView.createdBy;
+    }
+
+    get showUpdatedAt() {
+        return this.preferences.itemFieldsView.updatedAt;
+    }
+
+    get showUpdatedBy() {
+        return this.preferences.itemFieldsView.updatedBy;
     }
 
     get groupBy() {
@@ -92,6 +139,34 @@ export default class ChecklistLayout {
         this.updateView('deleted', value);
     }
 
+    set showDescription(value: boolean) {
+        this.updateItemFieldView('description', value);
+    }
+
+    set showPriority(value: boolean) {
+        this.updateItemFieldView('priority', value);
+    }
+
+    set showDueDate(value: boolean) {
+        this.updateItemFieldView('dueDate', value);
+    }
+
+    set showCreatedAt(value: boolean) {
+        this.updateItemFieldView('createdAt', value);
+    }
+
+    set showCreatedBy(value: boolean) {
+        this.updateItemFieldView('createdBy', value);
+    }
+
+    set showUpdatedAt(value: boolean) {
+        this.updateItemFieldView('updatedAt', value);
+    }
+
+    set showUpdatedBy(value: boolean) {
+        this.updateItemFieldView('updatedBy', value);
+    }
+
     set groupBy(groupBy: GroupByConfig<any> | undefined) {
         this.updateGroupBy(groupBy);
     }
@@ -121,6 +196,12 @@ export default class ChecklistLayout {
 
     updateView(key: keyof typeof this.preferences.itemsView, pValue: boolean) {
         this.preferences.itemsView[key] = pValue;
+        this._onPreferenceUpdated(key, pValue);
+        this._saveToStorage();
+    }
+
+    updateItemFieldView(key: keyof ChecklistItemFieldsView, pValue: boolean) {
+        this.preferences.itemFieldsView[key] = pValue;
         this._onPreferenceUpdated(key, pValue);
         this._saveToStorage();
     }

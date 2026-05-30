@@ -115,7 +115,6 @@
                                     </div>
                                 </DropdownMenuTrigger>
                                 <AddChecklistItemLinkDropdownContent
-                                    v-model="newLink"
                                     @add-link="addLink"
                                     @cancel-create="addLinkDropdownOpen = false"
                                 />
@@ -146,7 +145,7 @@
                             >
                                 Add a description...
                             </div>
-                            <div v-else class="text-sm text-gray-600 hover:bg-gray-50 rounded-lg p-2cursor-pointer" @click="handleDescriptionClick">
+                            <div v-else class="text-sm text-gray-600 hover:bg-gray-50 rounded-lg p-2cursor-pointer min-h-[5rem]" @click="handleDescriptionClick">
                                 <div
                                     class="prose prose-sm
                                         prose-ul:list-disc prose-ul:list-inside prose-ul:pl-0
@@ -156,14 +155,22 @@
                             </div>
                         </div>
 
-                        <div class="flex flex-col">
+                        <div class="flex flex-col" v-if="checlistItemDs.links && checlistItemDs.links.data.length > 0">
                             <div class="flex justify-between items-center">
                                 <span class="font-medium">Links</span>
-                                <Button v-if="!isEditingDesc && props.checklistItem.description" variant="secondary" size="sm" @click="beginEditingDescription">
-                                    Add
-                                </Button>
+                                <DropdownMenu v-model:open="addLinkBtnDropdownOpen">
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="secondary" size="sm">
+                                            Add
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <AddChecklistItemLinkDropdownContent
+                                        @add-link="addLink"
+                                        @cancel-create="addLinkBtnDropdownOpen = false"
+                                    />
+                                </DropdownMenu>
                             </div>
-                            <div v-if="checlistItemDs.links && checlistItemDs.links.data.length > 0" class="flex flex-col mt-2 gap-2">
+                            <div class="flex flex-col gap-2 py-1">
                                 <ItemLink 
                                     v-for="link in checlistItemDs.links.data" 
                                     :key="link.id" 
@@ -256,15 +263,16 @@ const nameInput = ref(null);
 const isEditingDesc = ref<boolean>(false);
 const textEditorRef = ref(null);
 const addLinkDropdownOpen = ref<boolean>(false);
+const addLinkBtnDropdownOpen = ref<boolean>(false);
 
 const checlistItemDs = reactive({
     links: null as DataObject<any> | null
 });
 
-const newLink = ref({
-    url: '',
-    title: ''
-});
+// const newLink = ref({
+//     url: '',
+//     title: ''
+// });
 
 async function createDataObjects(id: number) {
     checlistItemDs.links = null;
@@ -320,11 +328,11 @@ function handleChecked(isChecked: boolean) {
     }, true);
 }
 
-async function addLink() {
+async function addLink(link: { url: string; title?: string }) {
     const { toast } = useToast();
 
     try {
-        if (!newLink.value.url) {
+        if (!link.url) {
             toast({
                 title: 'Could not add link.',
                 description: 'Please enter a URL.',
@@ -335,14 +343,13 @@ async function addLink() {
 
         await checlistItemDs.links?.insert({
             checklist_item_id: props.checklistItem.id,
-            url: newLink.value.url,
-            title: newLink.value.title
+            url: link.url,
+            title: link.title
         });
 
         addLinkDropdownOpen.value = false;
+        addLinkBtnDropdownOpen.value = false;
         toast({title: 'Link added!'});
-        newLink.value.url = '';
-        newLink.value.title = '';
     } catch (err) {
         console.error(err);
         toast({
@@ -401,11 +408,11 @@ function setNewColour(colour: string | null) {
 const show = async() => {
     isDialogOpen.value = true;
     isEditingDesc.value = false;
+    await createDataObjects(props.checklistItem.id);
     await nextTick();
     if (nameInput.value) {
         autoResize(nameInput.value);
     }
-    createDataObjects(props.checklistItem.id);
 }
 
 const close = () => {
