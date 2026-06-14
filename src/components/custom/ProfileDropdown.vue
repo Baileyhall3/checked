@@ -84,6 +84,6 @@ const router = useRouter();
 
 function logOut() {
     userStore.signOut();
-    router.push(`/`);
+    router.push(`/login`);
 }
 </script>

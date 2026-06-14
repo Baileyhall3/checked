@@ -4,6 +4,7 @@
         :src="user.profile_picture_url"
         :class="['rounded-full object-cover', sizeClasses]"
         alt="Profile image"
+        v-bind="$attrs"
     />
     <div
         v-else
@@ -13,6 +14,7 @@
             backgroundColor: user?.bg_colour ?? defaultColour
         }"
         aria-hidden="true"
+        v-bind="$attrs"
     >
         {{ initial }}
     </div>
@@ -22,10 +24,16 @@
 import { computed } from 'vue';
 import { DataObjectRecord } from 'supabase-dataobject-core';
 
+export type UserDisplayAvatarSize = 'xs' | 'sm' | 'md' | 'lg';
+
+defineOptions({
+    inheritAttrs: false
+});
+
 const props = withDefaults(
     defineProps<{
         user?: DataObjectRecord | null;
-        size?: 'xs' | 'sm' | 'md' | 'lg';
+        size?: UserDisplayAvatarSize;
     }>(),
     {
         size: 'md'

@@ -14,12 +14,12 @@
             />
             <div class="flex flex-col w-full">
                 <div class="flex justify-between items-center">
-                    <RouterLink :to="notifRoute" class="hover:underline">
+                    <RouterLink :to="notifRoute" class="hover:underline" @click="dropdownOpen = false">
                         <span class="font-semibold text-sm">
                             {{ formatNotifType(notif.type) }}
                         </span>
                     </RouterLink>
-                    <DropdownMenu v-if="!props.hideDropdown">
+                    <DropdownMenu v-if="!props.hideDropdown" :open="dropdownOpen" @update:open="dropdownOpen = $event">
                         <DropdownMenuTrigger asChild>
                             <Button
                                 size="icon"
@@ -105,7 +105,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Ellipsis, BellOff, Trash, Bell, SquareX, SquareCheck } from 'lucide-vue-next';
 import { useToast } from '@/components/ui/toast';
-import { computed, watch } from 'vue';
+import { computed, watch, ref } from 'vue';
 import { formatNotifType } from '@/utils/shared';
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -126,7 +126,9 @@ watch(() => props.allowSelection, (newValue) => {
     if (newValue == false) {
         isSelected.value = false;
     }
-})
+});
+
+const dropdownOpen = ref(false);
 
 const { toast } = useToast();
 
@@ -146,9 +148,13 @@ function handleSelected(newValue: boolean) {
 }
 
 function formatNotifData(data: any, type: string) {
-    if (type === 'friend_request_accepted') {
+    if (type === 'user_sent_friend_request') {
         if (data.actor_name) {
             return `<strong>${data.actor_name}</strong> sent you a friend request.`;
+        }
+    } else if (type === 'friend_request_accepted') {
+        if (data.actor_name) {
+            return `<strong>${data.actor_name}</strong> accepted your friend request.`;
         }
     } else if (type === 'checklist_item_checked') {
         if (data.checked_by) {

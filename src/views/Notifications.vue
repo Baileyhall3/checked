@@ -39,7 +39,7 @@
                 </BlurredHeader>
                 <MainContent>
                     <div class="h-full overflow-auto">
-                        <Tabs ref="notificationTabs" v-model="activeTab" defaultValue="tab-unread" class="items-center w-full" @update:model-value="handleTabSwitch">
+                        <Tabs ref="notificationTabs" v-model="activeTab" defaultValue="tab-unread" class="items-center w-full gap-4" @update:model-value="handleTabSwitch">
                             <TabsList class="bg-gray-200 w-full">
                                 <TabsTrigger value="tab-unread">Unread</TabsTrigger>
                                 <TabsTrigger value="tab-read">Read</TabsTrigger>

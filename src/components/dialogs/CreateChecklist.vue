@@ -29,6 +29,7 @@
                         {{ errors.username }}
                     </p> -->
                 </div>
+
                 <div class="*:not-first:mt-2" v-if="!props.folder">
                     <Label for="checklistFolder">Folder</Label>
                     <div class="select-input">
@@ -53,6 +54,38 @@
                         </Select>
                     </div>
                 </div>
+
+                <div class="*:not-first:mt-2">
+                    <Label for="checklistMembers">Checklist Members</Label>
+                    <div class="select-input">
+                      <Select multiple class="select-input" v-model="checklistData.checklistMembers" :disabled="dataSources.userFriends?.data.length == 0">
+                        <SelectTrigger id="checklistMembers" class="relative ps-9 rounded-lg">
+                            <div
+                                class="text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 group-has-[select[disabled]]:opacity-50"
+                            >
+                                <Users class="h-4 w-4" aria-hidden="true" />
+                            </div>
+                            <SelectValue placeholder="Select members">
+                              <template v-if="checklistData.checklistMembers.length > 0">
+                                <div v-for="member in checklistData.checklistMembers" :key="member.id" class="flex items-center">
+                                  <UserDisplayAvatar :user="member" class="mr-1" size="sm" data-select-ignore />
+                                  {{ member.username }}
+                                </div>
+                              </template>
+                            </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <template v-for="friend in dataSources.userFriends?.data" :key="friend.id">
+                              <SelectItem :value="friend" itemTextClass="flex items-center" :text-value="friend.username">
+                                <UserDisplayAvatar :user="friend" class="mr-1" size="sm" data-select-ignore />
+                                {{ friend.username }}
+                              </SelectItem>
+                            </template>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                </div>
+
                 <div class="items-top flex gap-x-2 pb-4 mt-2">
                     <Checkbox id="isTemplate" v-model="checklistData.redirect" />
                     <div class="grid gap-1.5 leading-none">
@@ -73,7 +106,7 @@
                 <DialogClose asChild>
                     <Button type="button" variant="secondary" class="border">Cancel</Button>
                 </DialogClose>
-                <Button type="button" :disabled="isCreating" @click="createChecklist()">
+                <Button type="button" :disabled="isCreating || !canCreateChecklist" @click="createChecklist()">
                   <Spinner v-if="isCreating" />
                   Create
                 </Button>
@@ -93,7 +126,6 @@ import {
     DialogFooter,
     DialogClose
 } from "@/components/ui/dialog";
-import { ComboboxAnchor, ComboboxContent, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxItemIndicator, ComboboxLabel, ComboboxRoot, ComboboxTrigger, ComboboxViewport, TagsInputInput, TagsInputItem, TagsInputItemDelete, TagsInputItemText, TagsInputRoot, useFilter } from 'reka-ui'
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -101,10 +133,11 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectItemText,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Folder } from "lucide-vue-next";
+import { Folder, Users } from "lucide-vue-next";
 import { computed, ref, watch, reactive } from 'vue';
 import { supabase } from "@/api/supabase";
 import { userStore } from "@/store/userStore";
@@ -113,6 +146,8 @@ import { useToast } from "@/components/ui/toast/use-toast";
 import { dataSources } from "@/api/dataObjects";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useRouter } from "vue-router";
+import UserDisplayAvatar from "../custom/UI/UserDisplayAvatar.vue";
+import { DataObjectRecord } from "supabase-dataobject-core";
 
 interface ChecklistMember {
     id: number;
@@ -126,6 +161,7 @@ interface ChecklistFolder {
 
 const props = defineProps<{
   folder?: ChecklistFolder;
+  members?: DataObjectRecord<any>[];
 }>();
 
 const emit = defineEmits<{
@@ -144,19 +180,11 @@ const checklistData = reactive({
 const isCreating = ref<boolean>(false);
 const isDialogOpen = ref<boolean>(false);
 
+const canCreateChecklist = computed(() => {
+  return checklistData.name.trim() !== '';
+});
+
 const router = useRouter();
-
-const { contains } = useFilter({ sensitivity: 'base' })
-
-const query = ref('')
-const values = ref(['Apple'])
-const options = ['Apple', 'Banana', 'Blueberry', 'Grapes', 'Pineapple']
-
-const filteredOptions = computed(() => options.filter(option => contains(option, query.value) && !values.value.includes(option)))
-
-watch(values, () => {
-  query.value = ''
-}, { deep: true })
 
 async function createChecklist() {
   const { toast } = useToast();
@@ -173,12 +201,14 @@ async function createChecklist() {
       return; 
     }
 
+    const memberIds = checklistData.checklistMembers.map((member: DataObjectRecord<any>) => member.friend_user_id);
+
     const { data, error } = await supabase.rpc('create_checklist', {
       p_name: checklistData.name,
       p_folder_id: props.folder?.id ?? checklistData.folder_id,
       p_owner_id: checklistData.owner_id,
       p_is_template: false,
-      p_member_ids: checklistData.checklistMembers
+      p_member_ids: memberIds
     });
 
     if (error) {
@@ -215,6 +245,9 @@ function resetChecklistData() {
 }
 
 const show = () => {
+  if (props.members && props.members.length > 0) {
+    checklistData.checklistMembers = props.members;
+  }
   isDialogOpen.value = true;
 }
 

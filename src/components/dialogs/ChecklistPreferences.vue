@@ -173,6 +173,7 @@ function handleOpenUpdated(newVal: boolean) {
         preferenceDs.checklist = null;
     }
 }
+
 async function handleUpdate(pref: DataObjectRecord<any>, newVal: boolean, isEmail = false) {
     const { toast } = useToast(); 
     try {

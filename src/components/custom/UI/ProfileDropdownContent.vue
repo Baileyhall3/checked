@@ -22,10 +22,12 @@
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-            <DropdownMenuItem class="cursor-pointer">
-                <Users class="size-4" aria-hidden="true" />
-                Friends
-            </DropdownMenuItem>
+            <RouterLink to="/friends">
+                <DropdownMenuItem class="cursor-pointer">
+                    <Users class="size-4" aria-hidden="true" />
+                    Friends
+                </DropdownMenuItem>
+            </RouterLink>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem class="cursor-pointer" @click="logOut">
@@ -53,6 +55,6 @@ const router = useRouter();
 
 function logOut() {
     userStore.signOut();
-    router.push(`/`);
+    router.push(`/login`);
 }
 </script>

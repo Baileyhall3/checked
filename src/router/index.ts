@@ -7,6 +7,7 @@ import UserProfile from '@/views/UserProfile.vue';
 import DeletedItems from '@/views/DeletedItems.vue';
 import Notifications from '@/views/Notifications.vue';
 import Preferences from '@/views/Preferences.vue';
+import Friends from '@/views/Friends.vue';
 
 import MainLayout from '@/layouts/MainLayout.vue';
 
@@ -84,6 +85,14 @@ const routes: Array<RouteRecordRaw> = [
         component: Preferences,
         meta: {
           title: 'Preferences',
+        },
+      },
+      {
+        path: 'friends',
+        name: 'Friends',
+        component: Friends,
+        meta: {
+          title: 'Friends',
         },
       },
       {

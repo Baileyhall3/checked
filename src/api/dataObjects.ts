@@ -45,14 +45,14 @@ export const dataSources = reactive({
     themes: null as DataObject | null,
     readNotifications: null as DataObject | null,
     unreadNotifications: null as DataObject | null,
-    globalNotificationPreferences: null as DataObject | null
+    globalNotificationPreferences: null as DataObject | null,
+    userFriends: null as DataObject | null,
 });
 
 /**
  * Initializes all data objects to be used within the app. 
  * MUST stay in the current order, due to master-child bindings
- * @param url 
- * @param key 
+ * @param supabase 
  * @param currentUserId 
  */
 export async function initDataObjects(supabase: SupabaseClient, currentUserId: number) {
@@ -208,6 +208,26 @@ export async function initDataObjects(supabase: SupabaseClient, currentUserId: n
         ]
     });
 
+    dataSources.userFriends = await createDataObject('userFriends', {
+        viewName: 'friends_view',
+        tableName: 'friends',
+        fields: friendFields,
+        canInsert: false,
+        canUpdate: true,
+        canDelete: true,
+        masterDataObjectBinding: {
+            masterDataObjectId: 'user',
+            childBindingField: 'owner_user_id',
+            masterBindingField: 'id'
+        },
+        sort: [
+            { field: 'created_at', direction: 'desc'}
+        ],
+        whereClauses: [
+            { field: 'status', operator: 'equals', value: 'accepted' }
+        ]
+    });
+
     console.log('data sources: ', dataSources);
 }
 
@@ -350,4 +370,16 @@ export const notificationPreferencesFields: DataObjectField[] = [
     { name: "supports_push" },
     { name: "allow_push" },
     { name: "allow_email" },
+]
+
+export const friendFields: DataObjectField[] = [
+    { name: "id" },
+    { name: "owner_user_id" },
+    { name: "friend_user_id" },
+    { name: "username" },
+    { name: "profile_picture_url" },
+    { name: "bg_colour" },
+    { name: "created_at" },
+    { name: "status" },
+    { name: "created_by_id" }
 ]

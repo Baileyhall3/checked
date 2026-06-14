@@ -12,7 +12,7 @@ import {
 } from "reka-ui"
 import { cn } from "@/lib/utils"
 
-const props = defineProps<SelectItemProps & { class?: HTMLAttributes["class"] }>()
+const props = defineProps<SelectItemProps & { class?: HTMLAttributes["class"] } & { itemTextClass?: HTMLAttributes["class"] }>()
 
 const delegatedProps = reactiveOmit(props, "class")
 
@@ -35,7 +35,7 @@ const forwardedProps = useForwardProps(delegatedProps)
       </SelectItemIndicator>
     </span>
 
-    <SelectItemText>
+    <SelectItemText :class="props.itemTextClass">
       <slot />
     </SelectItemText>
   </SelectItem>
