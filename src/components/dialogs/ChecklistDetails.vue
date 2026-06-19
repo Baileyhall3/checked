@@ -1,5 +1,5 @@
 <template>
-    <Dialog v-model:open="isDialogOpen" @update:open="handleOpenUpdated">
+    <Dialog v-model:open="isDialogOpen">
         <DialogContent class="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
             <DialogHeader class="contents space-y-0 text-left">
                 <DialogTitle class="border-b px-6 py-4 text-base">
@@ -60,26 +60,6 @@
                             </button>
                         </div>
                     </div> -->
-                    
-                    <div class="flex flex-col pb-4">
-                        <span class="font-medium">Members</span>
-                        <div class="bg-gray-100 p-2 rounded-md">
-                            <div v-if="checklistDs.members?.data?.length > 0" class="flex flex-col gap-2">
-                                <UserCard
-                                    v-for="member in checklistDs.members?.data"
-                                    :key="member.id"
-                                    :user="member"
-                                >
-                                    <template #subtext="{ user }">
-                                        <p class="text-sm text-muted-foreground">
-                                            {{ user.role }}
-                                        </p>
-                                    </template>
-                                </UserCard>
-                            </div>
-                            <p v-else class="text-sm text-muted-foreground mt-2">No members found.</p>
-                        </div>
-                    </div>
                     <div class="flex flex-col pb-4">
                         <span class="font-medium">Owner</span>
                         <p class="text-sm text-muted-foreground">{{ props.checklist.owner_username }}</p>
@@ -151,44 +131,6 @@ const isDialogOpen = ref<boolean>(false);
 const isSaving = ref<boolean>(false);
 const isLoading = ref<boolean>(false);
 
-async function createDataObjects() {
-    checklistDs.members = null;
-    dataSources.manager?.removeDataObject('checklistMembers');
-
-    try {
-        isLoading.value = true;
-
-        const preferencesData = await createDataObject('checklistMembers', {
-            viewName: 'checklist_members_view',
-            tableName: 'checklist_members',
-            canInsert: true,
-            canUpdate: true,
-            canDelete: true,
-            whereClauses: [
-                { field: 'checklist_id', operator: 'equals', value: props.checklist.id }
-            ],
-            fields: [
-                { name: "id" },
-                { name: "checklist_id" },
-                { name: "user_id" },
-                { name: "username" },
-                { name: "role" },
-                { name: "added_at" },
-                { name: "owner_id" },
-                { name: "owner" },
-                { name: "profile_picture_url" },
-                { name: "bg_colour" },
-            ]
-        }); 
-
-        checklistDs.members = preferencesData;
-    } catch (err) {
-        console.error(err);
-    } finally {
-        isLoading.value = false;
-    }
-}
-
 async function saveChanges() {
     try {
         isSaving.value = true;
@@ -201,17 +143,7 @@ async function saveChanges() {
     }
 }
 
-function handleOpenUpdated(newVal: boolean) {
-    if (newVal == true) {
-        createDataObjects();
-    } else {
-        dataSources.manager?.removeDataObject('checklistMembers');
-        checklistDs.members = null;
-    }
-}
-
 const show = () => {
-    createDataObjects();
     isDialogOpen.value = true;
 }
 

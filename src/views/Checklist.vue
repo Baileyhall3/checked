@@ -32,7 +32,7 @@
                                     redirectOnDelete
                                 >
                                     <template #additionalActionItems>
-                                        <DropdownMenuItem class="cursor-pointer" @click="$refs.importItemsDialog?.show()">
+                                        <DropdownMenuItem v-if="canEdit" class="cursor-pointer" @click="$refs.importItemsDialog?.show()">
                                             <Import class="size-4 opacity-60" aria-hidden="true" />
                                             Import Items
                                         </DropdownMenuItem>
@@ -46,8 +46,8 @@
                         </template>
                     </BlurredHeader>
                     <MainContent>
-                        <div class="w-full flex mb-4">
-                            <SearchBar @search-entered="handleSearchQuery" />
+                        <div class="w-full flex mb-4 justify-between">
+                            <SearchBar @search-entered="handleSearchQuery" animateSearch />
                             <ButtonGroup>
                                 <ButtonGroup class="ml-3">
                                     <DropdownMenu>
@@ -194,7 +194,7 @@
 
                             <!-- Add New Item Input -->
                             <transition name="fade-slide">
-                                <div v-if="checklistState.preferences.itemsView.createNew && !checklistDs.checklist.currentRecord?.deleted_at && !allowSelection" class="pb-4">
+                                <div v-if="checklistDs.checklistItems?.options.canInsert && checklistState.preferences.itemsView.createNew && !checklistDs.checklist.currentRecord?.deleted_at && !allowSelection" class="pb-4">
                                     <AddItem v-model="newItemName" @add-clicked="addItem" @finished-voice-recording="createVoiceChecklistItem" />
                                 </div>
                             </transition>
@@ -297,6 +297,7 @@
                              <div class="flex flex-col gap-3" ref="checklistEl">
                                 <ChecklistItem 
                                     v-for="(item, index) in checklistDs.checklistItems?.data" :key="item.id"
+                                    :disabled="!checklistDs.checklistItems?.options.canUpdate"
                                     :item="item" 
                                     :checklistData="checklistDs.checklistItems" 
                                     :allowSelection="allowSelection"
@@ -406,6 +407,7 @@ import ProgressBar from '@/components/custom/UI/ProgressBar.vue';
 import { Checkbox } from "@/components/ui/checkbox";
 import ImportItems from '@/components/dialogs/ImportItems.vue';
 import { useWindowSize } from "@vueuse/core";
+import { userStore } from '@/store/userStore';
 
 const route = useRoute();
 const router = useRouter();
@@ -414,7 +416,8 @@ const enterPinDialog = ref();
 const sortableInstance = ref<Sortable | null>(null)
 const checklistEl = ref<HTMLElement | null>(null)
 const allowSelection = ref<boolean>(false);
-const selectedItemIds = ref<Set<number>>(new Set())
+const selectedItemIds = ref<Set<number>>(new Set());
+const canEdit = ref<boolean>(false);
 
 const isLoading = ref<boolean>(true);
 const { toast } = useToast();
@@ -461,7 +464,8 @@ const isIndeterminate = computed(() =>
 const checklistDs = reactive({
     checklist: null as DataObject<any> | null,
     checklistItems: null as DataObject<any> | null,
-    folderChecklistsLkp: null as DataObject<any> | null
+    folderChecklistsLkp: null as DataObject<any> | null,
+    checklistMembers: null as DataObject<any> | null
 });
 
 // const totalCount = computed(() => checklistDs.checklist?.currentRecord?.items_count || 0);
@@ -580,8 +584,10 @@ async function createDataObjects(id: number) {
             recordLimit: 1
         }); 
 
-        if (checklistData?.data.length) {
-            checklistDs.checklist = checklistData;
+        checklistDs.checklist = checklistData;
+        if (checklistData?.data.length == 0) {
+            isLoading.value = false;
+            return;
         }
 
         if (checklistDs.checklist?.currentRecord?.pin_protected_at) {
@@ -599,6 +605,36 @@ async function createDataObjects(id: number) {
 async function initOthersDs() {
     try {
         isLoading.value = true;
+        checklistDs.checklistMembers = await createDataObject('checklist_members', {
+            viewName: 'checklist_members_view',
+            tableName: 'checklist_members',
+            canInsert: true,
+            canUpdate: true,
+            canDelete: true,
+            masterDataObjectBinding: {
+                masterDataObjectId: 'checklist',
+                childBindingField: 'checklist_id',
+                masterBindingField: 'id'
+            },
+            fields: [
+                { name: "id" },
+                { name: "checklist_id" },
+                { name: "user_id" },
+                { name: "username" },
+                { name: "role" },
+                { name: "added_at" },
+                { name: "owner_id" },
+                { name: "owner" },
+                { name: "profile_picture_url" },
+                { name: "bg_colour" },
+            ]
+        }); 
+
+        const currentUserMember = checklistDs.checklistMembers?.data.find((m: any) => m.user_id === userStore.userProfile?.id);
+        if (currentUserMember) {
+            canEdit.value = currentUserMember.role === 'owner' || currentUserMember.role === 'editor';
+        }
+
         if (checklistDs.checklist?.currentRecord?.folder_name) {
             checklistDs.folderChecklistsLkp = await createDataObject('folder_checklists_lkp', {
                 viewName: 'checklists_view',
@@ -626,9 +662,9 @@ async function initOthersDs() {
         checklistDs.checklistItems = await createDataObject('checklist_items', {
             viewName: 'checklist_items_view',
             tableName: 'checklist_items',
-            canInsert: true,
-            canUpdate: true,
-            canDelete: true,
+            canInsert: canEdit.value,
+            canUpdate: canEdit.value,
+            canDelete: canEdit.value,
             whereClauses: checklistState.whereClauses,
             masterDataObjectBinding: {
                 masterDataObjectId: 'checklist',
@@ -639,8 +675,6 @@ async function initOthersDs() {
             fields: checklistItemsFields,
             allowedBuckets: ['checklist-item-voice-notes']
         }); 
-
-        console.log('dataaaa ', checklistDs.checklist)
     } catch (err) {
         console.error(err);
     } finally {
@@ -896,6 +930,7 @@ onIonViewDidLeave(() => {
     dataSources.manager?.removeDataObject('checklist');
     dataSources.manager?.removeDataObject('checklist_items');
     dataSources.manager?.removeDataObject('folder_checklists_lkp')
+    dataSources.manager?.removeDataObject('checklist_members');
     checklistDs.checklist = null;
     checklistDs.checklistItems = null;
     checklistDs.folderChecklistsLkp = null;

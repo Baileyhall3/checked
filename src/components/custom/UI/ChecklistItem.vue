@@ -4,6 +4,7 @@
             <Checkbox 
                 id="isSelected" 
                 :model-value="isSelected"
+                :disabled="props.disabled"
                 @update:model-value="handleSelected" 
             />
         </div>
@@ -12,7 +13,7 @@
                 transition-colors duration-150 border focus:outline-none focus:ring-2 focus:ring-indigo-400 select-none"
             :class="{ 
                 'ring-2 ring-indigo-400' :  isHovered || menuOpen || isSelected,
-                'opacity-50' : itemIsDisabled,
+                'opacity-50' : itemIsLocked,
             }"
             :style="{ '--item-colour': item.bg_colour }"
             @mouseenter="isHovered = true"
@@ -23,7 +24,7 @@
         >
             <div class="grid grid-cols-[auto_1fr_auto] gap-4 w-full items-start">
                 <div class="mt-1 flex flex-col justify-center gap-y-2">
-                    <template v-if="itemIsDisabled">
+                    <template v-if="itemIsLocked">
                         <Trash 
                             v-if="item.deleted_at || item.checklist_is_deleted" 
                             class="w-5 h-5 text-red-600"
@@ -37,10 +38,11 @@
                     </template>
                     <Checkbox
                         v-else
+                        v-model="item.is_checked"
                         :style="{ 'background-color': item.is_checked ? '#00bc7d' : 'transparent'}"
                         :class="{ 'border border-gray-400 !border-solid' : !item.is_checked }"
                         class="rounded-full"
-                        v-model="item.is_checked"
+                        :disabled="props.disabled"
                         @update:model-value="handleChecked"
                     />
                     <!-- <span>{{ props.item.sort_order }}</span> -->
@@ -66,6 +68,7 @@
                                 'text-gray-700' : item.deleted_at || item.is_checked, 
                                 'text-gray-900' : !item.deleted_at && !item.is_checked 
                             }"
+                            :disabled="props.disabled"
                             @blur="props.checklistData.saveChanges()"
                             @input="autoResize"
                             :rows="1"
@@ -171,6 +174,7 @@
         ref="itemDetailsDialog" 
         :checklist-item="item" 
         :data-object="props.checklistData" 
+        :disabled="props.disabled"
     />
 </template>
 
@@ -232,7 +236,7 @@ const itemDetailsDialog = ref();
 const nameInput = ref(null);
 const isDragging = ref(false);
 const isDraggable = computed(() => {
-    return !itemIsDisabled.value;
+    return !itemIsLocked.value;
 });
 
 const { width } = useWindowSize();
@@ -246,7 +250,7 @@ const doShowCreatedUpdated = computed(() => {
     return props.fieldsView?.createdAt || props.fieldsView?.createdBy || props.fieldsView?.updatedAt || props.fieldsView?.updatedBy;
 });
 
-const itemIsDisabled = computed((): boolean => {
+const itemIsLocked = computed((): boolean => {
     return props.item.deleted_at || props.item.locked_at || props.item.checklist_is_deleted ? true : false;
 });
 

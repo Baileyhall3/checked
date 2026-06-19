@@ -317,6 +317,7 @@ export const checklistFields: DataObjectField[] = [
     { name: "theme_id" },
     { name: "theme" },
     { name: "theme_config" },
+    { name: "is_member" }
 ]
 
 export const folderFields: DataObjectField[] = [

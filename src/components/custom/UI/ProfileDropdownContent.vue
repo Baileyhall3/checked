@@ -21,15 +21,15 @@
             </RouterLink>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuGroup>
+        <!-- <DropdownMenuGroup>
             <RouterLink to="/friends">
                 <DropdownMenuItem class="cursor-pointer">
                     <Users class="size-4" aria-hidden="true" />
                     Friends
                 </DropdownMenuItem>
             </RouterLink>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
+        </DropdownMenuGroup> -->
+        <!-- <DropdownMenuSeparator /> -->
         <DropdownMenuItem class="cursor-pointer" @click="logOut">
             <LogOut class="size-4" aria-hidden="true" />
             Log out

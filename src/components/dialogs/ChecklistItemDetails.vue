@@ -13,6 +13,7 @@
                                 :class="{ 'border border-gray-400 !border-solid' : !props.checklistItem.is_checked }"
                                 class="rounded-full mr-2 mt-1"
                                 v-model="props.checklistItem.is_checked"
+                                :disabled="props.disabled"
                                 @update:model-value="handleChecked"
                             />
                             <div class="w-full pe-4 font-semibold tracking-tight">
@@ -24,6 +25,7 @@
                                         'text-gray-700' : props.checklistItem.deleted_at || props.checklistItem.is_checked, 
                                         'text-gray-900' : !props.checklistItem.deleted_at && !props.checklistItem.is_checked 
                                     }"
+                                    :disabled="props.disabled"
                                     :rows="1"
                                     @input="autoResize"
                                     @blur="props.dataObject.saveChanges()"
@@ -32,7 +34,7 @@
                         </div>
                     </div>
                     <div class="px-4 py-0.5">
-                        <DropdownMenu>
+                        <DropdownMenu v-if="!props.disabled">
                             <DropdownMenuTrigger asChild>
                                 <Button
                                     size="icon"
@@ -72,17 +74,20 @@
                                 :locked-by="props.checklistItem.locked_by_username"
                             /> -->
                             <PriorityLabel 
+                                v-if="props.checklistItem.priority || !props.disabled"
                                 v-model:priority="props.checklistItem.priority" 
+                                :disabled="props.disabled"
                                 @update:priority="props.checklistItem.save()" 
                             />
                             <DueDate 
+                                v-if="props.checklistItem.due_date || !props.disabled"
                                 v-model="props.checklistItem.due_date" 
                                 showTime 
-                                editable 
+                                :editable="!props.disabled"
                                 :is-complete="props.checklistItem.is_checked"
                                 @update:model-value="props.checklistItem.save()" 
                             />
-                            <DropdownMenu>
+                            <DropdownMenu v-if="!props.disabled">
                                 <DropdownMenuTrigger asChild>
                                     <div class="flex items-center gap-2 rounded-lg px-1 py-0.5 border bg-gray-100 text-sm cursor-pointer hover:bg-gray-200">
                                         <button
@@ -107,7 +112,7 @@
                                 <ColoursDropdown :current-colour="props.checklistItem.bg_colour" allowClear @colour-selected="setNewColour" />
                             </DropdownMenu>
 
-                            <DropdownMenu v-model:open="addLinkDropdownOpen">
+                            <DropdownMenu v-model:open="addLinkDropdownOpen" v-if="!props.disabled">
                                 <DropdownMenuTrigger asChild>
                                     <div class="flex items-center gap-2 rounded-lg px-1 py-0.5 border bg-gray-100 text-sm cursor-pointer hover:bg-gray-200">
                                         <Link class="size-4 opacity-50" />
@@ -124,7 +129,7 @@
                         <div class="flex flex-col">
                             <div class="flex justify-between items-center">
                                 <span class="font-medium">Description</span>
-                                <Button v-if="!isEditingDesc && props.checklistItem.description" variant="secondary" size="sm" @click="beginEditingDescription">
+                                <Button v-if="!isEditingDesc && props.checklistItem.description && !props.disabled" variant="secondary" size="sm" @click="beginEditingDescription">
                                     Edit
                                 </Button>
                             </div>
@@ -139,13 +144,13 @@
                                     </Button>
                                 </div>
                             </template>
-                            <div v-else-if="!props.checklistItem.description"
+                            <div v-else-if="!props.checklistItem.description && !props.disabled"
                                 class="text-sm text-gray-600 border border-gray-300 rounded-lg p-2 bg-white hover:bg-gray-100 min-h-[5rem] cursor-pointer"
                                 @click="beginEditingDescription"
                             >
                                 Add a description...
                             </div>
-                            <div v-else class="text-sm text-gray-600 hover:bg-gray-50 rounded-lg p-2cursor-pointer min-h-[5rem]" @click="handleDescriptionClick">
+                            <div v-else-if="props.checklistItem.description" class="text-sm text-gray-600 hover:bg-gray-50 rounded-lg p-2cursor-pointer min-h-[5rem]" @click="handleDescriptionClick">
                                 <div
                                     class="prose prose-sm
                                         prose-ul:list-disc prose-ul:list-inside prose-ul:pl-0
@@ -158,7 +163,7 @@
                         <div class="flex flex-col" v-if="checlistItemDs.links && checlistItemDs.links.data.length > 0">
                             <div class="flex justify-between items-center">
                                 <span class="font-medium">Links</span>
-                                <DropdownMenu v-model:open="addLinkBtnDropdownOpen">
+                                <DropdownMenu v-model:open="addLinkBtnDropdownOpen" v-if="!props.disabled">
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="secondary" size="sm">
                                             Add
@@ -253,7 +258,8 @@ import AddChecklistItemLinkDropdownContent from '../custom/UI/AddChecklistItemLi
 
 const props = defineProps<{
     checklistItem: DataObjectRecord;
-    dataObject: DataObject
+    dataObject: DataObject;
+    disabled?: boolean;
 }>();
 
 const isDialogOpen = ref<boolean>(false);

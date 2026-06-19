@@ -1,5 +1,5 @@
 <template>
-    <RoundedContainer class="p-2">
+    <RoundedContainer class="p-2" :class="props.containerClass">
         <div :class="props.userRowClass">
             <div class="flex items-center gap-4">
                 <UserDisplayAvatar :user="props.user" :size="props.avatarSize" />
@@ -28,5 +28,6 @@ const props = defineProps<{
     user: DataRecord<any>;
     userRowClass?: HTMLAttributes['class'];
     avatarSize?: UserDisplayAvatarSize;
+    containerClass?: HTMLAttributes['class'];
 }>();
 </script>

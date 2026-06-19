@@ -9,12 +9,12 @@
             </AlertDialogHeader>
             <slot></slot>
             <AlertDialogFooter>
-                <AlertDialogCancel @click="emit('cancelled')">
+                <AlertDialogCancel @click.prevent="resolveConfirm(false)">
                     {{ props.cancelText }}
                 </AlertDialogCancel>
                 <AlertDialogAction 
                     :class="{ 'bg-red-600' : props.confirmType === 'delete' }"
-                    @click="emit('confirmed')"
+                    @click.prevent="resolveConfirm(true)"
                 >
                     {{ props.confirmText }}
                 </AlertDialogAction>
@@ -33,9 +33,9 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { ref } from 'vue';
+import { Button } from "@/components/ui/button";
 
 type ConfirmButtonType = 'default' | 'delete'
 
@@ -58,6 +58,7 @@ const emit = defineEmits<{
 }>();
 
 const isDialogOpen = ref<boolean>(false);
+let resolver: ((value: boolean) => void) | null = null;
 
 const show = () => {
     isDialogOpen.value = true;
@@ -67,5 +68,19 @@ const close = () => {
     isDialogOpen.value = false;
 }
 
-defineExpose({show, close})
+const confirm = (): Promise<boolean> => {
+    isDialogOpen.value = true;
+    return new Promise((resolve) => {
+        resolver = resolve;
+    });
+};
+
+const resolveConfirm = (value: boolean) => {
+    emit(value ? 'confirmed' : 'cancelled');
+    isDialogOpen.value = false;
+    resolver?.(value);
+    resolver = null;
+};
+
+defineExpose({show, close, confirm });
 </script>

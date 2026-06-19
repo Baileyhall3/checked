@@ -5,6 +5,10 @@
                 <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
                 Details
             </DropdownMenuItem>
+            <DropdownMenuItem class="cursor-pointer" @click="$refs.checklistSharingDialog?.show()">
+                <UserPlus class="size-4 opacity-60" aria-hidden="true" />
+                Sharing
+            </DropdownMenuItem>
             <DropdownMenuItem class="cursor-pointer" @click="$refs.checklistPreferencesDialog?.show()">
                 <Settings2 class="size-4 opacity-60" aria-hidden="true" />
                 Preferences
@@ -98,11 +102,12 @@
     <CopyChecklist ref="copyChecklistDialog" :checklist="props.checklist" @checklist-copied="handleChecklistCopied" />
     <MoveChecklist ref="moveChecklistDialog" :checklist="props.checklist" :checklist-data="props.checklistData" />
     <ChecklistPreferences ref="checklistPreferencesDialog" :checklist="props.checklist" />
+    <ChecklistSharing ref="checklistSharingDialog" :checklist="props.checklist" :data-object="props.checklistData" />
 </template>
 
 <script setup lang="ts">
 import { DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
-import { TextAlignStart, Trash, RotateCcw, EyeOff, Eye, ListX, Share2, Copy, MoveLeft, Star, Settings2 } from "lucide-vue-next";
+import { TextAlignStart, Trash, RotateCcw, EyeOff, Eye, ListX, Share2, Copy, MoveLeft, Star, Settings2, UserPlus } from "lucide-vue-next";
 import { DataObject, DataObjectRecord } from 'supabase-dataobject-core';
 import ChecklistDetails from '@/components/dialogs/ChecklistDetails.vue';
 import Confirm from '@/components/dialogs/Confirm.vue';
@@ -115,6 +120,7 @@ import { dataSources } from '@/api/dataObjects';
 import MoveChecklist from "@/components/dialogs/MoveChecklist.vue";
 import { useRouter } from "vue-router";
 import ChecklistPreferences from "@/components/dialogs/ChecklistPreferences.vue";
+import ChecklistSharing from "@/components/dialogs/ChecklistSharing.vue";
 
 const props = defineProps<{
     checklist: DataObjectRecord;
