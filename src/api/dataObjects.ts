@@ -47,6 +47,7 @@ export const dataSources = reactive({
     unreadNotifications: null as DataObject | null,
     globalNotificationPreferences: null as DataObject | null,
     userFriends: null as DataObject | null,
+    sharedChecklists: null as DataObject | null,
 });
 
 /**
@@ -227,6 +228,17 @@ export async function initDataObjects(supabase: SupabaseClient, currentUserId: n
             { field: 'status', operator: 'equals', value: 'accepted' }
         ]
     });
+
+    dataSources.sharedChecklists = await createDataObject('sharedChecklists', {
+        viewName: 'checklists_view',
+        tableName: 'checklists',
+        sort: { field: "items_updated_at", direction: 'desc' },
+        whereClauses: [
+            { field: 'deleted_at', operator: 'isnull' },
+            { field: 'is_member', operator: 'equals', value: true }
+        ],
+        fields: checklistFields
+    }); 
 
     console.log('data sources: ', dataSources);
 }

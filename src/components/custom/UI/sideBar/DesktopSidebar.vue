@@ -1,10 +1,12 @@
 <template>
   <aside
     v-if="!sideBarState.isMobile"
-    class="flex-shrink-0 border-r bg-white transition-[width] duration-200  overflow-x-hidden"
+    class="flex-shrink-0 border-r bg-white h-screen overflow-hidden transition-all duration-300"
     :class="sideBarState.isSidebarOpen ? 'w-64' : 'w-0'"
   >
-    <SidebarContent />
+    <div class="w-64 h-full">
+      <SidebarContent />
+    </div>
   </aside>
 </template>
 

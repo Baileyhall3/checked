@@ -8,8 +8,12 @@ export const sideBarState = reactive({
     isSidebarOpen: false,
     isMobile: computed(() => width.value < 768),
     foldersExpanded: true,
+    sharedChecklistsExpanded: true,
     toggleFoldersExpanded: () => {
         sideBarState.foldersExpanded = !sideBarState.foldersExpanded
+    },
+    toggleSharedChecklistsExpanded: () => {
+        sideBarState.sharedChecklistsExpanded = !sideBarState.sharedChecklistsExpanded
     },
     hoveredItemKey: null,
     onTreeItemClick: (itemType) => {

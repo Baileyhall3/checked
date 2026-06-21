@@ -33,49 +33,57 @@
                 <Share2 class="size-4 opacity-60" aria-hidden="true" />
                 Share
             </DropdownMenuItem>
-            <DropdownMenuItem class="cursor-pointer" title="Move this checklist to another folder" @click="moveChecklistDialog.show()">
-                <MoveLeft class="size-4 opacity-60" aria-hidden="true" />
-                Move
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-                v-if="!checklist.pin_protected_at"
-                class="cursor-pointer" 
-                title="Locking this item will prevent people from updating it"
-                @click="pinSetupDialog.show()" 
-            >
-                <EyeOff class="size-4 opacity-60" aria-hidden="true" />
-                Set PIN
-            </DropdownMenuItem>
-            <DropdownMenuItem class="cursor-pointer" @click="pinRemoveDialog.show()" v-else>
-                <Eye class="size-4" aria-hidden="true" />
-                Remove PIN
-            </DropdownMenuItem>
+            
+            <template v-if="!props.readonly">
+                <DropdownMenuItem class="cursor-pointer" title="Move this checklist to another folder" @click="moveChecklistDialog.show()">
+                    <MoveLeft class="size-4 opacity-60" aria-hidden="true" />
+                    Move
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                    v-if="!checklist.pin_protected_at"
+                    class="cursor-pointer" 
+                    title="Locking this item will prevent people from updating it"
+                    @click="pinSetupDialog.show()" 
+                >
+                    <EyeOff class="size-4 opacity-60" aria-hidden="true" />
+                    Set PIN
+                </DropdownMenuItem>
+                <DropdownMenuItem class="cursor-pointer" @click="pinRemoveDialog.show()" v-else>
+                    <Eye class="size-4" aria-hidden="true" />
+                    Remove PIN
+                </DropdownMenuItem>
+            </template>
 
             <slot name="additionalActionItems" />
 
-            <DropdownMenuSeparator />
-            <DropdownMenuItem class="cursor-pointer">
-                <ListX class="size-4 opacity-60" aria-hidden="true" />
-                Deleted Items
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
+            <template v-if="!props.readonly">
+                <DropdownMenuSeparator />
+                <DropdownMenuItem class="cursor-pointer">
+                    <ListX class="size-4 opacity-60" aria-hidden="true" />
+                    Deleted Items
+                </DropdownMenuItem>
+            </template>
         </template>
-        <DropdownMenuItem class="cursor-pointer text-red-600" @click="confirmDialog.show()" v-if="!checklist.deleted_at">
-            <Trash class="size-4" aria-hidden="true" />
-            Delete
-        </DropdownMenuItem>
-        <template v-else>
-            <DropdownMenuItem class="cursor-pointer" @click="recoverItem()">
-                <RotateCcw class="size-4 opacity-60" aria-hidden="true" />
-                Recover
-            </DropdownMenuItem>
-            <DropdownMenuItem
-                class="cursor-pointer text-red-600"
-                @click="hardDeleteConfirmDialog.show()"
-            >
+
+        <template v-if="!props.readonly">
+            <DropdownMenuSeparator />
+            <DropdownMenuItem class="cursor-pointer text-red-600" @click="confirmDialog.show()" v-if="!checklist.deleted_at">
                 <Trash class="size-4" aria-hidden="true" />
-                Delete Permanently
+                Delete
             </DropdownMenuItem>
+            <template v-else>
+                <DropdownMenuItem class="cursor-pointer" @click="recoverItem()">
+                    <RotateCcw class="size-4 opacity-60" aria-hidden="true" />
+                    Recover
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                    class="cursor-pointer text-red-600"
+                    @click="hardDeleteConfirmDialog.show()"
+                >
+                    <Trash class="size-4" aria-hidden="true" />
+                    Delete Permanently
+                </DropdownMenuItem>
+            </template>
         </template>
     </DropdownMenuContent>
 
@@ -83,6 +91,7 @@
         ref="checklistDetailsDialog"
         :checklist="props.checklist"
         :data-object="props.checklistData"
+        :readonly="props.readonly"
     />
     <Confirm
         description="Are you sure you want to delete this checklist? Deleted checklists can be recovered for 30 days. Checklist items will not be editable."
@@ -102,7 +111,7 @@
     <CopyChecklist ref="copyChecklistDialog" :checklist="props.checklist" @checklist-copied="handleChecklistCopied" />
     <MoveChecklist ref="moveChecklistDialog" :checklist="props.checklist" :checklist-data="props.checklistData" />
     <ChecklistPreferences ref="checklistPreferencesDialog" :checklist="props.checklist" />
-    <ChecklistSharing ref="checklistSharingDialog" :checklist="props.checklist" :data-object="props.checklistData" />
+    <ChecklistSharing ref="checklistSharingDialog" :checklist="props.checklist" :data-object="props.checklistData" :readonly="props.readonly" />
 </template>
 
 <script setup lang="ts">
@@ -127,6 +136,7 @@ const props = defineProps<{
     checklistData: DataObject;
     label?: string;
     redirectOnDelete?: boolean;
+    readonly?: boolean;
 }>();
 
 const checklistDetailsDialog = ref();

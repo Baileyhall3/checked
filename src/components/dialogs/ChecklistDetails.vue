@@ -9,6 +9,7 @@
                                 v-model="props.checklist.name"
                                 type="text"
                                 class="flex-1 bg-transparent border-none focus:outline-none text-gray-800 w-full"
+                                :disabled="props.readonly"
                             />
                         </div>
                     </div>
@@ -18,7 +19,7 @@
             <template v-else>
                 <div class="px-6 pt-4 pb-6">
                     <div class="items-top flex gap-x-2 pb-4">
-                        <Checkbox id="isTemplate" v-model="props.checklist.is_template" />
+                        <Checkbox id="isTemplate" v-model="props.checklist.is_template" :disabled="props.readonly" />
                         <div class="grid gap-1.5 leading-none">
                             <label
                                 for="isTemplate"
@@ -112,15 +113,12 @@ import Textarea from '../ui/textarea/Textarea.vue';
 import DateUtils from '@/utils/DateUtils';
 import { Palette, Image } from 'lucide-vue-next';
 import { Checkbox } from "@/components/ui/checkbox"
-import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import ColoursDropdown from '../custom/UI/ColoursDropdown.vue';
 import Loading from "../custom/UI/Loading.vue";
-import { dataSources } from '@/api/dataObjects.js';
-import UserCard from '../custom/UI/UserCard.vue';
 
 const props = defineProps<{
-    checklist: DataObjectRecord;
-    dataObject: DataObject
+    checklist: DataObjectRecord<any>;
+    dataObject: DataObject;
+    readonly?: boolean;
 }>();
 
 const checklistDs = reactive({

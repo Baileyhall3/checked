@@ -30,6 +30,7 @@
                                     :checklist="checklistDs.checklist.currentRecord"
                                     :checklist-data="checklistDs.checklist"
                                     redirectOnDelete
+                                    :readonly="!isOwner"
                                 >
                                     <template #additionalActionItems>
                                         <DropdownMenuItem v-if="canEdit" class="cursor-pointer" @click="$refs.importItemsDialog?.show()">
@@ -40,6 +41,13 @@
                                             <Clipboard class="size-4 opacity-60" aria-hidden="true" />
                                             Copy to Clipboard
                                         </DropdownMenuItem>
+                                        <template v-if="!isOwner">
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem class="cursor-pointer" @click="leaveChecklist()">
+                                                <LogOut class="size-4 opacity-60" aria-hidden="true" />
+                                                Leave Checklist
+                                            </DropdownMenuItem>
+                                        </template>
                                     </template>
                                 </ChecklistDropdownContent>
                             </DropdownMenu>
@@ -364,7 +372,7 @@ import { reactive, ref, computed, watch, nextTick, onMounted } from 'vue';
 import { dataSources, checklistFields, checklistItemsFields } from '@/api/dataObjects';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast/use-toast";
-import { X, ArrowUpDown, Check, Ellipsis, SlidersHorizontal, Clipboard, SquareCheck, SquareX, Trash, MoveLeft, Import } from "lucide-vue-next";
+import { X, ArrowUpDown, Check, Ellipsis, SlidersHorizontal, Clipboard, SquareCheck, SquareX, Trash, MoveLeft, Import, LogOut } from "lucide-vue-next";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -461,13 +469,6 @@ const isIndeterminate = computed(() =>
     selectedItemIds.value.size < allIds.value.length
 )
 
-const checklistDs = reactive({
-    checklist: null as DataObject<any> | null,
-    checklistItems: null as DataObject<any> | null,
-    folderChecklistsLkp: null as DataObject<any> | null,
-    checklistMembers: null as DataObject<any> | null
-});
-
 // const totalCount = computed(() => checklistDs.checklist?.currentRecord?.items_count || 0);
 // const completedCount = computed(() => checklistDs.checklist?.currentRecord?.items_checked_count || 0);
 // const progressPercent = computed(() => {
@@ -479,6 +480,15 @@ const totalCount = computed(() => checklistDs.checklistItems?.data?.length || 0)
 const completedCount = computed(() => checklistDs.checklistItems?.data?.filter((item: any) => item.is_checked)?.length || 0);
 const progressPercent = computed(() => {
     return totalCount.value === 0 ? 0 : Math.round((completedCount.value / totalCount.value) * 100);
+});
+
+const isOwner = computed(() => checklistDs.checklist?.owner_id === userStore.userProfile?.id);
+
+const checklistDs = reactive({
+    checklist: null as DataObject<any> | null,
+    checklistItems: null as DataObject<any> | null,
+    folderChecklistsLkp: null as DataObject<any> | null,
+    checklistMembers: null as DataObject<any> | null
 });
 
 watch(allowSelection, val => {
@@ -919,6 +929,26 @@ async function recoverChecklist() {
         toast({
             title: 'Checklist recovered.',
         });
+    }
+}
+
+async function leaveChecklist() {
+    try {
+        const userRecord = checklistDs?.checklistMembers?.data?.find(x => x.user_id === userStore.userProfile?.id);
+        if (!userRecord) { return; }
+        const result = await checklistDs.checklistMembers?.delete(userRecord.id);
+        if (result) {
+            toast({
+                title: 'Checklist left',
+                description: `You are no longer a member of ${checklistDs.checklist?.currentRecord.name}.`
+            });
+            dataSources.sharedChecklists?.refresh();
+            router.push('/home');
+        } else {
+            throw new Error(`Failed to leave checklist.`)
+        }
+    } catch(err) {
+        console.error(err);
     }
 }
 

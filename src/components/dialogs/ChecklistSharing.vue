@@ -29,7 +29,7 @@
                                     </p>
                                 </template>
                                 <template #actions="{ user }">
-                                    <template v-if="props.checklist.owner_id !== user.user_id">
+                                    <template v-if="props.checklist.owner_id !== user.user_id && !props.readonly">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button
@@ -65,7 +65,7 @@
                         </div>
                         <p v-else class="text-sm text-muted-foreground mt-2">No members found.</p>
 
-                        <Popover v-model:open="openPopover">
+                        <Popover v-model:open="openPopover" v-if="!props.readonly">
                             <PopoverTrigger as-child>
                                 <Button 
                                     variant="secondary" 
@@ -140,11 +140,8 @@ import { DataObject, DataObjectRecord, createDataObject } from 'supabase-dataobj
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
-    DialogClose
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -183,7 +180,8 @@ import { supabase } from '@/api/supabase.js';
 
 const props = defineProps<{
     checklist: DataObjectRecord<any>;
-    dataObject: DataObject
+    dataObject: DataObject;
+    readonly?: boolean;
 }>();
 
 const checklistDs = reactive({
@@ -213,9 +211,9 @@ async function createDataObjects() {
         const preferencesData = await createDataObject('checklistMembers', {
             viewName: 'checklist_members_view',
             tableName: 'checklist_members',
-            canInsert: true,
-            canUpdate: true,
-            canDelete: true,
+            canInsert: !props.readonly,
+            canUpdate: !props.readonly,
+            canDelete: !props.readonly,
             whereClauses: [
                 { field: 'checklist_id', operator: 'equals', value: props.checklist.id }
             ],
@@ -230,7 +228,8 @@ async function createDataObjects() {
                 { name: "owner" },
                 { name: "profile_picture_url" },
                 { name: "bg_colour" },
-            ]
+            ],
+            sort: { field: "added_at", direction: 'asc' },
         }); 
 
         checklistDs.members = preferencesData;

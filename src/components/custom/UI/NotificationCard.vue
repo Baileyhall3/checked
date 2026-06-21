@@ -61,7 +61,7 @@
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
-                <span class="text-sm" v-html="formatNotifData(notif.data, notif.type)"></span>
+                <span class="text-sm" v-html="formatNotifData(notif.data, notif.type, notif.username)"></span>
                 <div class="flex items-center justify-between mt-2">
                     <div>
                         <span
@@ -147,7 +147,7 @@ function handleSelected(newValue: boolean) {
     emit('selection-changed', newValue, props.notif.id);
 }
 
-function formatNotifData(data: any, type: string) {
+function formatNotifData(data: any, type: string, username: string) {
     if (type === 'user_sent_friend_request') {
         if (data.actor_name) {
             return `<strong>${data.actor_name}</strong> sent you a friend request.`;
@@ -161,6 +161,10 @@ function formatNotifData(data: any, type: string) {
             return `<strong>${data.item_name}</strong> was checked by <strong>${data.checked_by}</strong>.`;
         } else {
             return `<strong>${data.item_name}</strong> was checked.`;
+        }
+    } else if (type === 'user_shared_checklist') {
+        if (username) {
+            return `<strong>${username}</strong> shared a checklist with you.`;
         }
     }
 }
