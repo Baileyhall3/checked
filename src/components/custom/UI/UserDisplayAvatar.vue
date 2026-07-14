@@ -4,6 +4,7 @@
         :src="user.profile_picture_url"
         :class="['rounded-full object-cover', sizeClasses]"
         alt="Profile image"
+        :title="user.username"
         v-bind="$attrs"
     />
     <div
@@ -14,6 +15,7 @@
             backgroundColor: user?.bg_colour ?? defaultColour
         }"
         aria-hidden="true"
+        :title="user.username"
         v-bind="$attrs"
     >
         {{ initial }}
@@ -24,7 +26,9 @@
 import { computed } from 'vue';
 import { DataObjectRecord } from 'supabase-dataobject-core';
 
-export type UserDisplayAvatarSize = 'xs' | 'sm' | 'md' | 'lg';
+// TODO: Dropdown when clicking on avatar to show user details and actions (e.g., view profile, message, etc.)
+
+export type UserDisplayAvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'custom';
 
 defineOptions({
     inheritAttrs: false
@@ -52,10 +56,12 @@ const sizeClasses = computed(() => {
             return 'h-2 w-2 text-xs';
         case 'sm':
             return 'h-5 w-5 text-xs';
+        case 'md':
+            return 'h-10 w-10 text-base';
         case 'lg':
             return 'h-12 w-12 text-lg';
         default:
-            return 'h-10 w-10 text-base';
+            return '';
     }
 });
 </script>

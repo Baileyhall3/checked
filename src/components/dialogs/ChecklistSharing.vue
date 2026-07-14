@@ -65,8 +65,13 @@
                         </div>
                         <p v-else class="text-sm text-muted-foreground mt-2">No members found.</p>
 
-                        <Popover v-model:open="openPopover" v-if="!props.readonly">
-                            <PopoverTrigger as-child>
+                        <AddMember 
+                            v-if="!props.readonly"
+                            :membersData="memberSearchUsers"
+                            @search-users="searchUsers"
+                            @select-user="handleSelect"
+                        >
+                            <template #trigger="{ openPopover }">
                                 <Button 
                                     variant="secondary" 
                                     class="w-full mt-4"
@@ -75,48 +80,8 @@
                                 >
                                     Add Member
                                 </Button>
-                            </PopoverTrigger>
-                            <PopoverContent
-                                class="border-input w-full min-w-[var(--reka-popper-anchor-width)] p-0"
-                                align="start"
-                            >
-                                <Command>
-                                     <div class="flex items-center border-b px-3" cmdk-input-wrapper>
-                                        <Search class="mr-2 h-4 w-4 shrink-0 opacity-50" />
-                                        <input
-                                            v-model="userSearchQuery"
-                                            type="text"
-                                            placeholder="Search users..."
-                                            auto-focus
-                                            class="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-                                        />
-                                    </div>
-                                    <CommandList>
-                                        <Loading v-if="isRunningSearch" />
-                                        <template v-else>
-                                            <div v-if="memberSearchUsers.length === 0" class="p-4 items-center flex justify-center">
-                                                <span class="text-sm">No users found.</span>
-                                            </div>
-
-                                            <CommandGroup v-else>
-                                                <CommandItem
-                                                    v-for="user in memberSearchUsers"
-                                                    :key="user.id"
-                                                    :value="user.username"
-                                                    @select="handleSelect(user.id)"
-                                                >
-                                                    <UserCard 
-                                                        :user="user" 
-                                                        avatarSize="sm" 
-                                                        container-class="w-full" 
-                                                    />
-                                                </CommandItem>
-                                            </CommandGroup>
-                                        </template>
-                                    </CommandList>
-                                </Command>
-                            </PopoverContent>
-                        </Popover>
+                            </template>
+                        </AddMember>
                     </div>
                 </div>
             </template>
@@ -146,9 +111,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/ui/toast/use-toast";
-import { ref, computed, reactive, watch } from 'vue';
+import { ref, reactive } from 'vue';
 import DateUtils from '@/utils/DateUtils';
-import { Palette, Image, Ellipsis, Search } from 'lucide-vue-next';
+import { Ellipsis } from 'lucide-vue-next';
 import { DropdownMenu, 
     DropdownMenuTrigger, 
     DropdownMenuContent, 
@@ -166,17 +131,8 @@ import { dataSources } from '@/api/dataObjects.js';
 import UserCard from '../custom/UI/UserCard.vue';
 import { capitalize } from '@/utils/shared.js';
 import Confirm from './Confirm.vue';
-import SearchBar from '../custom/UI/SearchBar.vue';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 import { supabase } from '@/api/supabase.js';
+import AddMember from '../custom/UI/input/lookup/AddMember.vue';
 
 const props = defineProps<{
     checklist: DataObjectRecord<any>;
@@ -196,7 +152,6 @@ const isLoading = ref<boolean>(false);
 const openPopover = ref<boolean>(false);
 const memberSearchUsers = ref<any[]>([]);
 const isRunningSearch = ref<boolean>(false);
-const userSearchQuery = ref<string | null>(null);
 
 const viewerRoleConfirmDialog = ref();
 const editorRoleConfirmDialog = ref();
@@ -262,29 +217,17 @@ async function searchUsers(query: string | null) {
     }
 }
 
-watch(userSearchQuery, (newVal) => {
-    handleUserSearch(newVal);
-});
-
-let timeout
-function handleUserSearch(query: string | null) {
-    clearTimeout(timeout)
-    timeout = setTimeout(async () => {
-        searchUsers(query);
-    }, 300)
-}
-
-async function handleSelect(userId: number) {
+async function handleSelect(user: DataObjectRecord<any>) {
     try {
         // isLoading.value = true;
         await checklistDs.members?.insert({
             checklist_id: props.checklist.id,
-            user_id: userId,
+            user_id: user.id,
             role: 'viewer'
         });
         toast({
             title: 'User added.',
-            description: 'The user has been added to the checklist successfully.',
+            description: `${user.username} has been added to the checklist successfully.`,
         });
         searchUsers(null);
         openPopover.value = false;

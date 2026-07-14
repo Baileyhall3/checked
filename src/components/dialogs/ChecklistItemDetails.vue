@@ -94,6 +94,7 @@
                                             type="button"
                                             class="focus-visible:border-ring focus-visible:ring-ring/50 flex items-center justify-center rounded-full text-white transition-[color,box-shadow] outline-none hover:opacity-80 focus-visible:ring-[3px]"
                                             aria-label="Change background colour"
+                                            title="Change background colour"
                                         >
                                             <Palette class="size-4" aria-hidden="true" 
                                             :style="{ color: props.checklistItem.bg_colour ?? 'rgb(107, 114, 128)' }" />
@@ -114,7 +115,7 @@
 
                             <DropdownMenu v-model:open="addLinkDropdownOpen" v-if="!props.disabled">
                                 <DropdownMenuTrigger asChild>
-                                    <div class="flex items-center gap-2 rounded-lg px-1 py-0.5 border bg-gray-100 text-sm cursor-pointer hover:bg-gray-200">
+                                    <div class="flex items-center gap-2 rounded-lg px-1 py-0.5 border bg-gray-100 text-sm cursor-pointer hover:bg-gray-200" title="Add links">
                                         <Link class="size-4 opacity-50" />
                                         <span class="text-gray-500">Link</span>
                                     </div>
@@ -124,6 +125,15 @@
                                     @cancel-create="addLinkDropdownOpen = false"
                                 />
                             </DropdownMenu>
+                            
+                            <AddMember v-if="!props.disabled" :membersData="memberSearchUsers" @select-user="handleSelect" @search-users="searchUsers">
+                                <template #trigger="{ openPopover }">
+                                    <div class="flex items-center gap-2 rounded-lg px-1 py-0.5 border bg-gray-100 text-sm cursor-pointer hover:bg-gray-200" :aria-expanded="openPopover" title="Add members">
+                                        <Users class="size-4 opacity-50" />
+                                        <span class="text-gray-500">Members</span>
+                                    </div>
+                                </template>
+                            </AddMember>
                         </div>
 
                         <div class="flex flex-col">
@@ -159,7 +169,44 @@
                                 ></div>
                             </div>
                         </div>
-
+                        
+                        <!-- Members -->
+                        <div class="flex flex-col" v-if="checlistItemDs.members && checlistItemDs.members.data.length > 0">
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium">Members</span>
+                            </div>
+                            <div class="flex items-center gap-2 py-1">
+                                <DropdownMenu v-for="member in checlistItemDs.members.data" :key="member.id">
+                                    <DropdownMenuTrigger asChild>
+                                        <UserDisplayAvatar 
+                                            :user="member"
+                                            size="custom"
+                                            class="h-8 w-8 text-base"
+                                            :class="{ 'cursor-pointer hover:opacity-80 transition' : !props.disabled }"
+                                        />
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent v-if="!props.disabled">
+                                        <DropdownMenuLabel>
+                                            {{ member.username }}
+                                        </DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem class="cursor-pointer text-red-600" @click="deleteMember(member)">
+                                            Remove from Item
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                                
+                                <AddMember v-if="!props.disabled" :membersData="memberSearchUsers" @select-user="handleSelect" @search-users="searchUsers">
+                                    <template #trigger="{ openPopover }">
+                                        <Button v-if="!props.disabled" variant="secondary" size="icon" class="rounded-full" :aria-expanded="openPopover" title="Add member">
+                                            <Plus class="size-4" />
+                                        </Button>
+                                    </template>
+                                </AddMember>
+                            </div>
+                        </div>
+                        
+                        <!-- Links -->
                         <div class="flex flex-col" v-if="checlistItemDs.links && checlistItemDs.links.data.length > 0">
                             <div class="flex justify-between items-center">
                                 <span class="font-medium">Links</span>
@@ -240,8 +287,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { ref, nextTick, reactive } from 'vue';
 import DateUtils from '@/utils/DateUtils';
-import { Palette, Lock, Trash, Ellipsis, X, Link } from 'lucide-vue-next';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
+import { Palette, Lock, Trash, Ellipsis, X, Link, Users, Plus } from 'lucide-vue-next';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import ColoursDropdown from '../custom/UI/ColoursDropdown.vue';
 import TextEditor from '../custom/UI/input/TextEditor.vue';
 import { Checkbox } from '../ui/checkbox';
@@ -255,11 +302,16 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/toast/use-toast";
 import ItemLink from '../custom/UI/checklist/ItemLink.vue';
 import AddChecklistItemLinkDropdownContent from '../custom/UI/AddChecklistItemLinkDropdownContent.vue';
+import { supabase } from '@/api/supabase.js';
+import AddMember from '../custom/UI/input/lookup/AddMember.vue';
+import UserDisplayAvatar from '../custom/UI/UserDisplayAvatar.vue';
+import DropdownMenuSeparator from '../ui/dropdown-menu/DropdownMenuSeparator.vue';
 
 const props = defineProps<{
-    checklistItem: DataObjectRecord;
+    checklistItem: DataObjectRecord<any>;
     dataObject: DataObject;
     disabled?: boolean;
+    allowAddMember?: boolean;
 }>();
 
 const isDialogOpen = ref<boolean>(false);
@@ -270,9 +322,14 @@ const isEditingDesc = ref<boolean>(false);
 const textEditorRef = ref(null);
 const addLinkDropdownOpen = ref<boolean>(false);
 const addLinkBtnDropdownOpen = ref<boolean>(false);
+const openPopover = ref<boolean>(false);
+const memberSearchUsers = ref<any[]>([]);
+
+const { toast } = useToast();
 
 const checlistItemDs = reactive({
-    links: null as DataObject<any> | null
+    links: null as DataObject<any> | null,
+    members: null as DataObject<any> | null
 });
 
 // const newLink = ref({
@@ -283,6 +340,7 @@ const checlistItemDs = reactive({
 async function createDataObjects(id: number) {
     checlistItemDs.links = null;
     dataSources.manager?.removeDataObject('checklistItemLinks');
+    dataSources.manager?.removeDataObject('checklistItemMembers');
 
     try {
         isLoading.value = true;
@@ -290,9 +348,9 @@ async function createDataObjects(id: number) {
         const itemLinksData = await createDataObject('checklistItemLinks', {
             viewName: 'checklist_item_links_view',
             tableName: 'checklist_item_links',
-            canInsert: true,
-            canUpdate: true,
-            canDelete: true,
+            canInsert: !props.disabled,
+            canUpdate: !props.disabled,
+            canDelete: !props.disabled,
             whereClauses: [
                 { field: 'checklist_item_id', operator: 'equals', value: id }
             ],
@@ -308,6 +366,31 @@ async function createDataObjects(id: number) {
         }); 
 
         checlistItemDs.links = itemLinksData;
+
+        const itemMembersData = await createDataObject('checklistItemMembers', {
+            viewName: 'checklist_item_members_view',
+            tableName: 'checklist_item_members',
+            canInsert: !props.disabled,
+            canUpdate: !props.disabled,
+            canDelete: !props.disabled,
+            whereClauses: [
+                { field: 'item_id', operator: 'equals', value: id }
+            ],
+            fields: [
+                { name: "id" },
+                { name: "created_at" },
+                { name: "created_by_id" },
+                // { name: "created_by_username" }
+                { name: "item_id" },
+                { name: "user_id" },
+                { name: "username" },
+                { name: "bg_colour" },
+                { name: "profile_picture_url" },
+            ]
+        }); 
+
+        checlistItemDs.members = itemMembersData;
+        await searchUsers(null);
     } catch (err) {
         console.error(err);
     } finally {
@@ -383,6 +466,61 @@ function handleDescriptionClick() {
         return;
     }
     beginEditingDescription();
+}
+
+async function searchUsers(query: string | null) {
+    try {
+        // isRunningSearch.value = true;
+        const { data, error } = await supabase
+            .rpc('search_users_for_checklist_item', {
+                p_checklist_item_id: props.checklistItem.id,
+                p_checklist_id: props.checklistItem.checklist_id,
+                p_search: query
+            });
+
+        if (error) {
+            throw error;
+        }
+
+        memberSearchUsers.value = data || [];
+    } catch (err) {
+        console.error(err);
+    } finally {
+        // isRunningSearch.value = false;
+    }
+}
+
+async function handleSelect(user: DataObjectRecord<any>) {
+    try {
+        // isLoading.value = true;
+        await checlistItemDs.members?.insert({
+            item_id: props.checklistItem.id,
+            user_id: user.id
+        });
+        toast({
+            title: 'User added.',
+            description: `${user.username} has been added to the checklist item successfully.`,
+        });
+        searchUsers(null);
+        openPopover.value = false;
+    } catch (err) {
+        console.error(err);
+    } finally {
+        // isLoading.value = false;
+    }
+}
+
+async function deleteMember(member: DataObjectRecord<any>) {
+    try {
+        await checlistItemDs.members?.delete(member.id);
+        toast({
+            title: 'User removed.',
+            description: `${member.username} has been removed from the checklist item successfully.`,
+        });
+        searchUsers(null);
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 function cancelChanges() {

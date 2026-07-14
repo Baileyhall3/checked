@@ -416,6 +416,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import ImportItems from '@/components/dialogs/ImportItems.vue';
 import { useWindowSize } from "@vueuse/core";
 import { userStore } from '@/store/userStore';
+import { supabase } from '@/api/supabase.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -482,7 +483,7 @@ const progressPercent = computed(() => {
     return totalCount.value === 0 ? 0 : Math.round((completedCount.value / totalCount.value) * 100);
 });
 
-const isOwner = computed(() => checklistDs.checklist?.owner_id === userStore.userProfile?.id);
+const isOwner = computed(() => checklistDs.checklist?.currentRecord?.owner_id === userStore.userProfile?.id);
 
 const checklistDs = reactive({
     checklist: null as DataObject<any> | null,
@@ -645,29 +646,29 @@ async function initOthersDs() {
             canEdit.value = currentUserMember.role === 'owner' || currentUserMember.role === 'editor';
         }
 
-        if (checklistDs.checklist?.currentRecord?.folder_name) {
-            checklistDs.folderChecklistsLkp = await createDataObject('folder_checklists_lkp', {
-                viewName: 'checklists_view',
-                masterDataObjectBinding: {
-                    masterDataObjectId: 'checklist',
-                    childBindingField: 'folder_id',
-                    masterBindingField: 'folder_id'
-                },
-                sort: { field: "created_at", direction: 'desc' },
-                whereClauses: [
-                    { field: 'deleted_at', operator: 'isnull' }
-                ],
-                fields: [
-                    { name: "id" },
-                    { name: "name" },
-                    { name: "created_at" },
-                    { name: "folder_id" },
-                    { name: "folder_name" },
-                    { name: "owner_id" },
-                    { name: "deleted_at" }
-                ],
-            }); 
-        }
+        // if (checklistDs.checklist?.currentRecord?.folder_name) {
+        //     checklistDs.folderChecklistsLkp = await createDataObject('folder_checklists_lkp', {
+        //         viewName: 'checklists_view',
+        //         masterDataObjectBinding: {
+        //             masterDataObjectId: 'checklist',
+        //             childBindingField: 'folder_id',
+        //             masterBindingField: 'folder_id'
+        //         },
+        //         sort: { field: "created_at", direction: 'desc' },
+        //         whereClauses: [
+        //             { field: 'deleted_at', operator: 'isnull' }
+        //         ],
+        //         fields: [
+        //             { name: "id" },
+        //             { name: "name" },
+        //             { name: "created_at" },
+        //             { name: "folder_id" },
+        //             { name: "folder_name" },
+        //             { name: "owner_id" },
+        //             { name: "deleted_at" }
+        //         ],
+        //     }); 
+        // }
 
         checklistDs.checklistItems = await createDataObject('checklist_items', {
             viewName: 'checklist_items_view',
@@ -685,6 +686,29 @@ async function initOthersDs() {
             fields: checklistItemsFields,
             allowedBuckets: ['checklist-item-voice-notes']
         }); 
+
+        // const idParam = route.params.id
+        // const id = Number(idParam)
+
+        // const mappedFields = checklistItemsFields.map(f => f.name);
+        // const { data, error } = await supabase
+        //     .from("checklist_items_view")
+        //     .select(`
+        //         ${mappedFields.join(",")},
+        //         checklist_item_members_view (
+        //             user_id,
+        //             username,
+        //             bg_colour,
+        //             profile_picture_url
+        //         )
+        //     `)
+        //     .eq("checklist_id", id);
+
+        // const checklistMembers = data?.filter(x => x.checklist_item_members_view?.length > 0).map(x => ({
+        //     item_id: x.id,
+        //     members: x.checklist_item_members_view
+        // }));
+        debugger
     } catch (err) {
         console.error(err);
     } finally {
