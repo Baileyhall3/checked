@@ -74,7 +74,17 @@
                             :rows="1"
                         ></textarea>
                     </div>
-                    <div class="flex w-full gap-1 mb-1" v-if="((item.priority || item.due_date) && (props.fieldsView?.priority || props.fieldsView?.dueDate)) || item.locked_at">
+                    <div class="flex w-full gap-2 mb-1" v-if="((item.priority || item.due_date) && (props.fieldsView?.priority || props.fieldsView?.dueDate)) || item.locked_at || (props.item.members?.length && props.fieldsView?.members)">
+                        <div v-if="props.item.members?.length && props.fieldsView?.members" class="flex items-center gap-2">
+                            <template v-for="member in props.item.members" :key="member.id">
+                                <UserDisplayAvatar 
+                                    :title="member.username"
+                                    :user="member"
+                                    size="custom"
+                                    class="h-6 w-6 text-base"
+                                />
+                            </template>
+                        </div>
                         <PriorityLabel 
                             v-if="item.priority && props.fieldsView?.priority" 
                             :priority="item.priority" 
@@ -102,6 +112,7 @@
                             :title="`Locked by ${item.locked_by_username} ${DateUtils.toDateTime(item.locked_at)}`"
                         /> -->
                     </div>
+
                     <!-- Description -->
                     <div class="flex justify-between items-start" v-if="props.fieldsView?.description">
                         <div class="text-sm text-gray-600">
@@ -194,9 +205,10 @@ import VoiceNotePlayback from './buttons/VoiceNotePlayback.vue';
 import ChecklistItemDropdownContent from './ChecklistItemDropdownContent.vue';
 import LockedLabel from './checklist/LockedLabel.vue';
 import type { ChecklistItemFieldsView } from '@/layouts/ChecklistLayoutManager.js';
+import UserDisplayAvatar from './UserDisplayAvatar.vue';
 
 const props = defineProps<{
-    item: DataObjectRecord;
+    item: DataObjectRecord<any>;
     checklistData: DataObject;
     disabled?: boolean;
     allowSelection?: boolean;

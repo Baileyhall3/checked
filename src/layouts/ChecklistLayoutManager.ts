@@ -13,6 +13,7 @@ export interface ChecklistItemFieldsView {
     description: boolean;
     priority: boolean;
     dueDate: boolean;
+    members: boolean;
     createdAt: boolean;
     createdBy: boolean;
     updatedAt: boolean;
@@ -44,6 +45,7 @@ export default class ChecklistLayout {
             description: true,
             priority: true,
             dueDate: true,
+            members: true,
             createdAt: false,
             createdBy: false,
             updatedAt: false,
@@ -90,6 +92,10 @@ export default class ChecklistLayout {
 
     get showDueDate() {
         return this.preferences.itemFieldsView.dueDate;
+    }
+
+    get showMembers() {
+        return this.preferences.itemFieldsView.members;
     }
 
     get showCreatedAt() {
@@ -149,6 +155,10 @@ export default class ChecklistLayout {
 
     set showDueDate(value: boolean) {
         this.updateItemFieldView('dueDate', value);
+    }
+
+    set showMembers(value: boolean) {
+        this.updateItemFieldView('members', value);
     }
 
     set showCreatedAt(value: boolean) {

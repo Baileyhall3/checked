@@ -503,6 +503,7 @@ async function handleSelect(user: DataObjectRecord<any>) {
         });
         searchUsers(null);
         openPopover.value = false;
+        await props.checklistItem.refresh();
     } catch (err) {
         console.error(err);
     } finally {
@@ -518,6 +519,7 @@ async function deleteMember(member: DataObjectRecord<any>) {
             description: `${member.username} has been removed from the checklist item successfully.`,
         });
         searchUsers(null);
+        await props.checklistItem.refresh();
     } catch (err) {
         console.error(err);
     }

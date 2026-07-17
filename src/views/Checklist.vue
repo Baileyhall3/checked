@@ -140,6 +140,9 @@
                                                         <DropdownMenuCheckboxItem class="cursor-pointer justify-between" v-model="checklistState.layout.showDueDate">
                                                             Due Date
                                                         </DropdownMenuCheckboxItem>
+                                                        <DropdownMenuCheckboxItem class="cursor-pointer justify-between" v-model="checklistState.layout.showMembers">
+                                                            Members
+                                                        </DropdownMenuCheckboxItem>
                                                         <DropdownMenuCheckboxItem class="cursor-pointer justify-between" v-model="checklistState.layout.showCreatedAt">
                                                             Created At
                                                         </DropdownMenuCheckboxItem>
@@ -684,31 +687,20 @@ async function initOthersDs() {
             },
             sort: checklistState.sortConfig,
             fields: checklistItemsFields,
-            allowedBuckets: ['checklist-item-voice-notes']
+            allowedBuckets: ['checklist-item-voice-notes'],
+            relationships: [
+            {
+                name: "checklist_item_members_view",
+                alias: "members",
+                fields: [
+                    "user_id",
+                    "username",
+                    "bg_colour",
+                    "profile_picture_url"
+                ]
+            }
+        ]
         }); 
-
-        // const idParam = route.params.id
-        // const id = Number(idParam)
-
-        // const mappedFields = checklistItemsFields.map(f => f.name);
-        // const { data, error } = await supabase
-        //     .from("checklist_items_view")
-        //     .select(`
-        //         ${mappedFields.join(",")},
-        //         checklist_item_members_view (
-        //             user_id,
-        //             username,
-        //             bg_colour,
-        //             profile_picture_url
-        //         )
-        //     `)
-        //     .eq("checklist_id", id);
-
-        // const checklistMembers = data?.filter(x => x.checklist_item_members_view?.length > 0).map(x => ({
-        //     item_id: x.id,
-        //     members: x.checklist_item_members_view
-        // }));
-        debugger
     } catch (err) {
         console.error(err);
     } finally {
