@@ -139,9 +139,9 @@
                         <div class="flex flex-col">
                             <div class="flex justify-between items-center">
                                 <span class="font-medium">Description</span>
-                                <Button v-if="!isEditingDesc && props.checklistItem.description && !props.disabled" variant="secondary" size="sm" @click="beginEditingDescription">
+                                <!-- <Button v-if="!isEditingDesc && props.checklistItem.description && !props.disabled" variant="secondary" size="sm" @click="beginEditingDescription">
                                     Edit
-                                </Button>
+                                </Button> -->
                             </div>
                             <template v-if="isEditingDesc">
                                 <TextEditor ref="textEditorRef" v-model="props.checklistItem.description" />
@@ -233,37 +233,57 @@
                         </div>
                     </form>
 
-                    <div class="flex flex-col space-y-4">
-                        <!-- <div class="flex flex-col text-red-600" v-if="props.checklistItem.deleted_at">
-                            <span class="font-medium items-center flex">
-                                <Trash class="w-4 h-4 inline-block mr-2" />
-                                Deleted
-                            </span>
-                            <p class="text-sm text-muted-foreground">
-                                {{ DateUtils.toDateTime(props.checklistItem.deleted_at) }} by {{ props.checklistItem.deleted_by_username }}
-                            </p>
-                        </div>
-                        <div class="flex flex-col" v-if="props.checklistItem.locked_at">
-                            <span class="font-medium items-center flex">
-                                <Lock class="w-4 h-4 inline-block mr-2" />
-                                Locked
-                            </span>
-                            <p class="text-sm text-muted-foreground">
-                                {{ DateUtils.toDateTime(props.checklistItem.locked_at) }} by {{ props.checklistItem.locked_by_username }}
-                            </p>
-                        </div> -->
-                        <div class="flex flex-col">
-                            <span class="font-medium">Created</span>
-                            <p class="text-sm text-muted-foreground">
-                                {{ DateUtils.toDateTime(props.checklistItem.created_at) }} by {{ props.checklistItem.created_by_username }}
-                            </p>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="font-medium">Last Updated</span>
-                            <p class="text-sm text-muted-foreground">
-                                {{ DateUtils.toDateTime(props.checklistItem.updated_at) }} by {{ props.checklistItem.updated_by_username }}
-                            </p>
-                        </div>
+                    <div class="">
+                        <Button
+                            class="w-full justify-center flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                            variant="ghost"
+                            @click="showMetadata = !showMetadata"
+                        >
+                            <ChevronDown
+                                class="size-6 transition-transform duration-300"
+                                :class="{ 'rotate-180': showMetadata }"
+                            />
+                            <!-- {{ showMetadata ? "Hide details" : "Show details" }} -->
+                        </Button>
+                        <Transition name="expand">
+                            <div
+                                v-if="showMetadata"
+                                class="flex flex-col space-y-4 overflow-hidden pt-4 border-t"
+                            >
+                                <div class="flex flex-col space-y-4">
+                                    <!-- <div class="flex flex-col text-red-600" v-if="props.checklistItem.deleted_at">
+                                        <span class="font-medium items-center flex">
+                                            <Trash class="w-4 h-4 inline-block mr-2" />
+                                            Deleted
+                                        </span>
+                                        <p class="text-sm text-muted-foreground">
+                                            {{ DateUtils.toDateTime(props.checklistItem.deleted_at) }} by {{ props.checklistItem.deleted_by_username }}
+                                        </p>
+                                    </div>
+                                    <div class="flex flex-col" v-if="props.checklistItem.locked_at">
+                                        <span class="font-medium items-center flex">
+                                            <Lock class="w-4 h-4 inline-block mr-2" />
+                                            Locked
+                                        </span>
+                                        <p class="text-sm text-muted-foreground">
+                                            {{ DateUtils.toDateTime(props.checklistItem.locked_at) }} by {{ props.checklistItem.locked_by_username }}
+                                        </p>
+                                    </div> -->
+                                    <div class="flex flex-col">
+                                        <span class="font-medium">Created</span>
+                                        <p class="text-sm text-muted-foreground">
+                                            {{ DateUtils.toDateTime(props.checklistItem.created_at) }} by {{ props.checklistItem.created_by_username }}
+                                        </p>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="font-medium">Last Updated</span>
+                                        <p class="text-sm text-muted-foreground">
+                                            {{ DateUtils.toDateTime(props.checklistItem.updated_at) }} by {{ props.checklistItem.updated_by_username }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </Transition>
                     </div>
                     <!-- <DialogFooter class="pt-4 gap-2">
                         <DialogClose asChild>
@@ -287,7 +307,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { ref, nextTick, reactive } from 'vue';
 import DateUtils from '@/utils/DateUtils';
-import { Palette, Lock, Trash, Ellipsis, X, Link, Users, Plus } from 'lucide-vue-next';
+import { Palette, Lock, Trash, Ellipsis, X, Link, Users, Plus, ChevronDown } from 'lucide-vue-next';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import ColoursDropdown from '../custom/UI/ColoursDropdown.vue';
 import TextEditor from '../custom/UI/input/TextEditor.vue';
@@ -314,6 +334,10 @@ const props = defineProps<{
     allowAddMember?: boolean;
 }>();
 
+const emit = defineEmits<{
+    (e: 'members-updated'): void;
+}>();
+
 const isDialogOpen = ref<boolean>(false);
 const isSaving = ref<boolean>(false);
 const isLoading = ref<boolean>(false);
@@ -324,6 +348,7 @@ const addLinkDropdownOpen = ref<boolean>(false);
 const addLinkBtnDropdownOpen = ref<boolean>(false);
 const openPopover = ref<boolean>(false);
 const memberSearchUsers = ref<any[]>([]);
+const showMetadata = ref<boolean>(false);
 
 const { toast } = useToast();
 
@@ -504,6 +529,7 @@ async function handleSelect(user: DataObjectRecord<any>) {
         searchUsers(null);
         openPopover.value = false;
         await props.checklistItem.refresh();
+        emit('members-updated');
     } catch (err) {
         console.error(err);
     } finally {
@@ -520,6 +546,7 @@ async function deleteMember(member: DataObjectRecord<any>) {
         });
         searchUsers(null);
         await props.checklistItem.refresh();
+        emit('members-updated');
     } catch (err) {
         console.error(err);
     }
@@ -580,4 +607,24 @@ defineExpose({show, close})
     border-top-left-radius: 0.75rem;     /* Match your rounded style if needed */
 }
 
+.expand-enter-active,
+.expand-leave-active {
+    transition:
+        max-height 0.3s ease,
+        opacity 0.25s ease,
+        padding-top 0.3s ease;
+    overflow: hidden;
+}
+.expand-enter-from,
+.expand-leave-to {
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
+}
+.expand-enter-to,
+.expand-leave-from {
+    max-height: 500px;
+    opacity: 1;
+    padding-top: 1rem;
+}
 </style>

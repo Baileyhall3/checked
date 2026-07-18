@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full items-center grid" :class="{ 'grid-cols-[7%_93%]' : props.allowSelection }">
+    <div :key="itemKey" class="w-full items-center grid" :class="{ 'grid-cols-[7%_93%]' : props.allowSelection }">
         <div class="flex items-start  pr-3" v-if="props.allowSelection">
             <Checkbox 
                 id="isSelected" 
@@ -186,6 +186,7 @@
         :checklist-item="item" 
         :data-object="props.checklistData" 
         :disabled="props.disabled"
+        @members-updated="handleMembersUpdated"
     />
 </template>
 
@@ -241,6 +242,11 @@ onMounted(() => {
         autoResize(nameInput.value);
     }
 });
+
+const itemKey = ref<number>(0);
+// const itemKey = computed(() => {
+//     return `${props.item.id}-${props.item.updated_at}`;
+// });
 
 const isHovered = ref(false);
 const menuOpen = ref(false);
@@ -303,6 +309,10 @@ function handleChecked(isChecked: boolean) {
 
 function openItemDetails() {
     itemDetailsDialog.value.show();
+}
+
+function handleMembersUpdated() {
+    itemKey.value++;
 }
 </script>
 
