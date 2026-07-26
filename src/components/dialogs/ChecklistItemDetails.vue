@@ -1,6 +1,6 @@
 <template>
     <Dialog v-model:open="isDialogOpen">
-        <DialogContent class="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5">
+        <DialogContent class="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5 max-h-[90vh]">
             <DialogTitle></DialogTitle>
             <Loading v-if="isLoading" />
             <template v-else>
@@ -54,89 +54,91 @@
                     </div>
                 </div>
 
-                <div class="px-6 pt-4 pb-6">
-                    <form class="space-y-4 pb-4" @submit.prevent>
-                        <div v-if="props.checklistItem.locked_at" 
-                            class="flex items-center gap-2 rounded-lg px-1 py-2 border text-sm bg-gray-300 border-gray-700 text-gray-700 w-100 justify-center">
-                            <Lock class="size-4" />
-                            {{ `Locked by ${props.checklistItem.locked_by_username} ${DateUtils.toFullDateTime(props.checklistItem.locked_at)}` }}
-                        </div>
-                        <div v-if="props.checklistItem.deleted_at" 
-                            class="flex items-center gap-2 rounded-lg px-1 py-2 border text-sm bg-red-200 border-red-700 text-red-700 w-100 justify-center">
-                            <Trash class="size-4" />
-                            {{ `Deleted by ${props.checklistItem.deleted_by_username} ${DateUtils.toFullDateTime(props.checklistItem.deleted_at)}` }}
-                        </div>
-                        
-                        <div class="flex flex-wrap items-center gap-2">
-                            <!-- <LockedLabel 
-                                v-if="props.checklistItem.locked_at"
-                                :locked-at="props.checklistItem.locked_at"
-                                :locked-by="props.checklistItem.locked_by_username"
-                            /> -->
-                            <PriorityLabel 
-                                v-if="props.checklistItem.priority || !props.disabled"
-                                v-model:priority="props.checklistItem.priority" 
-                                :disabled="props.disabled"
-                                @update:priority="props.checklistItem.save()" 
-                            />
-                            <DueDate 
-                                v-if="props.checklistItem.due_date || !props.disabled"
-                                v-model="props.checklistItem.due_date" 
-                                showTime 
-                                :editable="!props.disabled"
-                                :is-complete="props.checklistItem.is_checked"
-                                @update:model-value="props.checklistItem.save()" 
-                            />
-                            <DropdownMenu v-if="!props.disabled">
-                                <DropdownMenuTrigger asChild>
-                                    <div class="flex items-center gap-2 rounded-lg px-1 py-0.5 border bg-gray-100 text-sm cursor-pointer hover:bg-gray-200">
-                                        <button
-                                            type="button"
-                                            class="focus-visible:border-ring focus-visible:ring-ring/50 flex items-center justify-center rounded-full text-white transition-[color,box-shadow] outline-none hover:opacity-80 focus-visible:ring-[3px]"
-                                            aria-label="Change background colour"
-                                            title="Change background colour"
-                                        >
-                                            <Palette class="size-4" aria-hidden="true" 
-                                            :style="{ color: props.checklistItem.bg_colour ?? 'rgb(107, 114, 128)' }" />
-                                        </button>
-                                        <span :class="{ 'text-gray-500' : !props.checklistItem.bg_colour }">Colour</span>
-                                        <button
-                                            v-if="props.checklistItem.bg_colour"
-                                            type="button"
-                                            class="ml-1  hover:text-gray-700 transition"
-                                            @click.stop="setNewColour(null)"
-                                        >
-                                            <X class="size-4" />
-                                        </button>
-                                    </div>
-                                </DropdownMenuTrigger>
-                                <ColoursDropdown :current-colour="props.checklistItem.bg_colour" allowClear @colour-selected="setNewColour" />
-                            </DropdownMenu>
-
-                            <DropdownMenu v-model:open="addLinkDropdownOpen" v-if="!props.disabled">
-                                <DropdownMenuTrigger asChild>
-                                    <div class="flex items-center gap-2 rounded-lg px-1 py-0.5 border bg-gray-100 text-sm cursor-pointer hover:bg-gray-200" title="Add links">
-                                        <Link class="size-4 opacity-50" />
-                                        <span class="text-gray-500">Link</span>
-                                    </div>
-                                </DropdownMenuTrigger>
-                                <AddChecklistItemLinkDropdownContent
-                                    @add-link="addLink"
-                                    @cancel-create="addLinkDropdownOpen = false"
-                                />
-                            </DropdownMenu>
+                <div class="px-6 pt-4 pb-6 flex flex-col flex-1 min-h-0">
+                    <form class="space-y-4 pb-4 min-h-0 flex-1 flex flex-col h-full" @submit.prevent>
+                        <div class="space-y-4">
+                            <div v-if="props.checklistItem.locked_at" 
+                                class="flex items-center gap-2 rounded-lg px-1 py-2 border text-sm bg-gray-300 border-gray-700 text-gray-700 w-100 justify-center">
+                                <Lock class="size-4" />
+                                {{ `Locked by ${props.checklistItem.locked_by_username} ${DateUtils.toFullDateTime(props.checklistItem.locked_at)}` }}
+                            </div>
+                            <div v-if="props.checklistItem.deleted_at" 
+                                class="flex items-center gap-2 rounded-lg px-1 py-2 border text-sm bg-red-200 border-red-700 text-red-700 w-100 justify-center">
+                                <Trash class="size-4" />
+                                {{ `Deleted by ${props.checklistItem.deleted_by_username} ${DateUtils.toFullDateTime(props.checklistItem.deleted_at)}` }}
+                            </div>
                             
-                            <AddMember v-if="!props.disabled" :membersData="memberSearchUsers" @select-user="handleSelect" @search-users="searchUsers">
-                                <template #trigger="{ openPopover }">
-                                    <div class="flex items-center gap-2 rounded-lg px-1 py-0.5 border bg-gray-100 text-sm cursor-pointer hover:bg-gray-200" :aria-expanded="openPopover" title="Add members">
-                                        <Users class="size-4 opacity-50" />
-                                        <span class="text-gray-500">Members</span>
-                                    </div>
-                                </template>
-                            </AddMember>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <!-- <LockedLabel 
+                                    v-if="props.checklistItem.locked_at"
+                                    :locked-at="props.checklistItem.locked_at"
+                                    :locked-by="props.checklistItem.locked_by_username"
+                                /> -->
+                                <PriorityLabel 
+                                    v-if="props.checklistItem.priority || !props.disabled"
+                                    v-model:priority="props.checklistItem.priority" 
+                                    :disabled="props.disabled"
+                                    @update:priority="props.checklistItem.save()" 
+                                />
+                                <DueDate 
+                                    v-if="props.checklistItem.due_date || !props.disabled"
+                                    v-model="props.checklistItem.due_date" 
+                                    showTime 
+                                    :editable="!props.disabled"
+                                    :is-complete="props.checklistItem.is_checked"
+                                    @update:model-value="props.checklistItem.save()" 
+                                />
+                                <DropdownMenu v-if="!props.disabled">
+                                    <DropdownMenuTrigger asChild>
+                                        <div class="flex items-center gap-2 rounded-lg px-1 py-0.5 border bg-gray-100 text-sm cursor-pointer hover:bg-gray-200">
+                                            <button
+                                                type="button"
+                                                class="focus-visible:border-ring focus-visible:ring-ring/50 flex items-center justify-center rounded-full text-white transition-[color,box-shadow] outline-none hover:opacity-80 focus-visible:ring-[3px]"
+                                                aria-label="Change background colour"
+                                                title="Change background colour"
+                                            >
+                                                <Palette class="size-4" aria-hidden="true" 
+                                                :style="{ color: props.checklistItem.bg_colour ?? 'rgb(107, 114, 128)' }" />
+                                            </button>
+                                            <span :class="{ 'text-gray-500' : !props.checklistItem.bg_colour }">Colour</span>
+                                            <button
+                                                v-if="props.checklistItem.bg_colour"
+                                                type="button"
+                                                class="ml-1  hover:text-gray-700 transition"
+                                                @click.stop="setNewColour(null)"
+                                            >
+                                                <X class="size-4" />
+                                            </button>
+                                        </div>
+                                    </DropdownMenuTrigger>
+                                    <ColoursDropdown :current-colour="props.checklistItem.bg_colour" allowClear @colour-selected="setNewColour" />
+                                </DropdownMenu>
+    
+                                <DropdownMenu v-model:open="addLinkDropdownOpen" v-if="!props.disabled">
+                                    <DropdownMenuTrigger asChild>
+                                        <div class="flex items-center gap-2 rounded-lg px-1 py-0.5 border bg-gray-100 text-sm cursor-pointer hover:bg-gray-200" title="Add links">
+                                            <Link class="size-4 opacity-50" />
+                                            <span class="text-gray-500">Link</span>
+                                        </div>
+                                    </DropdownMenuTrigger>
+                                    <AddChecklistItemLinkDropdownContent
+                                        @add-link="addLink"
+                                        @cancel-create="addLinkDropdownOpen = false"
+                                    />
+                                </DropdownMenu>
+                                
+                                <AddMember v-if="!props.disabled" :membersData="memberSearchUsers" @select-user="handleSelect" @search-users="searchUsers">
+                                    <template #trigger="{ openPopover }">
+                                        <div class="flex items-center gap-2 rounded-lg px-1 py-0.5 border bg-gray-100 text-sm cursor-pointer hover:bg-gray-200" :aria-expanded="openPopover" title="Add members">
+                                            <Users class="size-4 opacity-50" />
+                                            <span class="text-gray-500">Members</span>
+                                        </div>
+                                    </template>
+                                </AddMember>
+                            </div>
                         </div>
 
-                        <div class="flex flex-col">
+                        <div class="flex flex-col flex-1 min-h-0">
                             <div class="flex justify-between items-center">
                                 <span class="font-medium">Description</span>
                                 <!-- <Button v-if="!isEditingDesc && props.checklistItem.description && !props.disabled" variant="secondary" size="sm" @click="beginEditingDescription">
@@ -160,13 +162,15 @@
                             >
                                 Add a description...
                             </div>
-                            <div v-else-if="props.checklistItem.description" class="text-sm text-gray-600 hover:bg-gray-50 rounded-lg p-2cursor-pointer min-h-[5rem]" @click="handleDescriptionClick">
-                                <div
-                                    class="prose prose-sm
-                                        prose-ul:list-disc prose-ul:list-inside prose-ul:pl-0
-                                        prose-ol:list-decimal prose-ol:list-inside prose-ol:pl-0"
-                                    v-html="props.checklistItem.description"
-                                ></div>
+                            <div v-else-if="props.checklistItem.description" class="overflow-y-auto flex-1 min-h-0">
+                                <div class="text-sm text-gray-600 hover:bg-gray-50 rounded-lg p-2cursor-pointer min-h-[5rem]" @click="handleDescriptionClick">
+                                    <div
+                                        class="prose prose-sm
+                                            prose-ul:list-disc prose-ul:list-inside prose-ul:pl-0
+                                            prose-ol:list-decimal prose-ol:list-inside prose-ol:pl-0"
+                                        v-html="props.checklistItem.description"
+                                    ></div>
+                                </div>
                             </div>
                         </div>
                         
@@ -279,6 +283,12 @@
                                         <span class="font-medium">Last Updated</span>
                                         <p class="text-sm text-muted-foreground">
                                             {{ DateUtils.toDateTime(props.checklistItem.updated_at) }} by {{ props.checklistItem.updated_by_username }}
+                                        </p>
+                                    </div>
+                                    <div class="flex flex-col" v-if="props.checklistItem.checked_at">
+                                        <span class="font-medium">Checked</span>
+                                        <p class="text-sm text-muted-foreground">
+                                            {{ DateUtils.toDateTime(props.checklistItem.checked_at) }} by {{ props.checklistItem.checked_by_username }}
                                         </p>
                                     </div>
                                 </div>

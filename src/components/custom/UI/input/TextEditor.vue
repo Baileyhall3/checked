@@ -1,5 +1,5 @@
 <template>
-    <div class="rounded-xl border border-gray-300">
+    <div class="rounded-xl border border-gray-300 flex flex-col flex-1 min-h-0">
         <!-- Toolbar -->
         <div class="flex flex-wrap justify-between items-center border-b border-gray-200 px-2 py-1 bg-gray-50 rounded-t-xl">
             <div class="flex gap-1">
@@ -74,7 +74,7 @@
         <!-- Editable Area -->
         <div
             ref="editor"
-            class="rich-editor p-2 min-h-[8rem] outline-none text-sm sm:text-base overflow-y-auto"
+            class="rich-editor p-2 min-h-[8rem] outline-none text-sm sm:text-base overflow-y-auto flex-1"
             contenteditable="true"
             :data-placeholder="props.placeholder"
             @input="onInput"

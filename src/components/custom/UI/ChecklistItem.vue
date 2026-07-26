@@ -1,5 +1,9 @@
 <template>
-    <div :key="itemKey" class="w-full items-center grid" :class="{ 'grid-cols-[7%_93%]' : props.allowSelection }">
+    <div 
+        :key="itemKey" 
+        class="w-full items-center grid" 
+        :class="{ 'grid-cols-[7%_93%]' : props.allowSelection }"
+    >
         <div class="flex items-start  pr-3" v-if="props.allowSelection">
             <Checkbox 
                 id="isSelected" 
@@ -10,19 +14,20 @@
         </div>
         <div
             class="bg-white cursor-pointer checklist-item rounded-2xl shadow-sm border-gray-200 px-4 py-3 pl-5 relative
-                transition-colors duration-150 border focus:outline-none focus:ring-2 focus:ring-indigo-400 select-none"
+                transition-colors duration-150 border focus:outline-none focus:ring-2 focus:ring-indigo-400 select-none flex flex-col"
             :class="{ 
                 'ring-2 ring-indigo-400' :  isHovered || menuOpen || isSelected,
                 'opacity-50' : itemIsLocked,
             }"
             :style="{ '--item-colour': item.bg_colour }"
+            style="max-height: 50vh;"
             @mouseenter="isHovered = true"
             @mouseleave="isHovered = false"
             @focusin="isHovered = true"
             @focusout="!menuOpen && (isHovered = false)"
             @click="handleItemClick"
         >
-            <div class="grid grid-cols-[auto_1fr_auto] gap-4 w-full items-start">
+            <div class="grid grid-cols-[auto_1fr_auto] gap-4 w-full items-start flex-1 min-h-0">
                 <div class="mt-1 flex flex-col justify-center gap-y-2">
                     <template v-if="itemIsLocked">
                         <Trash 
@@ -49,7 +54,7 @@
                     <!-- <ItemPriorityCircle v-if="item.priority" :priority="item.priority" /> -->
                 </div>
                 
-                <div class="w-full">
+                <div class="w-full flex flex-col min-h-0 h-full">
                     <VoiceNotePlayback 
                         v-if="props.item.voice_note_path" 
                         :item="props.item"
@@ -74,6 +79,7 @@
                             :rows="1"
                         ></textarea>
                     </div>
+
                     <div class="flex w-full gap-2 mb-1" v-if="((item.priority || item.due_date) && (props.fieldsView?.priority || props.fieldsView?.dueDate)) || item.locked_at || (props.item.members?.length && props.fieldsView?.members)">
                         <div v-if="props.item.members?.length && props.fieldsView?.members" class="flex items-center gap-2">
                             <template v-for="member in props.item.members" :key="member.id">
@@ -114,10 +120,10 @@
                     </div>
 
                     <!-- Description -->
-                    <div class="flex justify-between items-start" v-if="props.fieldsView?.description">
+                    <div class="flex items-start flex-1 min-h-0 overflow-y-auto" v-if="props.fieldsView?.description">
                         <div class="text-sm text-gray-600">
                             <div
-                                class="prose prose-sm
+                                class="prose prose-sm line-clamp-6
                                     prose-ul:list-disc prose-ul:list-inside prose-ul:pl-0
                                     prose-ol:list-decimal prose-ol:list-inside prose-ol:pl-0"
                                 v-html="item.description"
