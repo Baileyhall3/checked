@@ -104,6 +104,20 @@
                                     class="border-gray-300 focus:ring-blue-500"
                                 />
                             </div>
+                            <div class="items-top flex gap-x-2 *:not-first:mt-2">
+                                <Checkbox id="isPrivate" v-model="dataSources.user.currentRecord.is_private" />
+                                <div class="grid gap-1.5 leading-none">
+                                    <label
+                                        for="isPrivate"
+                                        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                    >
+                                        Private account
+                                    </label>
+                                    <p class="text-sm text-muted-foreground">
+                                        Check this to make your account private, meaning you will not show up in public searches.
+                                    </p>
+                                </div>
+                            </div>
                             
                             <div class="w-full justify-end flex gap-2">
                                 <Button type="button" variant="secondary" :disabled="!dataSources.user?.hasChanges" class="border" @click="dataSources.user?.cancelChanges()">
@@ -200,6 +214,7 @@ import { useThemes } from '@/composables/useThemes';
 import UserDisplayAvatar from '@/components/custom/UI/UserDisplayAvatar.vue';
 import ProfileDropdownContent from '@/components/custom/UI/ProfileDropdownContent.vue';
 import MainContent from '@/components/custom/UI/MainContent.vue';
+import { Checkbox } from "@/components/ui/checkbox";
 
 const isSaving = ref<boolean>(false);
 const fileInputRef = ref<HTMLInputElement | null>(null);

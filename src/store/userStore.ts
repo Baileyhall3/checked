@@ -147,7 +147,7 @@ export const userStore = {
     }
   },
 
-  async signUp(email: string, password: string, username: string) {
+  async signUp(email: string, password: string, username: string, isPrivate: boolean) {
     try {
       state.loading = true
       state.error = null
@@ -164,7 +164,8 @@ export const userStore = {
           auth_id: data.user.id,
           email,
           username,
-          password_hash: 'managed_by_supabase'
+          password_hash: 'managed_by_supabase',
+          is_private: isPrivate
         })
         if (profileError) throw profileError
       }

@@ -8,6 +8,7 @@ import DeletedItems from '@/views/DeletedItems.vue';
 import Notifications from '@/views/Notifications.vue';
 import Preferences from '@/views/Preferences.vue';
 import Friends from '@/views/Friends.vue';
+import ChecklistInvite from '@/views/ChecklistInvite.vue';
 
 import MainLayout from '@/layouts/MainLayout.vue';
 
@@ -42,6 +43,15 @@ const routes: Array<RouteRecordRaw> = [
     meta: {
       title: 'Login',
       requiresAuth: false,
+    },
+  },
+  {
+    path: '/invite/:token',
+    name: 'Invite',
+    component: ChecklistInvite,
+    meta: {
+      title: 'Invite',
+      requiresAuth: true,
     },
   },
 

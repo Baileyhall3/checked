@@ -55,6 +55,20 @@
                                 {{ errors.email }}
                             </p>
                         </div>
+                        <div class="items-top flex gap-x-2 *:not-first:mt-2">
+                            <Checkbox id="isPrivate" v-model="signUpData.isPrivate" />
+                            <div class="grid gap-1.5 leading-none">
+                                <label
+                                    for="isPrivate"
+                                    class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                >
+                                    Private account
+                                </label>
+                                <p class="text-sm text-muted-foreground">
+                                    Check this to make your account private, meaning you will not show up in public searches.
+                                </p>
+                            </div>
+                        </div>
                         <div>
                             <div class="*:not-first:mt-2">
                                 <Label for="password-input" class="font-medium">Password</Label>
@@ -206,6 +220,7 @@ import { userStore } from "@/store/userStore";
 import { useRouter } from "vue-router";
 import { useToast } from "@/components/ui/toast/use-toast";
 import { Spinner } from "@/components/ui/spinner";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const isVisible = ref(false);
 const isSubmitting = ref(false);
@@ -215,7 +230,8 @@ const signUpData = reactive({
     username: '',
     email: '',
     password: '',
-    repeatPassword: ''
+    repeatPassword: '',
+    isPrivate: false
 });
 
 const errors = reactive({
@@ -298,13 +314,14 @@ async function handleRegister() {
             return; 
         }
     
-        const { data, error } = await userStore.signUp(signUpData.email, signUpData.password, signUpData.username);
+        const { data, error } = await userStore.signUp(signUpData.email, signUpData.password, signUpData.username, signUpData.isPrivate);
       
         if (!error) {        
             signUpData.email = '';
             signUpData.username = '';
             signUpData.password = '';
             signUpData.repeatPassword = '';
+            signUpData.isPrivate = false;
             
             toast({
                 title: 'Registration successful!',

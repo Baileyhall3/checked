@@ -55,8 +55,17 @@
                     </div>
                 </div>
 
-                <div class="*:not-first:mt-2">
+                <!-- <div class="*:not-first:mt-2">
                     <Label for="checklistMembers">Checklist Members</Label>
+                    <AddMember v-if="!props.disabled" :membersData="memberSearchUsers" @select-user="handleSelect" @search-users="searchUsers">
+                        <template #trigger="{ openPopover }">
+                            <div class="flex items-center gap-2 rounded-lg px-1 py-0.5 border bg-gray-100 text-sm cursor-pointer hover:bg-gray-200" :aria-expanded="openPopover" title="Add members">
+                                <Users class="size-4 opacity-50" />
+                                <span class="text-gray-500">Members</span>
+                            </div>
+                        </template>
+                    </AddMember>
+
                     <div class="select-input">
                       <Select multiple class="select-input" v-model="checklistData.checklistMembers" :disabled="dataSources.userFriends?.data.length == 0">
                         <SelectTrigger id="checklistMembers" class="relative ps-9 rounded-lg">
@@ -84,7 +93,7 @@
                         </SelectContent>
                       </Select>
                     </div>
-                </div>
+                </div> -->
 
                 <div class="items-top flex gap-x-2 pb-4 mt-2">
                     <Checkbox id="isTemplate" v-model="checklistData.redirect" />
@@ -148,6 +157,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useRouter } from "vue-router";
 import UserDisplayAvatar from "../custom/UI/UserDisplayAvatar.vue";
 import { DataObjectRecord } from "supabase-dataobject-core";
+import AddMember from "../custom/UI/input/lookup/AddMember.vue";
 
 interface ChecklistMember {
     id: number;
