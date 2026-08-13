@@ -106,6 +106,13 @@
                             :locked-at="item.locked_at"
                             :locked-by="item.locked_by_username"
                         />
+                        <div v-if="item.links_count > 0"
+                            class="flex items-center gap-2 rounded-lg px-1 py-0.5 text-sm bg-gray-100 border"
+                            :title="`This item has ${item.links_count} links`"
+                        >
+                            <Link class="size-4 " />
+                            <span>{{ item.links_count }}</span>
+                        </div>
     
                         <!-- <Trash 
                             v-if="item.deleted_at || item.checklist_is_deleted" 
@@ -199,7 +206,7 @@
 <script setup lang="ts">
 import { DataObject, DataObjectRecord } from 'supabase-dataobject-core';
 import DateUtils from '@/utils/DateUtils';
-import { Trash, Ellipsis, Lock, SquareCheck, SquareX } from "lucide-vue-next";
+import { Trash, Ellipsis, Lock, SquareCheck, SquareX, Link } from "lucide-vue-next";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import ChecklistItemDetails from '@/components/dialogs/ChecklistItemDetails.vue';
 import { ref, computed, onMounted, watch } from 'vue';

@@ -9,10 +9,13 @@
                             :text-color="resolvedTheme?.config.header.text"
                         >
                             <template #center>
-                                <span class="text-lg font-semibold truncate flex items-center gap-2">
+                                <div class="text-lg font-semibold truncate flex items-center gap-2">
                                     <DefaultStar type="checklist" :id="checklistDs.checklist.currentRecord?.id" />
+                                    <span title="Checklist is a template" v-if="checklistDs.checklist.currentRecord?.is_template">
+                                        <LayoutList class="size-4 opacity-60" aria-hidden="true" />
+                                    </span>
                                     {{ checklistDs.checklist.currentRecord?.name }}
-                                </span>
+                                </div>
                             </template>
                             <template #rightSide>
                                 <DropdownMenu>
@@ -202,7 +205,10 @@
                                         <!-- Checklist Progress Bar -->
                                         <transition name="fade-slide">
                                             <div v-if="checklistDs.checklistItems?.data?.length && checklistState.preferences.itemsView.progressBar" class="pb-4">
-                                                <ProgressBar :key="progressBarKey" :total-count="checklistDs.checklist?.currentRecord?.items_count" :completed-count="checklistDs.checklist?.currentRecord?.items_checked_count" />
+                                                <ProgressBar :total-count="checklistDs.checklist?.currentRecord?.items_count" :completed-count="checklistDs.checklist?.currentRecord?.items_checked_count" />
+
+                                                <!-- {{ checklistDs.checklist.currentRecord.items_checked_count }}
+                                                {{ checklistDs.checklist.currentRecord._record.items_checked_count }} -->
                                             </div>
                                         </transition>
             
@@ -383,7 +389,7 @@ import { reactive, ref, computed, watch, nextTick, onMounted } from 'vue';
 import { dataSources, checklistFields, checklistItemsFields } from '@/api/dataObjects';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast/use-toast";
-import { X, ArrowUpDown, Check, Ellipsis, SlidersHorizontal, Clipboard, SquareCheck, SquareX, Trash, MoveLeft, Import, LogOut } from "lucide-vue-next";
+import { X, ArrowUpDown, Check, Ellipsis, SlidersHorizontal, Clipboard, SquareCheck, LayoutList, Trash, MoveLeft, Import, LogOut } from "lucide-vue-next";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -716,12 +722,16 @@ async function initOthersDs() {
         }); 
 
         checklistDs.checklistItems?.on('afterUpdate', async(record, updates) => {
-            if (updates.is_checked !== undefined) {
-                console.log('Checklist item updated:', checklistDs.checklist?.currentRecord);
+            if (updates.is_checked !== undefined || updates.deleted_at !== undefined) {
+                console.log('Checklist item:', checklistDs.checklist?.currentRecord.items_checked_count);
                 await checklistDs.checklist?.currentRecord.refresh();
+                console.log('Checklist item updated:', checklistDs.checklist?.currentRecord.items_checked_count);
                 progressBarKey.value++
             }
-        })
+        });
+        checklistDs.checklistItems?.on('afterInsert', async(record) => {
+            await checklistDs.checklist?.currentRecord.refresh();
+        });
     } catch (err) {
         console.error(err);
     } finally {

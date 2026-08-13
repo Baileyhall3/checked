@@ -18,15 +18,19 @@
                     <Label for="checklistName">
                         Items to Create
                     </Label>
-                    <div class="rounded-xl border border-gray-300">
+                    <div>
                         <!-- Editable Area -->
-                        <div
+                        <!-- <div
                             ref="editor"
                             class="rich-editor p-4 h-[14rem] outline-none text-sm sm:text-base overflow-y-auto"
                             contenteditable="true"
                             @input="onInput"
                             @paste="sanitizePaste"
-                        ></div>
+                        ></div> -->
+                        <textarea
+                            v-model="importText"
+                            class="w-full h-56 rounded-xl border p-4 resize-none"
+                        />
                     </div>
                 </div>
             </form>
@@ -60,14 +64,14 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { ref} from 'vue';
+import { ref, computed } from 'vue';
 import { supabase } from "@/api/supabase";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/ui/toast/use-toast";
 import { DataObjectRecord } from "supabase-dataobject-core";
 
 const props = defineProps<{
-    checklist: DataObjectRecord;
+    checklist: DataObjectRecord<any>;
 }>();
 
 const emit = defineEmits<{
@@ -78,7 +82,16 @@ const isImporting = ref<boolean>(false);
 const isDialogOpen = ref<boolean>(false);
 const editor = ref<HTMLElement | null>(null);
 const importHtml = ref('');
-const importItems = ref<string[]>([]);
+// const importItems = ref<string[]>([]);
+
+const importText = ref<string>('');
+
+const importItems = computed(() =>
+    importText.value
+        .split(/\r?\n/)
+        .map(i => i.trim())
+        .filter(Boolean)
+)
 
 function parseLines(html: string) {
     const temp = document.createElement('div')
@@ -93,9 +106,12 @@ function parseLines(html: string) {
 }
 
 function onInput() {
-    const html = editor.value?.innerHTML || ''
-    importHtml.value = html
-    importItems.value = parseLines(html)
+    const text = editor.value?.innerText ?? ''
+
+    importItems.value = text
+        .split(/\r?\n/)
+        .map(i => i.trim())
+        .filter(Boolean)
 }
 
 function sanitizePaste(event: ClipboardEvent) {

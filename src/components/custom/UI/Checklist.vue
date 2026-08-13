@@ -69,23 +69,24 @@
                                 days until checklist is permanently deleted.
                             </p> -->
                         </div>
-                        <div class="me-2">
-                            <LayoutList 
-                                v-if="checklist.is_template && !checklist.deleted_at" 
-                                :size="16" 
-                                aria-hidden="true" 
-                                class="text-muted-foreground" 
-                                title="Checklist is a template"
-                            />
-                            <span 
+                        <div class="me-2 flex items-center gap-2">
+                            <div 
+                                v-if="checklist.is_template && !checklist.deleted_at"
+                                class="flex items-center gap-2 rounded-lg px-1 py-0.5 text-sm bg-gray-100 border"
+                                title="Checklist is a template" 
+                            >
+                                <LayoutList :size="16" aria-hidden="true" />
+                                Template
+                            </div>
+                            <div 
                                 v-if="!props.hideItemsCount"
-                                class="text-sm font-medium text-muted-foreground flex items-center gap-2" 
+                                class="flex items-center gap-2 rounded-lg px-1 py-0.5 text-sm bg-gray-100 border"
                                 :class="{ 'flex items-center gap-2 rounded-lg px-1 py-0.5 border text-sm bg-green-600 text-white' : ((checklist.items_checked_count > 0) && (checklist.items_checked_count == checklist.items_count)) }"
                                 :title="`${checklist.items_checked_count} out of ${checklist.items_count} checklist items completed`"
                             >
                                 <CircleCheckBig :size="14" />
                                 {{ checklist.items_checked_count }}/{{ checklist.items_count }}
-                            </span>
+                            </div>
                         </div>
                     </div>
                 </div>

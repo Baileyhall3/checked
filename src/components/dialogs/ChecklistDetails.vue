@@ -19,7 +19,7 @@
             <template v-else>
                 <div class="px-6 pt-4 pb-6">
                     <div class="items-top flex gap-x-2 pb-4">
-                        <Checkbox id="isTemplate" v-model="props.checklist.is_template" :disabled="props.readonly" />
+                        <Checkbox id="isTemplate" v-model="props.checklist.is_template" :disabled="props.readonly" @update:model-value="handleChecked" />
                         <div class="grid gap-1.5 leading-none">
                             <label
                                 for="isTemplate"
@@ -77,7 +77,7 @@
                             {{ DateUtils.toDateTime(props.checklist.items_updated_at) }} {{ props.checklist.items_updated_by_username ? ` by ${props.checklist.items_updated_by_username}` : '' }}
                         </p>
                     </div>
-                    <DialogFooter class="pt-4 gap-2">
+                    <!-- <DialogFooter class="pt-4 gap-2">
                         <DialogClose asChild>
                             <Button type="button" variant="secondary" class="border">Close</Button>
                         </DialogClose>
@@ -85,7 +85,7 @@
                             <Spinner v-if="isSaving" />
                             Save
                         </Button>
-                    </DialogFooter>
+                    </DialogFooter> -->
                 </div>
             </template>
         </DialogContent>
@@ -103,11 +103,6 @@ import {
     DialogFooter,
     DialogClose
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
-import { useToast } from "@/components/ui/toast/use-toast";
 import { ref, computed, reactive } from 'vue';
 import Textarea from '../ui/textarea/Textarea.vue';
 import DateUtils from '@/utils/DateUtils';
@@ -128,6 +123,12 @@ const checklistDs = reactive({
 const isDialogOpen = ref<boolean>(false);
 const isSaving = ref<boolean>(false);
 const isLoading = ref<boolean>(false);
+
+function handleChecked(isChecked: boolean) {
+    props.dataObject.update(props.checklist.id, {
+        is_template: isChecked
+    }, true);
+}
 
 async function saveChanges() {
     try {

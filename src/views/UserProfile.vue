@@ -5,6 +5,9 @@
                 <template #center>
                     <div class="text-lg font-semibold text-foreground flex items-center gap-2">
                         <UserDisplayAvatar :user="dataSources.user?.currentRecord" size="sm" />
+                        <span title="Profile is private" v-if="dataSources.user?.currentRecord?.is_private">
+                            <Lock class="size-4" aria-hidden="true" />
+                        </span>
                         <span>{{ dataSources.user?.currentRecord?.username }}</span>
                     </div>
                 </template>
@@ -193,7 +196,7 @@ import RoundedContainer from '@/components/RoundedContainer.vue';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LucideImagePlus, Home, Palette, Star, Ellipsis } from 'lucide-vue-next';
+import { LucideImagePlus, Home, Palette, Star, Ellipsis, Lock } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import { Spinner } from "@/components/ui/spinner";
 import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
