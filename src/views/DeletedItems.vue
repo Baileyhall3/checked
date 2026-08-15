@@ -90,37 +90,35 @@
                         </EmptyContent>
                     </Empty>
                     <template v-else>
-                        <div class="flex items-center space-x-2 mb-4 justify-between">
-                            <div class="flex gap-2 w-full">
-                                <SearchBar @search-entered="handleSearchQuery" />
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            size="icon"
-                                            variant="secondary"
-                                            class="rounded-xl shadow-none bg-white hover:bg-gray-200"
-                                            aria-label="Open sort"
-                                        >
-                                            <ArrowUpDown :size="16" aria-hidden="true" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                        <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-                                        <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('recent')">
-                                            Recently Deleted
-                                            <Check class="size-4" aria-hidden="true" v-if="currentSort === 'recent'" />
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('name')">
-                                            Name
-                                            <Check class="size-4" aria-hidden="true" v-if="currentSort === 'name'" />
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('created')">
-                                            Date Created
-                                            <Check class="size-4" aria-hidden="true" v-if="currentSort === 'created'" />
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
+                        <div class="flex items-center gap-2 mb-4 justify-between">
+                            <SearchBar @search-entered="handleSearchQuery" />
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="secondary"
+                                        class="rounded-xl shadow-none bg-white hover:bg-gray-200"
+                                        aria-label="Open sort"
+                                    >
+                                        <ArrowUpDown :size="16" aria-hidden="true" />
+                                        <span v-if="!isMobile">Sort</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+                                    <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('recent')">
+                                        Recently Deleted
+                                        <Check class="size-4" aria-hidden="true" v-if="currentSort === 'recent'" />
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('name')">
+                                        Name
+                                        <Check class="size-4" aria-hidden="true" v-if="currentSort === 'name'" />
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem class="cursor-pointer justify-between" @click="updateSort('created')">
+                                        Date Created
+                                        <Check class="size-4" aria-hidden="true" v-if="currentSort === 'created'" />
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                     </template>
                     <div v-if="dataSources.deletedChecklists && dataSources.deletedChecklists?.data.length > 0">
@@ -173,7 +171,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { onIonViewDidEnter } from '@ionic/vue';
 import { SortConfig, WhereClause } from 'supabase-dataobject-core';
 import { dataSources } from '@/api/dataObjects';
@@ -197,18 +195,11 @@ import {
   DropdownMenuLabel
 } from "@/components/ui/dropdown-menu";
 import Checklist from '@/components/custom/UI/Checklist.vue';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import Confirm from '@/components/dialogs/Confirm.vue';
 import { supabase } from "@/api/supabase";
 import { useToast } from '@/components/ui/toast';
 import MainContent from '@/components/custom/UI/MainContent.vue';
+import { useWindowSize } from "@vueuse/core";
 
 const confirmDeleteAllDialog = ref();
 const confirmDeleteSelectedDialog = ref();
@@ -220,6 +211,9 @@ const currentSort = ref<'recent' | 'name' | 'created'>('recent');
 const baseWhereClauases = ref<WhereClause[]>([]);
 
 const { toast } = useToast();
+
+const { width } = useWindowSize();
+const isMobile = computed(() => width.value < 768);
 
 onIonViewDidEnter(async () => {
     await dataSources.deletedChecklists?.refresh();

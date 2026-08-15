@@ -85,7 +85,7 @@ export async function initDataObjects(supabase: SupabaseClient, currentUserId: n
             childBindingField: 'owner_id',
             masterBindingField: 'id'
         },
-        sort: { field: "created_at", direction: 'desc' },
+        sort: [{ field: "items_updated_at", direction: 'desc' }, { field: "created_at", direction: 'desc' }],
         whereClauses: [
             { field: 'deleted_at', operator: 'isnull' }
         ],
@@ -103,7 +103,7 @@ export async function initDataObjects(supabase: SupabaseClient, currentUserId: n
             childBindingField: 'owner_id',
             masterBindingField: 'id'
         },
-        sort: { field: "created_at", direction: 'desc' },
+        sort: [{ field: "items_updated_at", direction: 'desc' }, { field: "created_at", direction: 'desc' }],
         whereClauses: [
             { field: 'deleted_at', operator: 'isnotnull' }
         ],

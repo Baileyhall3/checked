@@ -12,24 +12,23 @@
                 <RoundedContainer class="p-4 mt-6">
                     <div class="mb-4">
                         <div class="text-lg font-semibold">Notification Preferences</div>
-                        <p class="text-sm text-muted-foreground">Set your <span class="font-semibold">global</span> notification preferences below.</p>
-                        <p class="text-sm text-muted-foreground">These preference will apply to all checklists.</p>
+                        <p class="text-sm text-muted-foreground">Set your <span class="font-semibold">global</span> notification preferences below. These preference will apply to <span class="font-semibold">all checklists</span>.</p>
                     </div>
                     <div class="gap-4 grid" v-if="dataSources.globalNotificationPreferences.data">
                         <div 
                             v-for="(pref, index) in dataSources.globalNotificationPreferences.data" 
                             :key="pref.id"
-                            class="flex flex-col"
+                            class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
                             :class="{ 'border-b pb-4' : index !== (dataSources.globalNotificationPreferences.data.length - 1)}"
                         >
-                            <div class="mb-2">
+                            <div>
                                 <div class="font-semibold">{{ formatNotifType(pref.type) }}</div>
                                 <div class="text-sm text-muted-foreground">
                                     {{ pref.description }}
                                 </div>
                             </div>
                             
-                            <div class="flex gap-x-4">
+                            <div class="flex flex-wrap gap-y-2 gap-x-4">
                                 <div class="flex items-center gap-2" v-if="pref.supports_email">
                                     <Switch v-model="pref.allow_email" @update:model-value="newVal => handleUpdate(pref, newVal, true)" />
                                     <span class="text-sm">Allow Email</span>

@@ -1,24 +1,25 @@
 <template>
-    <img
-        v-if="user?.profile_picture_url"
-        :src="user.profile_picture_url"
-        :class="['rounded-full object-cover', sizeClasses]"
-        alt="Profile image"
-        :title="user.username"
-        v-bind="$attrs"
-    />
     <div
-        v-else
-        class="flex items-center justify-center rounded-full text-white font-semibold select-none"
+        class="flex items-center justify-center overflow-hidden rounded-full font-semibold select-none"
         :class="sizeClasses"
         :style="{
-            backgroundColor: user?.bg_colour ?? defaultColour
+            backgroundColor: user?.profile_picture_url
+                ? undefined
+                : user?.bg_colour ?? defaultColour
         }"
-        aria-hidden="true"
-        :title="user.username"
+        :title="user?.username"
         v-bind="$attrs"
     >
-        {{ initial }}
+        <img
+            v-if="user?.profile_picture_url"
+            :src="user.profile_picture_url"
+            class="block h-full w-full object-cover"
+            alt="Profile image"
+        />
+
+        <span v-else class="text-white">
+            {{ initial }}
+        </span>
     </div>
 </template>
 
@@ -60,6 +61,8 @@ const sizeClasses = computed(() => {
             return 'h-10 w-10 text-base';
         case 'lg':
             return 'h-12 w-12 text-lg';
+        case 'custom':
+            return '';
         default:
             return '';
     }

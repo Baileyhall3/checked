@@ -7,15 +7,29 @@
                 <div class="px-6 py-2 text-base border-b relative grid grid-cols-[85%_15%]">
                     <div :style="{ '--item-colour': props.checklistItem.bg_colour }">
                         <div class="flex justify-between items-start">
-                            <Checkbox
-                                v-if="!props.checklistItem.deleted_at"
-                                :style="{ 'background-color': props.checklistItem.is_checked ? '#00bc7d' : 'transparent'}"
-                                :class="{ 'border border-gray-400 !border-solid' : !props.checklistItem.is_checked }"
-                                class="rounded-full mr-2 mt-1"
-                                v-model="props.checklistItem.is_checked"
-                                :disabled="props.disabled"
-                                @update:model-value="handleChecked"
-                            />
+                            <div class="mr-2 mt-1">
+                                <template v-if="itemIsLocked">
+                                    <Trash 
+                                        v-if="props.checklistItem.deleted_at || props.checklistItem.checklist_is_deleted" 
+                                        class="w-5 h-5 text-red-600"
+                                        :title="`Deleted by ${props.checklistItem.deleted_by_username} ${DateUtils.toDateTime(props.checklistItem.deleted_at)}`"
+                                    />
+                                    <Lock 
+                                        v-if="props.checklistItem.locked_at" 
+                                        class="w-5 h-5 text-gray-600" 
+                                        :title="`Locked by ${props.checklistItem.locked_by_id === userStore.userProfile?.id ? 'You' : props.checklistItem.locked_by_username} ${DateUtils.toDateTime(props.checklistItem.locked_at)}`"
+                                    />
+                                </template>
+                                <Checkbox
+                                    v-else
+                                    :style="{ 'background-color': props.checklistItem.is_checked ? '#00bc7d' : 'transparent'}"
+                                    :class="{ 'border border-gray-400 !border-solid' : !props.checklistItem.is_checked }"
+                                    class="rounded-full"
+                                    v-model="props.checklistItem.is_checked"
+                                    :disabled="props.disabled"
+                                    @update:model-value="handleChecked"
+                                />
+                            </div>
                             <div class="w-full pe-4 font-semibold tracking-tight">
                                 <textarea
                                     ref="nameInput"
@@ -25,7 +39,7 @@
                                         'text-gray-700' : props.checklistItem.deleted_at || props.checklistItem.is_checked, 
                                         'text-gray-900' : !props.checklistItem.deleted_at && !props.checklistItem.is_checked 
                                     }"
-                                    :disabled="props.disabled"
+                                    :disabled="props.disabled || itemIsLocked"
                                     :rows="1"
                                     @input="autoResize"
                                     @blur="props.dataObject.saveChanges()"
@@ -34,7 +48,7 @@
                         </div>
                     </div>
                     <div class="px-4 py-0.5">
-                        <DropdownMenu v-if="!props.disabled">
+                        <DropdownMenu v-if="!props.disabled && !itemIsLocked">
                             <DropdownMenuTrigger asChild>
                                 <Button
                                     size="icon"
@@ -60,12 +74,12 @@
                             <div v-if="props.checklistItem.locked_at" 
                                 class="flex items-center gap-2 rounded-lg px-1 py-2 border text-sm bg-gray-300 border-gray-700 text-gray-700 w-100 justify-center">
                                 <Lock class="size-4" />
-                                {{ `Locked by ${props.checklistItem.locked_by_username} ${DateUtils.toFullDateTime(props.checklistItem.locked_at)}` }}
+                                {{ `Locked by ${ props.checklistItem.locked_by_id === userStore.userProfile?.id ? 'You' : props.checklistItem.locked_by_username} ${DateUtils.toFullDateTime(props.checklistItem.locked_at)}` }}
                             </div>
                             <div v-if="props.checklistItem.deleted_at" 
                                 class="flex items-center gap-2 rounded-lg px-1 py-2 border text-sm bg-red-200 border-red-700 text-red-700 w-100 justify-center">
                                 <Trash class="size-4" />
-                                {{ `Deleted by ${props.checklistItem.deleted_by_username} ${DateUtils.toFullDateTime(props.checklistItem.deleted_at)}` }}
+                                {{ `Deleted by ${props.checklistItem.deleted_by_id === userStore.userProfile?.id ? 'You' : props.checklistItem.deleted_by_username} ${DateUtils.toFullDateTime(props.checklistItem.deleted_at)}` }}
                             </div>
                             
                             <div class="flex flex-wrap items-center gap-2">
@@ -75,20 +89,20 @@
                                     :locked-by="props.checklistItem.locked_by_username"
                                 /> -->
                                 <PriorityLabel 
-                                    v-if="props.checklistItem.priority || !props.disabled"
+                                    v-if="props.checklistItem.priority || (!props.disabled && !itemIsLocked)"
                                     v-model:priority="props.checklistItem.priority" 
-                                    :disabled="props.disabled"
+                                    :disabled="props.disabled || itemIsLocked"
                                     @update:priority="props.checklistItem.save()" 
                                 />
                                 <DueDate 
-                                    v-if="props.checklistItem.due_date || !props.disabled"
+                                    v-if="props.checklistItem.due_date || (!props.disabled && !itemIsLocked)"
                                     v-model="props.checklistItem.due_date" 
                                     showTime 
-                                    :editable="!props.disabled"
+                                    :editable="!props.disabled && !itemIsLocked"
                                     :is-complete="props.checklistItem.is_checked"
                                     @update:model-value="props.checklistItem.save()" 
                                 />
-                                <DropdownMenu v-if="!props.disabled">
+                                <DropdownMenu v-if="!props.disabled && !itemIsLocked">
                                     <DropdownMenuTrigger asChild>
                                         <div class="flex items-center gap-2 rounded-lg px-1 py-0.5 border bg-gray-100 text-sm cursor-pointer hover:bg-gray-200">
                                             <button
@@ -114,7 +128,7 @@
                                     <ColoursDropdown :current-colour="props.checklistItem.bg_colour" allowClear @colour-selected="setNewColour" />
                                 </DropdownMenu>
     
-                                <DropdownMenu v-model:open="addLinkDropdownOpen" v-if="!props.disabled">
+                                <DropdownMenu v-model:open="addLinkDropdownOpen" v-if="!props.disabled && !itemIsLocked">
                                     <DropdownMenuTrigger asChild>
                                         <div class="flex items-center gap-2 rounded-lg px-1 py-0.5 border bg-gray-100 text-sm cursor-pointer hover:bg-gray-200" title="Add links">
                                             <Link class="size-4 opacity-50" />
@@ -127,7 +141,7 @@
                                     />
                                 </DropdownMenu>
                                 
-                                <AddMember v-if="!props.disabled" :membersData="memberSearchUsers" @select-user="handleSelect" @search-users="searchUsers">
+                                <AddMember v-if="!props.disabled && !itemIsLocked" :membersData="memberSearchUsers" @select-user="handleSelect" @search-users="searchUsers">
                                     <template #trigger="{ openPopover }">
                                         <div class="flex items-center gap-2 rounded-lg px-1 py-0.5 border bg-gray-100 text-sm cursor-pointer hover:bg-gray-200" :aria-expanded="openPopover" title="Add members">
                                             <Users class="size-4 opacity-50" />
@@ -138,7 +152,7 @@
                             </div>
                         </div>
 
-                        <div class="flex flex-col flex-1 min-h-0">
+                        <div class="flex flex-col flex-1 min-h-0" v-if="props.checklistItem.description || (!props.disabled && !itemIsLocked)">
                             <div class="flex justify-between items-center">
                                 <span class="font-medium">Description</span>
                                 <!-- <Button v-if="!isEditingDesc && props.checklistItem.description && !props.disabled" variant="secondary" size="sm" @click="beginEditingDescription">
@@ -156,7 +170,7 @@
                                     </Button>
                                 </div>
                             </template>
-                            <div v-else-if="!props.checklistItem.description && !props.disabled"
+                            <div v-else-if="!props.checklistItem.description && !props.disabled && !itemIsLocked"
                                 class="text-sm text-gray-600 border border-gray-300 rounded-lg p-2 bg-white hover:bg-gray-100 min-h-[5rem] cursor-pointer"
                                 @click="beginEditingDescription"
                             >
@@ -200,7 +214,7 @@
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                                 
-                                <AddMember v-if="!props.disabled" :membersData="memberSearchUsers" @select-user="handleSelect" @search-users="searchUsers">
+                                <AddMember v-if="!props.disabled && !itemIsLocked" :membersData="memberSearchUsers" @select-user="handleSelect" @search-users="searchUsers">
                                     <template #trigger="{ openPopover }">
                                         <Button v-if="!props.disabled" variant="secondary" size="icon" class="rounded-full" :aria-expanded="openPopover" title="Add member">
                                             <Plus class="size-4" />
@@ -214,7 +228,7 @@
                         <div class="flex flex-col" v-if="checlistItemDs.links && checlistItemDs.links.data.length > 0">
                             <div class="flex justify-between items-center">
                                 <span class="font-medium">Links</span>
-                                <DropdownMenu v-model:open="addLinkBtnDropdownOpen" v-if="!props.disabled">
+                                <DropdownMenu v-model:open="addLinkBtnDropdownOpen" v-if="!props.disabled && !itemIsLocked">
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="secondary" size="sm">
                                             Add
@@ -315,7 +329,7 @@ import type { DataObject, DataObjectRecord } from 'supabase-dataobject-core';
 import { createDataObject } from 'supabase-dataobject-core';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ref, nextTick, reactive } from 'vue';
+import { ref, nextTick, reactive, computed } from 'vue';
 import DateUtils from '@/utils/DateUtils';
 import { Palette, Lock, Trash, Ellipsis, X, Link, Users, Plus, ChevronDown } from 'lucide-vue-next';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -336,6 +350,7 @@ import { supabase } from '@/api/supabase.js';
 import AddMember from '../custom/UI/input/lookup/AddMember.vue';
 import UserDisplayAvatar from '../custom/UI/UserDisplayAvatar.vue';
 import DropdownMenuSeparator from '../ui/dropdown-menu/DropdownMenuSeparator.vue';
+import { userStore } from '@/store/userStore.js';
 
 const props = defineProps<{
     checklistItem: DataObjectRecord<any>;
@@ -365,6 +380,10 @@ const { toast } = useToast();
 const checlistItemDs = reactive({
     links: null as DataObject<any> | null,
     members: null as DataObject<any> | null
+});
+
+const itemIsLocked = computed((): boolean => {
+    return props.checklistItem.deleted_at || (props.checklistItem.locked_at && props.checklistItem.locked_by_id !== userStore.userProfile?.id) || props.checklistItem.checklist_is_deleted ? true : false;
 });
 
 // const newLink = ref({

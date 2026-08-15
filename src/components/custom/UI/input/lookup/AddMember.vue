@@ -5,7 +5,7 @@
             <Button 
                 v-if="!$slots.trigger"
                 variant="secondary" 
-                class="w-full mt-4"
+                class="w-full"
                 role="combobox"
                 :aria-expanded="openPopover"
             >

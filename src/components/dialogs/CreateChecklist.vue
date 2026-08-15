@@ -1,5 +1,5 @@
 <template>
-    <Dialog v-model:open="isDialogOpen">
+    <Dialog v-model:open="isDialogOpen" @update:open="handleOpenUpdated">
         <DialogContent class="sm:max-w-[425px]">
             <DialogHeader>
                 <DialogTitle>Create Checklist</DialogTitle>
@@ -54,46 +54,37 @@
                         </Select>
                     </div>
                 </div>
+                
+                <div class="*:not-first:mt-2" v-if="usersDs.users && usersDs.users?.data.length > 0">
+                  <Label for="checklistMembers">Checklist Members</Label>
+                  <AddMember id="checklistMembers" :membersData="usersDs.users?.data" @select-user="handleSelect" @search-users="searchUsers" />
+                </div>
 
-                <!-- <div class="*:not-first:mt-2">
-                    <Label for="checklistMembers">Checklist Members</Label>
-                    <AddMember v-if="!props.disabled" :membersData="memberSearchUsers" @select-user="handleSelect" @search-users="searchUsers">
-                        <template #trigger="{ openPopover }">
-                            <div class="flex items-center gap-2 rounded-lg px-1 py-0.5 border bg-gray-100 text-sm cursor-pointer hover:bg-gray-200" :aria-expanded="openPopover" title="Add members">
-                                <Users class="size-4 opacity-50" />
-                                <span class="text-gray-500">Members</span>
-                            </div>
-                        </template>
-                    </AddMember>
-
-                    <div class="select-input">
-                      <Select multiple class="select-input" v-model="checklistData.checklistMembers" :disabled="dataSources.userFriends?.data.length == 0">
-                        <SelectTrigger id="checklistMembers" class="relative ps-9 rounded-lg">
-                            <div
-                                class="text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 group-has-[select[disabled]]:opacity-50"
-                            >
-                                <Users class="h-4 w-4" aria-hidden="true" />
-                            </div>
-                            <SelectValue placeholder="Select members">
-                              <template v-if="checklistData.checklistMembers.length > 0">
-                                <div v-for="member in checklistData.checklistMembers" :key="member.id" class="flex items-center">
-                                  <UserDisplayAvatar :user="member" class="mr-1" size="sm" data-select-ignore />
-                                  {{ member.username }}
-                                </div>
-                              </template>
-                            </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                            <template v-for="friend in dataSources.userFriends?.data" :key="friend.id">
-                              <SelectItem :value="friend" itemTextClass="flex items-center" :text-value="friend.username">
-                                <UserDisplayAvatar :user="friend" class="mr-1" size="sm" data-select-ignore />
-                                {{ friend.username }}
-                              </SelectItem>
-                            </template>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                </div> -->
+                <div v-if="checklistData.checklistMembers.length > 0" class="flex flex-col gap-2">
+                  <UserCard
+                      v-for="member in checklistData.checklistMembers"
+                      :key="member.id"
+                      :user="member"
+                      avatarSize="sm"
+                      containerClass="border"
+                      userRowClass="flex items-center justify-between"
+                  >
+                      <template #actions="{ user }">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          class="p-0"
+                          aria-label="Remove member"
+                          type="button"
+                          @click="removeMember(user)"
+                        >
+                          <X
+                            class="h-4 w-4"
+                          />
+                        </Button>
+                      </template>
+                    </UserCard>
+                </div>
 
                 <div class="items-top flex gap-x-2 pb-4 mt-2">
                     <Checkbox id="isTemplate" v-model="checklistData.redirect" />
@@ -146,7 +137,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Folder, Users } from "lucide-vue-next";
+import { Folder, Users, X } from "lucide-vue-next";
 import { computed, ref, watch, reactive } from 'vue';
 import { supabase } from "@/api/supabase";
 import { userStore } from "@/store/userStore";
@@ -158,6 +149,9 @@ import { useRouter } from "vue-router";
 import UserDisplayAvatar from "../custom/UI/UserDisplayAvatar.vue";
 import { DataObjectRecord } from "supabase-dataobject-core";
 import AddMember from "../custom/UI/input/lookup/AddMember.vue";
+import { DataObject } from "supabase-dataobject-core";
+import { createDataObject } from "supabase-dataobject-core";
+import UserCard from "../custom/UI/UserCard.vue";
 
 interface ChecklistMember {
     id: number;
@@ -189,12 +183,52 @@ const checklistData = reactive({
 
 const isCreating = ref<boolean>(false);
 const isDialogOpen = ref<boolean>(false);
+const isLoading = ref<boolean>(false);
+const userSearchQuery = ref<string | null>(null);
+
+const usersDs = reactive({
+    users: null as DataObject<any> | null
+});
 
 const canCreateChecklist = computed(() => {
   return checklistData.name.trim() !== '';
 });
 
 const router = useRouter();
+
+async function searchUsers(query: string | null) {
+  userSearchQuery.value = query;
+    setUserSearchWhereClause();
+}
+
+async function handleSelect(user: DataObjectRecord<any>) {
+    checklistData.checklistMembers.push(user);
+    setUserSearchWhereClause();
+}
+
+async function setUserSearchWhereClause() {
+    if (usersDs.users) {
+        const whereClauses = [
+            { field: 'id', operator: 'notequals', value: userStore.userProfile?.id }
+        ];
+
+        if (userSearchQuery.value) {
+            whereClauses.push({ field: 'username', operator: 'like', value: userSearchQuery.value });
+        }
+
+        if (checklistData.checklistMembers.length > 0) {
+            const selectedMemberIds = checklistData.checklistMembers.map((member: DataObjectRecord<any>) => member.id);
+            whereClauses.push({ field: 'id', operator: 'notin', value: selectedMemberIds });
+        }
+
+        usersDs.users.whereClauses = whereClauses;
+    }
+}
+
+function removeMember(user: DataObjectRecord<any>) {
+    checklistData.checklistMembers = checklistData.checklistMembers.filter((member: DataObjectRecord<any>) => member.id !== user.id);
+    setUserSearchWhereClause();
+}
 
 async function createChecklist() {
   const { toast } = useToast();
@@ -211,7 +245,7 @@ async function createChecklist() {
       return; 
     }
 
-    const memberIds = checklistData.checklistMembers.map((member: DataObjectRecord<any>) => member.friend_user_id);
+    const memberIds = checklistData.checklistMembers.map((member: DataObjectRecord<any>) => member.id);
 
     const { data, error } = await supabase.rpc('create_checklist', {
       p_name: checklistData.name,
@@ -236,6 +270,7 @@ async function createChecklist() {
         const newChecklistId = data[0].checklist_id;
         router.push(`/checklist/${newChecklistId}`);
       }
+      dataSources.myChecklists?.refresh();
       close();
     }
 
@@ -254,15 +289,46 @@ function resetChecklistData() {
   checklistData.owner_id = userStore.userProfile?.id
 }
 
+async function createDataObjects() {
+    usersDs.users = null;
+    dataSources.manager?.removeDataObject('publicUsers');
+
+    try {
+        isLoading.value = true;
+
+        const preferencesData = await createDataObject('publicUsers', {
+            viewName: 'public_users_view',
+            whereClauses: [
+                { field: 'id', operator: 'notequals', value: userStore.userProfile?.id }
+            ],
+            sort: { field: "username", direction: 'asc' },
+        }); 
+
+        usersDs.users = preferencesData;
+    } catch (err) {
+        console.error(err);
+    } finally {
+        isLoading.value = false;
+    }
+}
+
+function handleOpenUpdated(newVal: boolean) {
+    if (newVal == true) {
+        createDataObjects();
+    } else {
+        dataSources.manager?.removeDataObject('publicUsers');
+        usersDs.users = null;
+    }
+}
+
 const show = () => {
-  if (props.members && props.members.length > 0) {
-    checklistData.checklistMembers = props.members;
-  }
-  isDialogOpen.value = true;
+    createDataObjects();
+    isDialogOpen.value = true;
 }
 
 const close = () => {
-  isDialogOpen.value = false;
+    usersDs.users = null;
+    isDialogOpen.value = false;
 }
 
 defineExpose({show, close})

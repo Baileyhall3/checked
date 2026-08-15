@@ -66,7 +66,6 @@
         </template>
 
         <template v-if="!props.readonly">
-            <DropdownMenuSeparator />
             <DropdownMenuItem class="cursor-pointer text-red-600" @click="confirmDialog.show()" v-if="!checklist.deleted_at">
                 <Trash class="size-4" aria-hidden="true" />
                 Delete

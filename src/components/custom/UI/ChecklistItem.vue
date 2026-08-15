@@ -81,6 +81,11 @@
                     </div>
 
                     <div class="flex w-full gap-2 mb-1" v-if="((item.priority || item.due_date) && (props.fieldsView?.priority || props.fieldsView?.dueDate)) || item.locked_at || (props.item.members?.length && props.fieldsView?.members)">
+                        <LockedLabel 
+                            v-if="item.locked_at"
+                            :locked-at="item.locked_at"
+                            :locked-by="item.locked_by_username"
+                        />
                         <div v-if="props.item.members?.length && props.fieldsView?.members" class="flex items-center gap-2">
                             <template v-for="member in props.item.members" :key="member.id">
                                 <UserDisplayAvatar 
@@ -100,11 +105,6 @@
                             v-if="item.due_date && props.fieldsView?.dueDate" 
                             v-model="item.due_date" 
                             :is-complete="item.is_checked"
-                        />
-                        <LockedLabel 
-                            v-if="item.locked_at"
-                            :locked-at="item.locked_at"
-                            :locked-by="item.locked_by_username"
                         />
                         <div v-if="item.links_count > 0"
                             class="flex items-center gap-2 rounded-lg px-1 py-0.5 text-sm bg-gray-100 border"
@@ -220,6 +220,7 @@ import ChecklistItemDropdownContent from './ChecklistItemDropdownContent.vue';
 import LockedLabel from './checklist/LockedLabel.vue';
 import type { ChecklistItemFieldsView } from '@/layouts/ChecklistLayoutManager.js';
 import UserDisplayAvatar from './UserDisplayAvatar.vue';
+import { userStore } from '@/store/userStore.js';
 
 const props = defineProps<{
     item: DataObjectRecord<any>;
@@ -282,7 +283,7 @@ const doShowCreatedUpdated = computed(() => {
 });
 
 const itemIsLocked = computed((): boolean => {
-    return props.item.deleted_at || props.item.locked_at || props.item.checklist_is_deleted ? true : false;
+    return props.item.deleted_at || (props.item.locked_at && props.item.locked_by_id !== userStore.userProfile?.id) || props.item.checklist_is_deleted ? true : false;
 });
 
 function handleSelected(newValue: boolean) {

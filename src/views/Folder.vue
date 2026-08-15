@@ -328,6 +328,18 @@ async function initChecklistsDs() {
             ],
             sort: { field: "items_updated_at", direction: 'desc' },
             fields: checklistFields,
+            relationships: [
+                {
+                    name: "checklist_members_view",
+                    alias: "members",
+                    fields: [
+                        "user_id",
+                        "username",
+                        "bg_colour",
+                        "profile_picture_url"
+                    ]
+                }
+            ]
         }); 
 
         folderDs.checklistItems = await createDataObject('folder_checklist_items', {
@@ -347,7 +359,8 @@ async function initChecklistsDs() {
             sort: { field: "created_at", direction: 'desc' },
             fields: checklistItemsFields,
             autoRefresh: false,
-            groupBy: { field: 'checklist', additionalFields: ['checklist_id'] }
+            groupBy: { field: 'checklist', additionalFields: ['checklist_id'] },
+
         }); 
 
         if (preferences.value.listView === 'items') {

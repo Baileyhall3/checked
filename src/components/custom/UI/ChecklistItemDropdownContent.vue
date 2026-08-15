@@ -20,14 +20,14 @@
         <DropdownMenuItem 
             v-if="!item.locked_at"
             class="cursor-pointer" 
-            title="Locking this item will prevent people from updating it"
+            title="Locking this item will prevent other members from updating it"
             @click="lockItem()" 
         >
             <Lock class="size-4 opacity-60" aria-hidden="true" />
             Lock
         </DropdownMenuItem>
         <DropdownMenuItem class="cursor-pointer" @click="unlockItem()" v-else>
-            <LockOpen class="size-4" aria-hidden="true" />
+            <LockOpen class="size-4 opacity-60" aria-hidden="true" />
             Unlock
         </DropdownMenuItem>
         <DropdownMenuSeparator />

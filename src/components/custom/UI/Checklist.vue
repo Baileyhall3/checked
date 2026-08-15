@@ -58,6 +58,7 @@
                         <!-- <ChevronRight class="size-3.5 mx-1" /> -->
                     </div>
                     <div class="flex justify-between items-center">
+                        
                         <div>
                             <p class="text-muted-foreground text-sm" :class="{ 'text-red-600' : checklist.deleted_at }">
                                 {{ DateUtils.toRelevantDateOrTime(checklist.deleted_at ?? checklist.items_updated_at ?? checklist.created_at) }}
@@ -70,6 +71,28 @@
                             </p> -->
                         </div>
                         <div class="me-2 flex items-center gap-2">
+                            <div class="flex items-center" v-if="props.checklist.members && props.checklist.members.length">
+                                <template
+                                    v-for="(member, index) in props.checklist.members.slice(0, 4)"
+                                    :key="member.id"
+                                >
+                                    <UserDisplayAvatar
+                                        :title="member.username"
+                                        :user="member"
+                                        size="custom"
+                                        class="h-6 w-6 text-base border-2 border-white"
+                                        :class="{ '-ml-1': index > 0 }"
+                                        :style="{ zIndex: 4 - index }"
+                                    />
+                                </template>
+
+                                <span
+                                    v-if="props.checklist.members.length > 4"
+                                    class="-ml-2 flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-muted text-xs"
+                                >
+                                    +{{ props.checklist.members.length - 4 }}
+                                </span>
+                            </div>
                             <div 
                                 v-if="checklist.is_template && !checklist.deleted_at"
                                 class="flex items-center gap-2 rounded-lg px-1 py-0.5 text-sm bg-gray-100 border"
@@ -88,6 +111,7 @@
                                 {{ checklist.items_checked_count }}/{{ checklist.items_count }}
                             </div>
                         </div>
+                        
                     </div>
                 </div>
             </div>
@@ -104,9 +128,10 @@ import { Button } from "@/components/ui/button";
 import ChecklistDropdownContent from './ChecklistDropdownContent.vue';
 import { Checkbox } from "@/components/ui/checkbox"
 import { ref } from 'vue';
+import UserDisplayAvatar from './UserDisplayAvatar.vue';
 
 const props = defineProps<{
-    checklist: DataObjectRecord;
+    checklist: DataObjectRecord<any>;
     checklistData: DataObject;
     hideFolder?: boolean;
     hideDeletedIcon?: boolean;
