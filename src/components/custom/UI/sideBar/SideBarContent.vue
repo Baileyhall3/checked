@@ -73,8 +73,8 @@
                              >
                                  Shared Checklists
                                  <ChevronRight 
-                                     :size="14"
-                                     :style="{ transform: `rotate(${sideBarState.foldersExpanded ? 90 : 0}deg)` }"
+                                    :size="14"
+                                    :style="{ transform: `rotate(${sideBarState.sharedChecklistsExpanded ? 90 : 0}deg)` }"
                                  />
                              </span>
                              <template v-if="sideBarState.sharedChecklistsExpanded">

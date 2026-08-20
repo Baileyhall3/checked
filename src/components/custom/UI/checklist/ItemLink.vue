@@ -6,9 +6,9 @@
         <a 
             :href="props.link.url" 
             target="_blank" 
-            class="text-sm text-blue-600 hover:underline flex items-center gap-1"
+            class="text-sm text-blue-600 hover:underline flex items-center gap-2"
         >
-            <Link class="size-3" />
+            <Link2 class="size-4" />
             {{ props.link.title || props.link.url }}
         </a>
         <div
@@ -46,7 +46,7 @@
 
 <script setup lang="ts">
 import { DataObjectRecord } from 'supabase-dataobject-core';
-import { Link, Ellipsis } from "lucide-vue-next";
+import { Link, Link2, Ellipsis } from "lucide-vue-next";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuContent } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ref, computed } from 'vue';

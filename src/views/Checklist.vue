@@ -93,20 +93,40 @@
                                                             <DropdownMenuSubTrigger inset class="cursor-pointer pl-8">Group By</DropdownMenuSubTrigger>
                                                             <DropdownMenuPortal>
                                                                 <DropdownMenuSubContent>
-                                                                    <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateSort('name')">
-                                                                        Priority
-                                                                        <Check class="size-4" aria-hidden="true" v-if="checklistState.preferences.currentSort === 'name'" />
-                                                                    </DropdownMenuItem>
-                                                                    <DropdownMenuItem class="cursor-pointer justify-between" @click="checklistState.layout.updateSort('name')">
-                                                                        Due Date
-                                                                        <Check class="size-4" aria-hidden="true" v-if="checklistState.preferences.currentSort === 'name'" />
-                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuRadioGroup v-model="checklistState.preferences.groupBy">
+                                                                        <DropdownMenuRadioItem value="priority" @click="checklistState.layout.updateGroupBy('priority')" class="cursor-pointer">Priority</DropdownMenuRadioItem>
+                                                                        <DropdownMenuRadioItem value="due_date" @click="checklistState.layout.updateGroupBy('due_date')" class="cursor-pointer">Due Date</DropdownMenuRadioItem>
+                                                                        <DropdownMenuSeparator />
+                                                                        <DropdownMenuRadioItem value="none" @click="checklistState.layout.updateGroupBy('none')" class="cursor-pointer">None</DropdownMenuRadioItem>
+                                                                    </DropdownMenuRadioGroup>
                                                                 </DropdownMenuSubContent>
                                                             </DropdownMenuPortal>
                                                         </DropdownMenuSub>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                                 <ButtonGroupSeparator />
+                                                <!-- <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button
+                                                            variant="secondary"
+                                                            class="rounded-xl shadow-none bg-white hover:bg-gray-200"
+                                                            aria-label="Open filter dropdown"
+                                                        >
+                                                            <Funnel :size="16" aria-hidden="true" />
+                                                            <span v-if="!isMobile">Filter</span>
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent>
+                                                        <DropdownMenuLabel>Item Status</DropdownMenuLabel>
+                                                        <DropdownMenuCheckboxItem class="cursor-pointer justify-between" v-model="checklistState.layout.showProgressBar">
+                                                            Checked
+                                                        </DropdownMenuCheckboxItem>
+                                                        <DropdownMenuCheckboxItem class="cursor-pointer justify-between" v-model="checklistState.layout.showProgressBar">
+                                                            Unchecked
+                                                        </DropdownMenuCheckboxItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                                <ButtonGroupSeparator /> -->
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
                                                         <Button
@@ -205,7 +225,7 @@
                                         <!-- Checklist Progress Bar -->
                                         <transition name="fade-slide">
                                             <div v-if="checklistDs.checklistItems?.data?.length && checklistState.preferences.itemsView.progressBar" class="pb-4">
-                                                <ProgressBar :total-count="checklistDs.checklist?.currentRecord?.items_count" :completed-count="checklistDs.checklist?.currentRecord?.items_checked_count" />
+                                                <ProgressBar :total-count="checklistDs.checklist?.currentRecord?._record.items_count" :completed-count="checklistDs.checklist?.currentRecord?._record.items_checked_count" />
 
                                                 <!-- {{ checklistDs.checklist.currentRecord.items_checked_count }}
                                                 {{ checklistDs.checklist.currentRecord._record.items_checked_count }} -->
@@ -316,8 +336,36 @@
 
                                 </div>
                                 <div class="flex-1 p-2 overflow-y-auto min-h-0 checklist-scroll" ref="checklistEl">
+                                    <!-- Checklist items grouped -->
+                                    <template v-if="checklistDs.checklistItems?.hasGroupBy">
+                                        <div v-for="checklist in checklistDs.checklistItems?.groupedData" :key="checklist.groupValue" class="mb-8">
+                                            <ChecklistItemsGroup
+                                                :checklist-data="checklistDs.checklistItems"
+                                                :items="checklist.records"
+                                                collapsible
+                                            >
+                                                <template #header>
+                                                    <div v-if="checklistState.preferences.groupBy === 'priority'" class="flex gap-2 items-center">
+                                                        <template v-if="checklist.groupValue">
+                                                            <ItemPriorityCircle :priority="checklist.groupValue" />
+                                                            <span v-if="checklist.groupValue === 1">High</span>
+                                                            <span v-else-if="checklist.groupValue === 2">Medium</span>
+                                                            <span v-else-if="checklist.groupValue === 3">Low</span>
+                                                        </template>
+                                                        <span v-else>None</span>
+                                                    </div>
+                                                    <template v-else>
+                                                    <span v-if="checklist.groupValue === null || !checklist.groupValue">None</span>
+                                                    <!-- <span v-else>{{ DateUtils.toDate(checklist.groupValue) }}</span> -->
+                                                    <span v-else>{{ checklist.groupValue }}</span>
+                                                    </template>
+                                                </template>
+                                            </ChecklistItemsGroup>
+                                        </div>
+                                     </template>
+
                                     <!-- Checklist Items -->
-                                    <div class="flex flex-col gap-3" >
+                                    <div class="flex flex-col gap-3" v-else>
                                         <ChecklistItem 
                                             v-for="(item, index) in checklistDs.checklistItems?.data" :key="item.id"
                                             :disabled="!checklistDs.checklistItems?.options.canUpdate"
@@ -389,7 +437,21 @@ import { reactive, ref, computed, watch, nextTick, onMounted } from 'vue';
 import { dataSources, checklistFields, checklistItemsFields } from '@/api/dataObjects';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast/use-toast";
-import { X, ArrowUpDown, Check, Ellipsis, SlidersHorizontal, Clipboard, SquareCheck, LayoutList, Trash, MoveLeft, Import, LogOut } from "lucide-vue-next";
+import { 
+    X, 
+    ArrowUpDown, 
+    Check, 
+    Ellipsis, 
+    SlidersHorizontal, 
+    Clipboard, 
+    SquareCheck, 
+    LayoutList, 
+    Trash, 
+    MoveLeft, 
+    Import, 
+    LogOut,
+    Funnel 
+} from "lucide-vue-next";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -421,7 +483,7 @@ import Loading from '@/components/custom/UI/Loading.vue';
 import ChecklistItem from '@/components/custom/UI/ChecklistItem.vue';
 import ChecklistDropdownContent from '@/components/custom/UI/ChecklistDropdownContent.vue';
 import EnterPIN from '@/components/dialogs/EnterPIN.vue';
-import ChecklistLayout, { ChecklistSort, ChecklistPreferences, ChecklistItemFieldsView } from '@/layouts/ChecklistLayoutManager';
+import ChecklistLayout, { ChecklistSort, ChecklistPreferences, ChecklistItemFieldsView, ChecklistGroupByField } from '@/layouts/ChecklistLayoutManager';
 import CreateChecklist from '@/components/dialogs/CreateChecklist.vue';
 import { useThemes } from '@/composables/useThemes';
 import MainContent from '@/components/custom/UI/MainContent.vue';
@@ -434,6 +496,9 @@ import ImportItems from '@/components/dialogs/ImportItems.vue';
 import { useWindowSize } from "@vueuse/core";
 import { userStore } from '@/store/userStore';
 import { supabase } from '@/api/supabase.js';
+import ChecklistItemsGroup from '@/components/custom/ChecklistItemsGroup.vue';
+import { GroupByConfig } from 'supabase-dataobject-core/dist/types';
+import ItemPriorityCircle from '@/components/custom/UI/ItemPriorityCircle.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -458,6 +523,7 @@ const checklistState = reactive<{
     searchQuery: string;
     sortConfig: SortConfig<any>[];
     whereClauses: WhereClause<any>[];
+    groupBy: GroupByConfig<any> | undefined;
 }>({
     layout: null,
     preferences: null,
@@ -466,7 +532,8 @@ const checklistState = reactive<{
         { field: 'created_at', direction: 'desc' },
         { field: 'sort_order', direction: 'desc' }
     ],
-    whereClauses: []
+    whereClauses: [],
+    groupBy: undefined
 });
 
 const { resolveTheme, themeToCssVars } = useThemes()
@@ -568,6 +635,7 @@ onIonViewDidEnter(async() => {
     const checklistLayout = new ChecklistLayout({
         key: `checklist-${id}-layout`, 
         onPreferenceUpdated: (preference, pValue) => {
+            console.log('Preference updated:', preference, pValue);
             if (preference == 'currentSort') {
                 const isCustom = pValue === 'custom'
                 if (sortableInstance.value) {
@@ -580,6 +648,8 @@ onIonViewDidEnter(async() => {
                 if (preference === 'checked' || preference === 'deleted') {
                     updateWhereClauses();
                 }
+            }  else if (preference == 'groupBy') {
+                updateGroupBy(pValue);
             }
         }
     });
@@ -588,6 +658,7 @@ onIonViewDidEnter(async() => {
     checklistState.preferences = checklistLayout.preferences;
     updateSort(checklistState.layout.preferences.currentSort, checklistState.layout.preferences.sortDirection ?? 'asc', true);
     updateWhereClauses(true);
+    updateGroupBy(checklistState.layout.preferences.groupBy, true);
 
     await createDataObjects(id);
 
@@ -638,6 +709,7 @@ async function createDataObjects(id: number) {
 async function initOthersDs() {
     try {
         isLoading.value = true;
+        // TODO: Make this an RPC call
         checklistDs.checklistMembers = await createDataObject('checklist_members', {
             viewName: 'checklist_members_view',
             tableName: 'checklist_members',
@@ -707,19 +779,22 @@ async function initOthersDs() {
             sort: checklistState.sortConfig,
             fields: checklistItemsFields,
             allowedBuckets: ['checklist-item-voice-notes'],
+            groupBy: checklistState.groupBy,
             relationships: [
-            {
-                name: "checklist_item_members_view",
-                alias: "members",
-                fields: [
-                    "user_id",
-                    "username",
-                    "bg_colour",
-                    "profile_picture_url"
-                ]
-            }
-        ]
+                {
+                    name: "checklist_item_members_view",
+                    alias: "members",
+                    fields: [
+                        "user_id",
+                        "username",
+                        "bg_colour",
+                        "profile_picture_url"
+                    ]
+                }
+            ]
         }); 
+
+        console.log('Checklist items data:', checklistDs.checklistItems);
 
         checklistDs.checklistItems?.on('afterUpdate', async(record, updates) => {
             if (updates.is_checked !== undefined || updates.deleted_at !== undefined) {
@@ -832,7 +907,6 @@ function updateSort(value: ChecklistSort, direction: 'asc' | 'desc', pSkipUpdate
     }
     itemsSort.push({ field: 'sort_order', direction: direction });
     checklistState.sortConfig = itemsSort;
-    console.log('sorta ', checklistState.sortConfig)
     if (!pSkipUpdate) {
         checklistDs.checklistItems?.updateSort(checklistState.sortConfig);
     }
@@ -856,6 +930,23 @@ function updateWhereClauses(pSkipUpdate = false) {
     }
     if (!pSkipUpdate) {
         checklistDs.checklistItems.whereClauses = checklistState.whereClauses;
+    }
+}
+
+function updateGroupBy(field: ChecklistGroupByField, pSkipUpdate = false) {
+    checklistState.groupBy = undefined;
+    if (field === 'none') {
+        checklistState.groupBy = undefined;
+    } else if (field === 'priority' || field === 'due_date' || field === 'created_by') {
+        checklistState.groupBy = { 
+            field: field,  
+            aggregates: {
+                itemCount: { field: 'id', op: 'count' }
+            }
+        }
+    }
+    if (!pSkipUpdate) {
+        checklistDs.checklistItems?.setGroupBy(checklistState.groupBy);
     }
 }
 

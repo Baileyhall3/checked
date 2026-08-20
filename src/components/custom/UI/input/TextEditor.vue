@@ -31,6 +31,15 @@
                     <UnderlineIcon class="w-3 h-3" />
                 </button>
                 <button
+                    v-if="!props.hideStrikethrough"
+                    type="button"
+                    class="p-2 rounded hover:bg-gray-200 active:bg-gray-300"
+                    title="Strikethrough"
+                    @click="exec('strikethrough')"
+                >
+                    <Strikethrough class="w-3 h-3" />
+                </button>
+                <button
                     v-if="!props.hideBulletList"
                     type="button"
                     class="p-2 rounded hover:bg-gray-200 active:bg-gray-300"
@@ -102,11 +111,11 @@ import {
     List, 
     ListOrdered, 
     CornerUpLeftIcon, 
-    CornerUpRight 
+    CornerUpRight,
+    Strikethrough
 } from 'lucide-vue-next';
 import { ref, watch, onMounted } from 'vue';
 import { Button } from "@/components/ui/button";
-
 
 const props = defineProps<{
     modelValue: string;
@@ -116,6 +125,7 @@ const props = defineProps<{
     hideUnderline?: boolean;
     hideBulletList?: boolean;
     hideNumberedList?: boolean;
+    hideStrikethrough?: boolean;
 }>();
 
 const emit = defineEmits<{

@@ -10,6 +10,7 @@
                                 type="text"
                                 class="flex-1 bg-transparent border-none focus:outline-none text-gray-800 w-full"
                                 :disabled="props.readonly"
+                                @blur="props.checklist.save()"
                             />
                         </div>
                     </div>

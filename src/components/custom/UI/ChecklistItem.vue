@@ -80,7 +80,15 @@
                         ></textarea>
                     </div>
 
-                    <div class="flex w-full gap-2 mb-1" v-if="((item.priority || item.due_date) && (props.fieldsView?.priority || props.fieldsView?.dueDate)) || item.locked_at || (props.item.members?.length && props.fieldsView?.members)">
+                    <div 
+                        class="flex w-full gap-2 mb-1" 
+                        v-if="((item.priority || item.due_date) && 
+                            (props.fieldsView?.priority || props.fieldsView?.dueDate)) || 
+                            item.locked_at || 
+                            (props.item.members?.length && 
+                            props.fieldsView?.members) ||
+                            item.links_count > 0"
+                    >
                         <LockedLabel 
                             v-if="item.locked_at"
                             :locked-at="item.locked_at"
@@ -107,10 +115,10 @@
                             :is-complete="item.is_checked"
                         />
                         <div v-if="item.links_count > 0"
-                            class="flex items-center gap-2 rounded-lg px-1 py-0.5 text-sm bg-gray-100 border"
+                            class="flex items-center gap-2 rounded-lg px-1 py-0.5 text-sm bg-gray-100 border text-blue-600"
                             :title="`This item has ${item.links_count} links`"
                         >
-                            <Link class="size-4 " />
+                            <Link2 class="size-4 " />
                             <span>{{ item.links_count }}</span>
                         </div>
     
@@ -206,7 +214,7 @@
 <script setup lang="ts">
 import { DataObject, DataObjectRecord } from 'supabase-dataobject-core';
 import DateUtils from '@/utils/DateUtils';
-import { Trash, Ellipsis, Lock, SquareCheck, SquareX, Link } from "lucide-vue-next";
+import { Trash, Ellipsis, Lock, SquareCheck, SquareX, Link, Link2 } from "lucide-vue-next";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import ChecklistItemDetails from '@/components/dialogs/ChecklistItemDetails.vue';
 import { ref, computed, onMounted, watch } from 'vue';
