@@ -1,6 +1,8 @@
 <template>
     <DropdownMenuContent>
         <template v-if="!checklist.deleted_at">
+            <slot name="actionItemsTop" v-bind="{ checklist }" />
+
             <DropdownMenuItem class="cursor-pointer" @click="openChecklistDetails()">
                 <TextAlignStart class="size-4 opacity-60" aria-hidden="true" />
                 Details
@@ -189,6 +191,7 @@ async function handleChecklistDelete() {
             description: 'Deleted items are recoverable for 30 days.',
         });
         dataSources.deletedChecklists?.refresh();
+        dataSources.myChecklists?.refresh();
         if (props.redirectOnDelete) {
             redirect();
         }

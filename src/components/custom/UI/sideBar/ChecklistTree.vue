@@ -42,7 +42,7 @@
           >
             {{ item.value.title }}
         </RouterLink>
-        <router-link 
+        <RouterLink 
             v-else
             :to="`/checklist/${item.value.checklistId}`" 
             class="flex items-center w-full min-w-0"
@@ -53,7 +53,7 @@
             <span class="truncate min-w-0 block">
                 {{ item.value.title }}
             </span>
-        </router-link>
+        </RouterLink>
       </div>
 
       <FolderActions
@@ -61,6 +61,35 @@
         :folder="item.value.folder"
         :is-hovered="sideBarState.hoveredItemKey === item._id || sideBarState.isMobile"
       />
+      <DropdownMenu v-else>
+          <DropdownMenuTrigger asChild>
+              <Button
+                  @click.stop.prevent 
+                  size="icon"
+                  variant="ghost"
+                  aria-label="Open edit menu"
+                  class="opacity-0
+                    transition-opacity p-0 size-4 ml-2 rounded-full shadow-none"
+                  :class="{
+                      'opacity-60 pointer-events-auto': sideBarState.hoveredItemKey === item._id || sideBarState.isMobile
+                  }"
+              >
+                  <Ellipsis :size="16" aria-hidden="true" />
+              </Button>
+          </DropdownMenuTrigger>
+          <ChecklistDropdownContent 
+              :checklist="item.value.checklist"
+              :checklist-data="dataSources.myChecklists"
+              :redirectOnDelete="false"
+          >
+            <template #actionItemsTop="{ checklist }">
+                <DropdownMenuItem class="cursor-pointer" @click="openChecklist(checklist)">
+                    <SquareArrowUpRight class="size-4 opacity-60" aria-hidden="true" />
+                    Open Checklist
+                </DropdownMenuItem>
+            </template>
+          </ChecklistDropdownContent>
+      </DropdownMenu>
     </TreeItem>
   </TreeRoot>
 </template>
@@ -74,8 +103,10 @@ import FolderTreeItem from './FolderTreeItem.vue';
 import { sideBarState } from './sideBarState';
 import { DataObjectRecord } from 'supabase-dataobject-core';
 import FolderActions from './FolderActions.vue';
+import ChecklistDropdownContent from '../ChecklistDropdownContent.vue';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useRouter } from "vue-router";
-import { FolderOpen, Folder, ListTodo } from 'lucide-vue-next';
+import { FolderOpen, Folder, ListTodo, Ellipsis, SquareArrowUpRight } from 'lucide-vue-next';
 
 const expanded = ref<string[]>([]);
 
@@ -179,4 +210,8 @@ watch(
     },
     { immediate: true }
 );
+
+function openChecklist(checklist: DataObjectRecord) {
+    router.push(`/checklist/${checklist.id}`);
+}
 </script>

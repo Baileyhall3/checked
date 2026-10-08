@@ -1,7 +1,6 @@
 <template>
     <Dialog v-model:open="isDialogOpen">
-        <DialogContent class="flex flex-col gap-0 overflow-y-visible p-0 sm:max-w-lg [&>button:last-child]:top-3.5 max-h-[90vh]">
-            <DialogTitle></DialogTitle>
+        <DialogContent class="flex flex-col gap-0 overflow-y-visible p-0 max-w-[75%] [&>button:last-child]:top-3.5 max-h-[90vh]" style="min-width: 75%;">
             <Loading v-if="isLoading" />
             <template v-else>
                 <div class="px-6 py-2 text-base border-b relative grid grid-cols-[85%_15%]">
@@ -47,7 +46,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="px-4 py-0.5">
+                    <div class="px-4 py-0.5 justify-end flex">
                         <DropdownMenu v-if="!props.disabled && !itemIsLocked">
                             <DropdownMenuTrigger asChild>
                                 <Button
