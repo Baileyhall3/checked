@@ -3,8 +3,9 @@
         <AlertDialogContent>
             <AlertDialogHeader>
                 <AlertDialogTitle>{{ props.title }}</AlertDialogTitle>
-                <AlertDialogDescription v-if="props.description">
+                <AlertDialogDescription v-if="props.description || $slots.description">
                     {{ props.description }}
+                    <slot name="description" />
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <slot></slot>

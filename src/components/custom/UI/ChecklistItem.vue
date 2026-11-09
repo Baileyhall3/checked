@@ -324,9 +324,11 @@ function setCurrent(event: MouseEvent) {
 }
 
 function handleChecked(isChecked: boolean) {
-    props.checklistData.update(props.item.id, {
-        is_checked: isChecked
-    }, true);
+    props.item.is_checked = isChecked;
+    props.item.save();
+    // props.checklistData.update(props.item.id, {
+    //     is_checked: isChecked
+    // }, true);
 }
 
 function openItemDetails() {

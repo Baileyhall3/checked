@@ -33,6 +33,7 @@ const errorHandler: DataObjectErrorHandler = {
     }
 }
 
+// TODO: get rid of this and just use getDataObjectById from the dataObjectManager
 export const dataSources = reactive({
     manager: null as DataObjectManager | null,
     user: null as DataObject | null,
@@ -59,7 +60,8 @@ export const dataSources = reactive({
 export async function initDataObjects(supabase: SupabaseClient, currentUserId: number) {
     dataSources.manager = initializeDataObjectManager({
         supabaseClient: supabase,
-        errorHandler
+        errorHandler,
+        makeReactive: reactive
     });
 
     dataSources.user = await createDataObject('user', {

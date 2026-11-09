@@ -95,18 +95,24 @@
         :readonly="props.readonly"
     />
     <Confirm
-        description="Are you sure you want to delete this checklist? Deleted checklists can be recovered for 30 days. Checklist items will not be editable."
         ref="confirmDialog" 
         @confirmed="handleChecklistDelete"
-    />
+    >
+        <template #description>
+            <p>Are you sure you want to delete <strong>{{ props.checklist.name }}</strong>? Deleted checklists can be recovered for 30 days. Checklist items will not be editable.</p>
+        </template>
+    </Confirm>
 
     <Confirm
-        description="Are you sure you want to permanently delete this checklist? All checklist items will be deleted. This cannot be undone."
         ref="hardDeleteConfirmDialog" 
         confirm-text="Delete"
         confirm-type="delete"
         @confirmed="hardDeleteItem"
-    />
+    >
+        <template #description>
+            <p>Are you sure you want to permanently delete <strong>{{ props.checklist.name }}</strong>? All checklist items will be deleted. This cannot be undone.</p>
+        </template>
+    </Confirm>
     <PINSetup ref="pinSetupDialog" :item="props.checklist" :data-object="props.checklistData" type="checklist" />
     <PINRemove ref="pinRemoveDialog" :item="props.checklist" :data-object="props.checklistData" type="checklist" />
     <CopyChecklist ref="copyChecklistDialog" :checklist="props.checklist" @checklist-copied="handleChecklistCopied" />

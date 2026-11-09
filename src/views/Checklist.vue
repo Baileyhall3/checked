@@ -225,10 +225,7 @@
                                         <!-- Checklist Progress Bar -->
                                         <transition name="fade-slide">
                                             <div v-if="checklistDs.checklistItems?.data?.length && checklistState.preferences.itemsView.progressBar" class="pb-4">
-                                                <ProgressBar :total-count="checklistDs.checklist?.currentRecord?._record.items_count" :completed-count="checklistDs.checklist?.currentRecord?._record.items_checked_count" />
-
-                                                <!-- {{ checklistDs.checklist.currentRecord.items_checked_count }}
-                                                {{ checklistDs.checklist.currentRecord._record.items_checked_count }} -->
+                                                <ProgressBar :total-count="checklistDs.checklist?.currentRecord.items_count" :completed-count="checklistDs.checklist?.currentRecord.items_checked_count" />
                                             </div>
                                         </transition>
             
@@ -509,7 +506,6 @@ const checklistEl = ref<HTMLElement | null>(null)
 const allowSelection = ref<boolean>(false);
 const selectedItemIds = ref<Set<number>>(new Set());
 const canEdit = ref<boolean>(false);
-const progressBarKey = ref<number>(0);
 
 const isLoading = ref<boolean>(true);
 const { toast } = useToast();
@@ -536,6 +532,13 @@ const checklistState = reactive<{
     groupBy: undefined
 });
 
+const checklistDs = reactive({
+    checklist: null as DataObject<any> | null,
+    checklistItems: null as DataObject<any> | null,
+    folderChecklistsLkp: null as DataObject<any> | null,
+    checklistMembers: null as DataObject<any> | null
+});
+
 const { resolveTheme, themeToCssVars } = useThemes()
 
 const resolvedTheme = computed(() =>
@@ -555,28 +558,7 @@ const isIndeterminate = computed(() =>
     selectedItemIds.value.size < allIds.value.length
 )
 
-const totalCount = computed(() => checklistDs.checklist?.currentRecord?.items_count || 0);
-const completedCount = computed(() => checklistDs.checklist?.currentRecord?.items_checked_count || 0);
-
-// const progressPercent = computed(() => {
-//     const current = checklistDs.checklist?.currentRecord;
-//     return completedCount.value === 0 ? 0 : Math.round((completedCount.value / totalCount.value) * 100)
-// });
-
-// const totalCount = computed(() => checklistDs.checklistItems?.data?.length || 0);
-// const completedCount = computed(() => checklistDs.checklistItems?.data?.filter((item: any) => item.is_checked)?.length || 0);
-// const progressPercent = computed(() => {
-//     return totalCount.value === 0 ? 0 : Math.round((completedCount.value / totalCount.value) * 100);
-// });
-
 const isOwner = computed(() => checklistDs.checklist?.currentRecord?.owner_id === userStore.userProfile?.id);
-
-const checklistDs = reactive({
-    checklist: null as DataObject<any> | null,
-    checklistItems: null as DataObject<any> | null,
-    folderChecklistsLkp: null as DataObject<any> | null,
-    checklistMembers: null as DataObject<any> | null
-});
 
 watch(allowSelection, val => {
     if (!val) selectedItemIds.value = new Set()
@@ -686,6 +668,7 @@ async function createDataObjects(id: number) {
         }); 
 
         checklistDs.checklist = checklistData;
+
         if (checklistData?.data.length == 0) {
             isLoading.value = false;
             return;
@@ -774,7 +757,8 @@ async function initOthersDs() {
             masterDataObjectBinding: {
                 masterDataObjectId: 'checklist',
                 childBindingField: 'checklist_id',
-                masterBindingField: 'id'
+                masterBindingField: 'id',
+                refreshMasterOnChange: true
             },
             sort: checklistState.sortConfig,
             fields: checklistItemsFields,
@@ -798,15 +782,14 @@ async function initOthersDs() {
 
         checklistDs.checklistItems?.on('afterUpdate', async(record, updates) => {
             if (updates.is_checked !== undefined || updates.deleted_at !== undefined) {
-                console.log('Checklist item:', checklistDs.checklist?.currentRecord.items_checked_count);
-                await checklistDs.checklist?.currentRecord.refresh();
-                console.log('Checklist item updated:', checklistDs.checklist?.currentRecord.items_checked_count);
-                progressBarKey.value++
+                // console.log('Checklist item:', checklistDs.checklist?.currentRecord.items_checked_count);
+                // await checklistDs.checklist?.currentRecord.refresh();
+                // console.log('Checklist item updated:', checklistDs.checklist?.currentRecord.items_checked_count);
             }
         });
-        checklistDs.checklistItems?.on('afterInsert', async(record) => {
-            await checklistDs.checklist?.currentRecord.refresh();
-        });
+        // checklistDs.checklistItems?.on('afterInsert', async(record) => {
+        //     await checklistDs.checklist?.currentRecord.refresh();
+        // });
     } catch (err) {
         console.error(err);
     } finally {
@@ -816,39 +799,39 @@ async function initOthersDs() {
 
 const newItemName = ref("");
 async function createVoiceChecklistItem(blob: Blob) {
-  const checklistItemsDs = checklistDs.checklistItems
-  if (!checklistItemsDs) return
+    const checklistItemsDs = checklistDs.checklistItems
+    if (!checklistItemsDs) return
 
-  const userId = dataSources.user?.currentRecord?.auth_id;
-  if (!userId) { return; }
+    const userId = dataSources.user?.currentRecord?.auth_id;
+    if (!userId) { return; }
 
-  const created = await checklistItemsDs.insert({
-    checklist_id: checklistDs.checklist?.currentRecord?.id,
-    name: 'Voice note'
-  })
+    const created = await checklistItemsDs.insert({
+        checklist_id: checklistDs.checklist?.currentRecord?.id,
+        name: 'Voice note'
+    })
 
-  if (!created) return
+    if (!created) return
 
-  const itemId = created.id
+    const itemId = created.id
 
-  // 2️⃣ Build file path
-  const fileName = `${crypto.randomUUID()}.webm`
-  const filePath = `${userId}/${itemId}/${fileName}`
+    // 2️⃣ Build file path
+    const fileName = `${crypto.randomUUID()}.webm`
+    const filePath = `${userId}/${itemId}/${fileName}`
 
-  // 3️⃣ Upload using DataObjectStorage
-  await checklistItemsDs.storage.uploadToBucket(
-    'checklist-item-voice-notes',
-    filePath,
-    blob,
-    {
-      contentType: 'audio/webm'
-    }
-  )
+    // 3️⃣ Upload using DataObjectStorage
+    await checklistItemsDs.storage.uploadToBucket(
+        'checklist-item-voice-notes',
+        filePath,
+        blob,
+        {
+            contentType: 'audio/webm'
+        }
+    )
 
-  // 4️⃣ Update item with voice path
-  await checklistItemsDs.update(itemId, {
-    voice_note_path: filePath
-  })
+    // 4️⃣ Update item with voice path
+    await checklistItemsDs.update(itemId, {
+        voice_note_path: filePath
+    });
 }
 
 async function addItem() {
